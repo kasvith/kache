@@ -3,7 +3,7 @@ package kache
 import (
 	"os"
 
-	"github.com/kasvith/kache/internal/kache/config"
+	"github.com/kasvith/kache/internal/config"
 )
 
 // Invoke will start the application
