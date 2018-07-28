@@ -9,5 +9,5 @@ import (
 // Invoke will start the application
 func Invoke() {
 	// Prase commandline args
-	opts := config.ParseConfig(os.Args)
+	_ = config.ParseConfig(os.Args)
 }

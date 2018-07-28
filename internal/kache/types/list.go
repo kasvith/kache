@@ -1,27 +1,53 @@
 package types
 
 import (
+	"container/list"
 	"errors"
 	"sync"
 )
 
-// List Data structure
+// List Linked list represenation in the memoery, it's thread safe
 type List struct {
-	Capacity uint8
-	data     []string
-	sync.Mutex
+	list *list.List
+	mux  sync.Mutex
 }
 
-// Add an item to the list
-func (list *List) Add(value interface{}) error {
-	s, err := value.(string)
+// New Creates a new List
+func New() *List {
+	return &List{list: list.New()}
+}
 
-	if err == true {
-		return errors.New("Invalid type")
+// Push Inserts an item to the head of the list
+func (list *List) Push(val ...string) error {
+	list.mux.Lock()
+	defer list.mux.Unlock()
+
+	if len(val) == 0 {
+		return errors.New("No items to insert")
+	} else if len(val) == 1 {
+		list.list.PushFront(val)
+		return nil
+	} else {
+		newList := buildValueList(true, val...)
+		list.list.PushFrontList(newList)
+		return nil
+	}
+}
+
+func buildValueList(front bool, val ...string) *list.List {
+	l := list.New()
+
+	if front == true {
+		for _, v := range val {
+			l.PushFront(v)
+		}
+
+		return l
 	}
 
-	list.Lock()
-	defer list.Unlock()
-	list.data = append(list.data, s)
-	return nil
+	for _, v := range val {
+		l.PushBack(v)
+	}
+
+	return l
 }
