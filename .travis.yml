@@ -1,0 +1,10 @@
+language: go
+
+go:
+  - "1.10.x"
+
+before_install:
+  - make dep
+
+script:
+  - go test -v ./...
