@@ -84,3 +84,38 @@ func (list *TList) Tail() *list.Element {
 
 	return list.list.Back()
 }
+
+// Len returns the length of the list
+func (list *TList) Len() int {
+	list.mux.Lock()
+	defer list.mux.Unlock()
+	return list.list.Len()
+}
+
+// HPop pops out the element from head
+func (list *TList) HPop() interface{} {
+	list.mux.Lock()
+	defer list.mux.Unlock()
+
+	if list.Head() == nil {
+		return nil
+	}
+
+	return list.list.Remove(list.Head())
+}
+
+// TPop pops out the element from tail
+func (list *TList) TPop() interface{} {
+	list.mux.Lock()
+	defer list.mux.Unlock()
+
+	if list.Tail() == nil {
+		return nil
+	}
+
+	return list.list.Remove(list.Tail())
+}
+
+func (list *TList) Range(start, stop int) []string {
+
+}

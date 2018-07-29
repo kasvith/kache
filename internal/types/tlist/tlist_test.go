@@ -30,3 +30,15 @@ func TestPushSingleValue(t *testing.T) {
 		t.Error("Items are not same")
 	}
 }
+
+func TestLen(t *testing.T) {
+	l := New()
+
+	for i := 0; i < 10; i++ {
+		l.HPush(string(i))
+	}
+
+	if l.Len() != 10 {
+		t.Error("Assert Length is unequal expected 10, got", l.Len())
+	}
+}
