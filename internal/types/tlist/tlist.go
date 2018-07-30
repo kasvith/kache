@@ -71,24 +71,16 @@ func buildValueList(front bool, val ...string) *list.List {
 
 // Head Gets head of the list
 func (list *TList) Head() *list.Element {
-	list.mux.Lock()
-	defer list.mux.Unlock()
-
 	return list.list.Front()
 }
 
 // Tail Gets tail of the list
 func (list *TList) Tail() *list.Element {
-	list.mux.Lock()
-	defer list.mux.Unlock()
-
 	return list.list.Back()
 }
 
 // Len returns the length of the list
 func (list *TList) Len() int {
-	list.mux.Lock()
-	defer list.mux.Unlock()
 	return list.list.Len()
 }
 
@@ -116,6 +108,74 @@ func (list *TList) TPop() interface{} {
 	return list.list.Remove(list.Tail())
 }
 
-func (list *TList) Range(start, stop int) []string {
+func (list *TList) convertPos(pos int) int {
+	// get the real index from the negative one
+	if pos < 0 {
+		pos = pos + list.Len()
+	}
 
+	return pos
+}
+
+func (list *TList) findAtIndex(pos int) *list.Element {
+	if pos < 0 || pos > list.Len() {
+		return nil
+	}
+	
+	if pos == 0 {
+		return list.Head()
+	}
+
+	if pos == list.Len()-1 {
+		return list.Tail()
+	}
+
+	for i, e := 1, list.Head().Next(); e != nil && i <= pos; i, e = i+1, e.Next() {
+		if i == pos {
+			return e
+		}
+	}
+
+	return nil
+}
+
+// ToString Convert an interface to string
+func ToString(i interface{}) string {
+	if s, ok := i.(string); ok {
+		return s
+	}
+
+	return ""
+}
+
+// Range will output set of keys based on index query
+func (list *TList) Range(start, stop int) []string {
+	list.mux.Lock()
+	defer list.mux.Unlock()
+
+	start = list.convertPos(start)
+	stop = list.convertPos(stop)
+
+	if start > list.Len()-1 {
+		return []string{}
+	}
+
+	if stop > list.Len()-1 {
+		stop = list.Len() - 1
+	}
+
+	dist := stop - start
+
+	if dist < 0 {
+		return []string{}
+	}
+
+	res := make([]string, dist + 1)
+
+
+	for i, j , e := start, 0, list.findAtIndex(start); e != nil && i <= stop; i,j, e = i+1, j + 1, e.Next() {
+		res[j] = ToString(e.Value)
+	}
+
+	return res[:]
 }
