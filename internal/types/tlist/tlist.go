@@ -6,7 +6,7 @@ import (
 	"sync"
 )
 
-// TList Linked list represenation in the memoery, it's thread safe
+// TList Linked list representation in the memory, it's thread safe
 type TList struct {
 	list *list.List
 	mux  sync.Mutex
@@ -23,7 +23,7 @@ func (list *TList) HPush(val ...string) error {
 	defer list.mux.Unlock()
 
 	if len(val) == 0 {
-		return errors.New("No items to insert")
+		return errors.New("no items to insert")
 	} else if len(val) == 1 {
 		list.list.PushFront(val[0])
 		return nil
@@ -40,7 +40,7 @@ func (list *TList) TPush(val ...string) error {
 	defer list.mux.Unlock()
 
 	if len(val) == 0 {
-		return errors.New("No items to insert")
+		return errors.New("no items to insert")
 	} else if len(val) == 1 {
 		list.list.PushBack(val[0])
 		return nil
@@ -85,27 +85,27 @@ func (list *TList) Len() int {
 }
 
 // HPop pops out the element from head
-func (list *TList) HPop() interface{} {
+func (list *TList) HPop() string {
 	list.mux.Lock()
 	defer list.mux.Unlock()
 
 	if list.Head() == nil {
-		return nil
+		return ""
 	}
 
-	return list.list.Remove(list.Head())
+	return ToString(list.list.Remove(list.Head()))
 }
 
 // TPop pops out the element from tail
-func (list *TList) TPop() interface{} {
+func (list *TList) TPop() string {
 	list.mux.Lock()
 	defer list.mux.Unlock()
 
 	if list.Tail() == nil {
-		return nil
+		return ""
 	}
 
-	return list.list.Remove(list.Tail())
+	return ToString(list.list.Remove(list.Tail()))
 }
 
 func (list *TList) convertPos(pos int) int {
@@ -156,7 +156,7 @@ func (list *TList) Range(start, stop int) []string {
 	start = list.convertPos(start)
 	stop = list.convertPos(stop)
 
-	if start > list.Len()-1 {
+	if start > list.Len()-1 || start < 0 {
 		return []string{}
 	}
 

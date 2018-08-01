@@ -4,6 +4,7 @@ import (
 	"testing"
 	"strconv"
 	"github.com/kasvith/kache/pkg/testsuite"
+	"errors"
 )
 
 func TestPushSingleValue(t *testing.T) {
@@ -40,24 +41,14 @@ func TestLen(t *testing.T) {
 		l.HPush(strconv.Itoa(i))
 	}
 
-	if l.Len() != 10 {
-		t.Error("Assert Length is unequal expected 10, got", l.Len())
-	}
-}
-
-func TestRange(t *testing.T) {
-	l := New()
-
-	for i := 0; i < 10; i++ {
-		l.HPush(strconv.Itoa(i))
-	}
+	testsuite.AssertEqual(t, 10, l.Len())
 }
 
 func TestToString(t *testing.T) {
 	var i interface{}
 	i = "str"
 
-	testsuite.AssertEqual(t, i, "str")
+	testsuite.AssertEqual(t, "str", i )
 }
 
 func TestFindAtIndexHead(t *testing.T) {
@@ -69,7 +60,7 @@ func TestFindAtIndexHead(t *testing.T) {
 
 	e1 := l.findAtIndex(0)
 
-	testsuite.AssertEqual(t, e1.Value, "9")
+	testsuite.AssertEqual(t, "9", e1.Value)
 }
 
 
@@ -82,7 +73,7 @@ func TestFindAtIndexTail(t *testing.T) {
 
 	e2 := l.findAtIndex(l.Len() - 1)
 
-	testsuite.AssertEqual(t, e2.Value, "0")
+	testsuite.AssertEqual(t, "0", e2.Value)
 }
 
 func TestFindAtIndexNull(t *testing.T)  {
@@ -105,7 +96,7 @@ func TestFindAtIndexMiddle(t *testing.T) {
 
 	e2 := l.findAtIndex(4)
 
-	testsuite.AssertEqual(t, e2.Value, "5")
+	testsuite.AssertEqual(t, "5", e2.Value)
 }
 
 func TestTList_RangeAllItems(t *testing.T) {
@@ -119,6 +110,43 @@ func TestTList_RangeAllItems(t *testing.T) {
 
 	res := l.Range(0, -1)
 	testsuite.AssertStringSliceEqual(t, strs, res)
+}
+
+func TestTList_RangeMinusDistance(t *testing.T) {
+	l := New()
+	strs := make([]string, 10)
+
+	for i := 0; i < 10; i++ {
+		strs[i] = strconv.Itoa(9 - i)
+		l.HPush(strconv.Itoa(i))
+	}
+
+	res := l.Range(5, 2)
+	testsuite.AssertStringSliceEqual(t, []string{}, res)
+}
+
+func TestTList_RangeStopOutOfBound(t *testing.T) {
+	l := New()
+	strs := make([]string, 10)
+
+	for i := 0; i < 10; i++ {
+		strs[i] = strconv.Itoa(9 - i)
+		l.HPush(strconv.Itoa(i))
+	}
+
+	res := l.Range(0, 100)
+	testsuite.AssertStringSliceEqual(t, strs, res)
+}
+
+func TestTList_RangeStartOutOfBound(t *testing.T) {
+	l := New()
+
+	for i := 0; i < 10; i++ {
+		l.HPush(strconv.Itoa(i))
+	}
+
+	res := l.Range(100, -1)
+	testsuite.AssertStringSliceEqual(t, []string{}, res)
 }
 
 func TestTList_RangeTwoFromTail(t *testing.T) {
@@ -172,4 +200,118 @@ func TestTList_RangeOneFromTail(t *testing.T) {
 
 	res := l.Range(-1, -1)
 	testsuite.AssertStringSliceEqual(t, []string{"0"}, res)
+}
+
+func TestTList_HPop(t *testing.T) {
+	l := New()
+	strs := make([]string, 10)
+
+	for i := 0; i < 10; i++ {
+		strs[i] = strconv.Itoa(9 - i)
+		l.HPush(strconv.Itoa(i))
+	}
+
+	elem := l.HPop()
+	testsuite.AssertEqual(t, "9", elem)
+
+	elem = l.HPop()
+	testsuite.AssertEqual(t, "8", elem)
+}
+
+func TestTList_TPop(t *testing.T) {
+	l := New()
+
+	for i := 0; i < 10; i++ {
+		l.HPush(strconv.Itoa(i))
+	}
+
+	elem := l.TPop()
+	testsuite.AssertEqual(t, "0", elem)
+
+	elem = l.TPop()
+	testsuite.AssertEqual(t, "1", elem)
+}
+
+func TestTList_TPush(t *testing.T) {
+	l := New()
+	strs := make([]string, 10)
+
+	for i := 0; i < 10; i++ {
+		strs[i] = strconv.Itoa(9 - i)
+		l.TPush(strconv.Itoa(i))
+	}
+
+	elem := l.HPop()
+	testsuite.AssertEqual(t, "0", elem)
+
+	elem = l.HPop()
+	testsuite.AssertEqual(t, "1", elem)
+}
+
+func TestTList_TPushListHead(t *testing.T) {
+	l := New()
+	strs := make([]string, 10)
+	vals := make([]string, 10)
+
+	for i := 0; i < 10; i++ {
+		strs[i] = strconv.Itoa(9 - i)
+		vals[i] = strconv.Itoa(i)
+	}
+
+	l.HPush(vals...)
+
+	res := l.Range(0, -1)
+	testsuite.AssertStringSliceEqual(t, strs, res)
+
+	l.HPush([]string{"0", "1"}...)
+	res = l.Range(0, -1)
+	testsuite.AssertStringSliceEqual(t, []string{"1", "0", "9", "8", "7", "6", "5", "4", "3" ,"2" ,"1" ,"0"}, res)
+}
+
+func TestTList_TPushListTail(t *testing.T) {
+	l := New()
+	strs := make([]string, 10)
+	vals := make([]string, 10)
+
+	for i := 0; i < 10; i++ {
+		strs[i] = strconv.Itoa(9 - i)
+		vals[i] = strconv.Itoa(i)
+	}
+
+	l.TPush(vals...)
+
+	res := l.Range(0, -1)
+	testsuite.AssertStringSliceEqual(t, vals, res)
+
+	l.TPush([]string{"0", "1"}...)
+	res = l.Range(0, -1)
+	testsuite.AssertStringSliceEqual(t, []string{"0" ,"1", "2", "3", "4", "5", "6", "7", "8", "9", "0" ,"1"}, res)
+}
+
+func TestTList_HPushNil(t *testing.T) {
+	l := New()
+	err := l.HPush([]string{}...)
+
+	testsuite.ExceptError(t, errors.New("no items to insert"), err)
+}
+
+func TestTList_TPushNil(t *testing.T) {
+	l := New()
+	err := l.TPush([]string{}...)
+
+	testsuite.ExceptError(t, errors.New("no items to insert"), err)
+}
+
+func TestTList_HPopNil(t *testing.T) {
+	l := New()
+	it := l.HPop()
+
+	testsuite.AssertEqual(t,"", it)
+}
+
+func TestTList_TPopNil(t *testing.T) {
+	l := New()
+	it := l.TPop()
+
+	testsuite.AssertEqual(t,"", it)
 }
