@@ -179,3 +179,22 @@ func (list *TList) Range(start, stop int) []string {
 
 	return res[:]
 }
+
+func (list *TList)Trim(start, stop int)  {
+	start = list.convertPos(start)
+	stop = list.convertPos(stop)
+
+	if start > list.Len()-1 || start < 0 {
+		return
+	}
+
+	if stop > list.Len()-1 {
+		return
+	}
+
+	dist := stop - start
+
+	if dist < 0 {
+		return
+	}
+}
