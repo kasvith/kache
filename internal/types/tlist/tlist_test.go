@@ -1,10 +1,10 @@
 package tlist
 
 import (
-	"testing"
-	"strconv"
-	"github.com/kasvith/kache/pkg/testsuite"
 	"errors"
+	"github.com/kasvith/kache/pkg/testsuite"
+	"strconv"
+	"testing"
 )
 
 func TestPushSingleValue(t *testing.T) {
@@ -48,7 +48,7 @@ func TestToString(t *testing.T) {
 	var i interface{}
 	i = "str"
 
-	testsuite.AssertEqual(t, "str", i )
+	testsuite.AssertEqual(t, "str", i)
 }
 
 func TestFindAtIndexHead(t *testing.T) {
@@ -63,7 +63,6 @@ func TestFindAtIndexHead(t *testing.T) {
 	testsuite.AssertEqual(t, "9", e1.Value)
 }
 
-
 func TestFindAtIndexTail(t *testing.T) {
 	l := New()
 
@@ -76,7 +75,7 @@ func TestFindAtIndexTail(t *testing.T) {
 	testsuite.AssertEqual(t, "0", e2.Value)
 }
 
-func TestFindAtIndexNull(t *testing.T)  {
+func TestFindAtIndexNull(t *testing.T) {
 	l := New()
 
 	for i := 0; i < 10; i++ {
@@ -175,7 +174,6 @@ func TestTList_RangeTwoFromMiddle(t *testing.T) {
 	testsuite.AssertStringSliceEqual(t, []string{"7", "6", "5", "4"}, res)
 }
 
-
 func TestTList_RangeOneFromHead(t *testing.T) {
 	l := New()
 	strs := make([]string, 10)
@@ -265,7 +263,7 @@ func TestTList_TPushListHead(t *testing.T) {
 
 	l.HPush([]string{"0", "1"}...)
 	res = l.Range(0, -1)
-	testsuite.AssertStringSliceEqual(t, []string{"1", "0", "9", "8", "7", "6", "5", "4", "3" ,"2" ,"1" ,"0"}, res)
+	testsuite.AssertStringSliceEqual(t, []string{"1", "0", "9", "8", "7", "6", "5", "4", "3", "2", "1", "0"}, res)
 }
 
 func TestTList_TPushListTail(t *testing.T) {
@@ -285,7 +283,7 @@ func TestTList_TPushListTail(t *testing.T) {
 
 	l.TPush([]string{"0", "1"}...)
 	res = l.Range(0, -1)
-	testsuite.AssertStringSliceEqual(t, []string{"0" ,"1", "2", "3", "4", "5", "6", "7", "8", "9", "0" ,"1"}, res)
+	testsuite.AssertStringSliceEqual(t, []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "1"}, res)
 }
 
 func TestTList_HPushNil(t *testing.T) {
@@ -306,12 +304,110 @@ func TestTList_HPopNil(t *testing.T) {
 	l := New()
 	it := l.HPop()
 
-	testsuite.AssertEqual(t,"", it)
+	testsuite.AssertEqual(t, "", it)
 }
 
 func TestTList_TPopNil(t *testing.T) {
 	l := New()
 	it := l.TPop()
 
-	testsuite.AssertEqual(t,"", it)
+	testsuite.AssertEqual(t, "", it)
+}
+
+func TestTList_TrimNullList(t *testing.T) {
+	l := New()
+
+	l.Trim(0, 10)
+
+	testsuite.AssertEqual(t, 0, l.Len())
+}
+
+func TestTList_TrimFullList(t *testing.T) {
+	l := New()
+
+	for i := 0; i < 10; i++ {
+		l.HPush(strconv.Itoa(i))
+	}
+
+	// list now trimmed to 2 elements
+	l.Trim(0, 1)
+	testsuite.AssertEqual(t, 2, l.Len())
+	testsuite.AssertStringSliceEqual(t, []string{"9", "8"}, l.Range(0, -1))
+}
+
+func TestTList_TrimAddMoreAndAssert(t *testing.T) {
+	l := New()
+
+	for i := 0; i < 10; i++ {
+		l.HPush(strconv.Itoa(i))
+	}
+
+	// list now trimmed to 2 elements
+	l.Trim(0, 1)
+	testsuite.AssertEqual(t, 2, l.Len())
+	testsuite.AssertStringSliceEqual(t, []string{"9", "8"}, l.Range(0, -1))
+
+	// push new elem
+	l.HPush("a")
+
+	// list now trimmed to 2 elements
+	l.Trim(0, 1)
+
+	// assert for 2 elements
+	testsuite.AssertEqual(t, 2, l.Len())
+
+	// check list updated
+	testsuite.AssertStringSliceEqual(t, []string{"a", "9"}, l.Range(0, -1))
+}
+
+func TestTList_TrimMinusStart(t *testing.T) {
+	l := New()
+
+	for i := 0; i < 10; i++ {
+		l.HPush(strconv.Itoa(i))
+	}
+
+	// list now trimmed to 2 elements
+	l.Trim(-100, 1)
+	testsuite.AssertEqual(t, 2, l.Len())
+	testsuite.AssertStringSliceEqual(t, []string{"9", "8"}, l.Range(0, -1))
+}
+
+func TestTList_TrimExceededStopLimit(t *testing.T) {
+	l := New()
+
+	for i := 0; i < 10; i++ {
+		l.HPush(strconv.Itoa(i))
+	}
+
+	// list now trimmed to 2 elements
+	l.Trim(0, 10000)
+	testsuite.AssertEqual(t, 10, l.Len())
+	testsuite.AssertStringSliceEqual(t, []string{"9", "8", "7", "6", "5", "4", "3", "2", "1", "0"}, l.Range(0, -1))
+}
+
+func TestTList_TrimStopLesserThanStart(t *testing.T) {
+	l := New()
+
+	for i := 0; i < 10; i++ {
+		l.HPush(strconv.Itoa(i))
+	}
+
+	// list now trimmed to 2 elements
+	l.Trim(4, 2)
+	testsuite.AssertEqual(t, 10, l.Len())
+	testsuite.AssertStringSliceEqual(t, []string{"9", "8", "7", "6", "5", "4", "3", "2", "1", "0"}, l.Range(0, -1))
+}
+
+func TestTList_TrimHead(t *testing.T) {
+	l := New()
+
+	for i := 0; i < 10; i++ {
+		l.HPush(strconv.Itoa(i))
+	}
+
+	// list now trimmed to 2 elements
+	l.Trim(2, -1)
+	testsuite.AssertEqual(t, 8, l.Len())
+	testsuite.AssertStringSliceEqual(t, []string{"7", "6", "5", "4", "3", "2", "1", "0"}, l.Range(0, -1))
 }

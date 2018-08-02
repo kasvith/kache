@@ -19,12 +19,14 @@ func New() *TList {
 
 // HPush Inserts an item to the head of the list
 func (list *TList) HPush(val ...string) error {
+	if len(val) == 0 {
+		return errors.New("no items to insert")
+	}
+
 	list.mux.Lock()
 	defer list.mux.Unlock()
 
-	if len(val) == 0 {
-		return errors.New("no items to insert")
-	} else if len(val) == 1 {
+	if len(val) == 1 {
 		list.list.PushFront(val[0])
 		return nil
 	} else {
@@ -36,12 +38,14 @@ func (list *TList) HPush(val ...string) error {
 
 // TPush Inserts an item to the tail of the list
 func (list *TList) TPush(val ...string) error {
+	if len(val) == 0 {
+		return errors.New("no items to insert")
+	}
+
 	list.mux.Lock()
 	defer list.mux.Unlock()
 
-	if len(val) == 0 {
-		return errors.New("no items to insert")
-	} else if len(val) == 1 {
+	if len(val) == 1 {
 		list.list.PushBack(val[0])
 		return nil
 	} else {
@@ -121,7 +125,7 @@ func (list *TList) findAtIndex(pos int) *list.Element {
 	if pos < 0 || pos > list.Len() {
 		return nil
 	}
-	
+
 	if pos == 0 {
 		return list.Head()
 	}
@@ -170,31 +174,50 @@ func (list *TList) Range(start, stop int) []string {
 		return []string{}
 	}
 
-	res := make([]string, dist + 1)
+	res := make([]string, dist+1)
 
-
-	for i, j , e := start, 0, list.findAtIndex(start); e != nil && i <= stop; i,j, e = i+1, j + 1, e.Next() {
+	for i, j, e := start, 0, list.findAtIndex(start); e != nil && i <= stop; i, j, e = i+1, j+1, e.Next() {
 		res[j] = ToString(e.Value)
 	}
 
 	return res[:]
 }
 
-func (list *TList)Trim(start, stop int)  {
+func (list *TList) Trim(start, stop int) {
+	list.mux.Lock()
+
 	start = list.convertPos(start)
 	stop = list.convertPos(stop)
 
-	if start > list.Len()-1 || start < 0 {
+	if start > list.Len()-1 {
+		list.mux.Unlock()
 		return
 	}
 
-	if stop > list.Len()-1 {
+	if start < 0 {
+		start = 0
+	}
+
+	if stop > list.Len() {
+		stop = list.Len() - 1
+	}
+
+	if stop < start {
+		list.mux.Unlock()
 		return
 	}
 
-	dist := stop - start
+	itemsForRemoveFromHead := start
+	itemsForRemoveFromTail := list.Len() - 1 - stop
 
-	if dist < 0 {
-		return
+	list.mux.Unlock()
+
+	// TODO We need a more optimized method
+	for i := itemsForRemoveFromHead; i > 0; i-- {
+		list.HPop()
+	}
+
+	for i := itemsForRemoveFromTail; i > 0; i-- {
+		list.TPop()
 	}
 }
