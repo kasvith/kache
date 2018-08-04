@@ -13,12 +13,17 @@ func New() *HashMap {
 	return &HashMap{m: make(map[string]string)}
 }
 
-func (m *HashMap) Set(key, value string) {
+func (m *HashMap) Set(key, value string) int {
 	m.mux.Lock()
 	defer m.mux.Unlock()
 
+	if value, found := m.m[key]; found {
+		m.m[key] = value
+		return 0
+	}
+
 	m.m[key] = value
-	return
+	return 1
 }
 
 func (m *HashMap) Get(key string) string {

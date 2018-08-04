@@ -9,14 +9,17 @@ import (
 func TestHashMap_Set(t *testing.T) {
 	hm := New()
 
-	hm.Set("mykey", "myval")
+	rep := hm.Set("mykey", "myval")
 	testsuite.AssertEqual(t, 1, len(hm.m))
+	testsuite.AssertEqual(t, 1, rep)
 
-	hm.Set("mykey", "myval")
+	rep = hm.Set("mykey", "updated")
 	testsuite.AssertEqual(t, 1, len(hm.m))
+	testsuite.AssertEqual(t, 0, rep)
 
-	hm.Set("mykey1", "myval")
+	rep = hm.Set("mykey1", "myval")
 	testsuite.AssertEqual(t, 2, len(hm.m))
+	testsuite.AssertEqual(t, 1, rep)
 }
 
 func TestHashMap_Get(t *testing.T) {
