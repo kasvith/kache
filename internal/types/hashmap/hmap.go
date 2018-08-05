@@ -1,6 +1,8 @@
 package hashmap
 
 import (
+	"errors"
+	"strconv"
 	"sync"
 )
 
@@ -85,6 +87,7 @@ func (m *HashMap) Delete(keys ...string) int {
 func (m *HashMap) Exists(key string) int {
 	m.mux.Lock()
 	defer m.mux.Unlock()
+
 	_, found := m.m[key]
 
 	if found {
@@ -92,4 +95,17 @@ func (m *HashMap) Exists(key string) int {
 	}
 
 	return 0
+}
+
+func (m *HashMap) IncrementBy(amount string) (int, error) {
+	m.mux.Lock()
+	defer m.mux.Unlock()
+
+	// Convert value to int
+	val, err := strconv.Atoi(amount)
+
+	if err != nil {
+		return 0, errors.New("invalid integer or integer out of range")
+	}
+
 }
