@@ -16,3 +16,7 @@ after_success:
 os:
   - linux
   - osx
+
+branches:
+  except:
+  - gh-pages
