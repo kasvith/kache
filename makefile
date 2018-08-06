@@ -1,6 +1,6 @@
 # Makefile for kache
 
-all: dep test build-kache build-cli
+all: dep vet test build-kache build-cli
 
 build-kache:
 	go build -o bin/kache ./cmd/kache
@@ -13,6 +13,9 @@ dep:
 
 test:
 	go test -v ./...
+
+vet:
+    go vet ./...
 
 clean:
 	rm -f bin/kache bin/kache-cli
