@@ -9,11 +9,11 @@ import (
 
 type HashMap struct {
 	m   map[string]string
-	mux sync.Mutex
+	mux *sync.Mutex
 }
 
 func New() *HashMap {
-	return &HashMap{m: make(map[string]string)}
+	return &HashMap{m: make(map[string]string), mux: &sync.Mutex{}}
 }
 
 func (m *HashMap) Set(key, value string) int {

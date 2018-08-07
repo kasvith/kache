@@ -9,12 +9,12 @@ import (
 // TList Linked list representation in the memory, it's thread safe
 type TList struct {
 	list *list.List
-	mux  sync.Mutex
+	mux  *sync.Mutex
 }
 
 // New Creates a new List
 func New() *TList {
-	return &TList{list: list.New()}
+	return &TList{list: list.New(), mux: &sync.Mutex{}}
 }
 
 // HPush Inserts an item to the head of the list
