@@ -1,7 +1,7 @@
 package main
 
-import "github.com/kasvith/kache/internal/kache"
+import "github.com/kasvith/kache/internal/commands/kache"
 
 func main() {
-	kache.Invoke()
+	kache.Execute()
 }
