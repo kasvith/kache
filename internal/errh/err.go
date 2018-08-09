@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func LogErrorAndExit(err error, exit int) {
+func PrintErrorAndExit(err error, exit int) {
 	if os.Getenv("ENV") == "DEBUG" {
 		panic(err)
 	}

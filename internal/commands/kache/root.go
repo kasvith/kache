@@ -88,7 +88,7 @@ func Execute() {
 func runApp(cmd *cobra.Command, args []string) {
 	var appConfig AppConfig
 	if err := viper.Unmarshal(&appConfig); err != nil {
-		errh.LogErrorAndExit(err, 2)
+		errh.PrintErrorAndExit(err, 2)
 	}
 
 	fmt.Println(appConfig)
