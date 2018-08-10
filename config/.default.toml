@@ -3,3 +3,4 @@
 host="127.0.0.1"
 port=6879
 maxClients=10000
+maxTimeout=120
