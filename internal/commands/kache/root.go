@@ -6,14 +6,11 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
+	"github.com/kasvith/kache/internal/srv"
+	"github.com/kasvith/kache/internal/config"
 )
 
-type AppConfig struct {
-	Port       int
-	Host       string
-	Verbose    bool
-	MaxClients int
-}
+
 
 var verbose bool
 var cfgFile string
@@ -31,14 +28,16 @@ func init() {
 	// Flags
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "", "", "configuration file")
-	rootCmd.PersistentFlags().StringP("host", "", "127.0.0.1", "host for running application")
-	rootCmd.PersistentFlags().IntP("port", "p", 6969, "port for running application")
-	rootCmd.PersistentFlags().IntP("maxClients", "", 10000, "max connections can be handled")
+	rootCmd.Flags().StringP("host", "", "127.0.0.1", "host for running application")
+	rootCmd.Flags().IntP("port", "p", 6969, "port for running application")
+	rootCmd.Flags().IntP("maxClients", "", 10000, "max connections can be handled")
+	rootCmd.Flags().IntP("maxTimeout", "", 120, "max timeout for clients(in seconds)")
 
 	// Bind the flags to config
-	viper.BindPFlag("port", rootCmd.PersistentFlags().Lookup("port"))
-	viper.BindPFlag("host", rootCmd.PersistentFlags().Lookup("host"))
-	viper.BindPFlag("maxClients", rootCmd.PersistentFlags().Lookup("maxClients"))
+	viper.BindPFlag("port", rootCmd.Flags().Lookup("port"))
+	viper.BindPFlag("host", rootCmd.Flags().Lookup("host"))
+	viper.BindPFlag("maxClients", rootCmd.Flags().Lookup("maxClients"))
+	viper.BindPFlag("maxTimeout", rootCmd.Flags().Lookup("maxTimeout"))
 	viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
 }
 
@@ -86,10 +85,10 @@ func Execute() {
 }
 
 func runApp(cmd *cobra.Command, args []string) {
-	var appConfig AppConfig
+	var appConfig config.AppConfig
 	if err := viper.Unmarshal(&appConfig); err != nil {
 		errh.PrintErrorAndExit(err, 2)
 	}
 
-	fmt.Println(appConfig)
+	srv.Start(appConfig)
 }
