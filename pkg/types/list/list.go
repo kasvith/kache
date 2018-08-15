@@ -3,6 +3,7 @@ package list
 import (
 	"container/list"
 	"errors"
+	"github.com/kasvith/kache/pkg/util"
 	"sync"
 )
 
@@ -97,7 +98,7 @@ func (list *TList) HPop() string {
 		return ""
 	}
 
-	return ToString(list.list.Remove(list.Head()))
+	return util.ToString(list.list.Remove(list.Head()))
 }
 
 // TPop pops out the element from tail
@@ -109,7 +110,7 @@ func (list *TList) TPop() string {
 		return ""
 	}
 
-	return ToString(list.list.Remove(list.Tail()))
+	return util.ToString(list.list.Remove(list.Tail()))
 }
 
 func (list *TList) convertPos(pos int) int {
@@ -143,15 +144,6 @@ func (list *TList) findAtIndex(pos int) *list.Element {
 	return nil
 }
 
-// ToString Convert an interface to string
-func ToString(i interface{}) string {
-	if s, ok := i.(string); ok {
-		return s
-	}
-
-	return ""
-}
-
 // Range will output set of keys based on index query
 func (list *TList) Range(start, stop int) []string {
 	list.mux.Lock()
@@ -177,7 +169,7 @@ func (list *TList) Range(start, stop int) []string {
 	res := make([]string, dist+1)
 
 	for i, j, e := start, 0, list.findAtIndex(start); e != nil && i <= stop; i, j, e = i+1, j+1, e.Next() {
-		res[j] = ToString(e.Value)
+		res[j] = util.ToString(e.Value)
 	}
 
 	return res[:]

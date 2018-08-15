@@ -44,13 +44,6 @@ func TestLen(t *testing.T) {
 	testsuite.AssertEqual(t, 10, l.Len())
 }
 
-func TestToString(t *testing.T) {
-	var i interface{}
-	i = "str"
-
-	testsuite.AssertEqual(t, "str", i)
-}
-
 func TestFindAtIndexHead(t *testing.T) {
 	l := New()
 
