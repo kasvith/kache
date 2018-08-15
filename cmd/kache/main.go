@@ -1,6 +1,6 @@
 package main
 
-import "github.com/kasvith/kache/internal/commands/kache"
+import "github.com/kasvith/kache/internal/cobra-cmds/kache"
 
 func main() {
 	kache.Execute()
