@@ -1,13 +1,13 @@
 package db
 
 import (
-	"sync"
 	"fmt"
+	"sync"
 )
 
 type DB struct {
 	file map[string]*DataNode
-	mux sync.Mutex
+	mux  sync.Mutex
 }
 
 type KeyNotFoundError struct {
@@ -19,18 +19,18 @@ func (e *KeyNotFoundError) Error() string {
 }
 
 func NewDB() *DB {
-	return &DB{}
+	return &DB{file: make(map[string]*DataNode)}
 }
 
 func (db *DB) Get(key string) (*DataNode, error) {
 	db.mux.Lock()
 	defer db.mux.Unlock()
 
-	if v, ok := db.file[key]; ok{
+	if v, ok := db.file[key]; ok {
 		return v, nil
 	}
 
-	return nil, &KeyNotFoundError{key:key}
+	return nil, &KeyNotFoundError{key: key}
 }
 
 func (db *DB) Set(key string, val *DataNode) {
@@ -59,7 +59,7 @@ func (db *DB) Exists(key string) int {
 	db.mux.Lock()
 	defer db.mux.Unlock()
 
-	if _, ok := db.file[key]; ok{
+	if _, ok := db.file[key]; ok {
 		return 1
 	}
 
