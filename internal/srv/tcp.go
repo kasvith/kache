@@ -2,12 +2,16 @@ package srv
 
 import (
 	"bufio"
+	"github.com/kasvith/kache/internal/arch"
 	"github.com/kasvith/kache/internal/config"
+	"github.com/kasvith/kache/internal/db"
 	"github.com/kasvith/kache/internal/errh"
 	"log"
 	"net"
 	"strconv"
+	"strings"
 	"sync"
+	"io"
 )
 
 type Clients struct {
@@ -16,6 +20,9 @@ type Clients struct {
 }
 
 var ConnectedClients Clients
+
+var DB = db.NewDB()
+var dbCommand = &arch.DBCommand{}
 
 func (c *Clients) Increase() {
 	c.mux.Lock()
@@ -36,10 +43,34 @@ func handleConnection(conn net.Conn) {
 
 	for {
 		rw := bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn))
-		read, _ := rw.ReadString('\n')
-		rw.WriteString(read)
+		read, err := rw.ReadString('\n')
+
+		if err != nil && err == io.EOF {
+			break
+		}
+
+		strs := strings.Split(strings.TrimSpace(read), " ")
+
+		if len(strs) == 0 {
+			rw.Flush()
+			continue
+		}
+
+		rep := dbCommand.Execute(DB, strings.ToLower(strs[0]), strs[1:])
+
+		if rep.Err == nil {
+			rw.WriteString(rep.Rep.Reply())
+		} else {
+			err := rep.Err.Err()
+			rw.WriteString(err.Error())
+		}
+
 		rw.Flush()
 	}
+
+	log.Println("Disconnected client from", conn.RemoteAddr())
+	ConnectedClients.Decrease()
+	log.Println(ConnectedClients.ConnectedClients, "connections are now open")
 }
 
 func Start(config config.AppConfig) {
