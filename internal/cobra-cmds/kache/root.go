@@ -2,15 +2,13 @@ package kache
 
 import (
 	"fmt"
+	"github.com/kasvith/kache/internal/config"
 	"github.com/kasvith/kache/internal/errh"
+	"github.com/kasvith/kache/internal/srv"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
-	"github.com/kasvith/kache/internal/srv"
-	"github.com/kasvith/kache/internal/config"
 )
-
-
 
 var verbose bool
 var cfgFile string
