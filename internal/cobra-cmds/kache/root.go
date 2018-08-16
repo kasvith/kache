@@ -3,7 +3,7 @@ package kache
 import (
 	"fmt"
 	"github.com/kasvith/kache/internal/config"
-	"github.com/kasvith/kache/internal/errh"
+	"github.com/kasvith/kache/internal/logs"
 	"github.com/kasvith/kache/internal/srv"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -16,7 +16,7 @@ var cfgFile string
 var rootCmd = &cobra.Command{
 	Use:   "kache",
 	Short: "kache is a simple distributed in memory database",
-	Long:  `A fast and flexible redis alternative built with go`,
+	Long:  `A fast and flexible in memory database built with go`,
 	Run:   runApp,
 }
 
@@ -26,8 +26,11 @@ func init() {
 	// Flags
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "", "", "configuration file")
+	rootCmd.PersistentFlags().BoolP("logging", "", true, "set application logs")
+	rootCmd.PersistentFlags().StringP("logfile", "", "../logs/kache.log", "application log file")
+
 	rootCmd.Flags().StringP("host", "", "127.0.0.1", "host for running application")
-	rootCmd.Flags().IntP("port", "p", 6969, "port for running application")
+	rootCmd.Flags().IntP("port", "p", 7088, "port for running application")
 	rootCmd.Flags().IntP("maxClients", "", 10000, "max connections can be handled")
 	rootCmd.Flags().IntP("maxTimeout", "", 120, "max timeout for clients(in seconds)")
 
@@ -37,6 +40,8 @@ func init() {
 	viper.BindPFlag("maxClients", rootCmd.Flags().Lookup("maxClients"))
 	viper.BindPFlag("maxTimeout", rootCmd.Flags().Lookup("maxTimeout"))
 	viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
+	viper.BindPFlag("logging", rootCmd.PersistentFlags().Lookup("logging"))
+	viper.BindPFlag("logfile", rootCmd.PersistentFlags().Lookup("logfile"))
 }
 
 func initConfig() {
@@ -85,8 +90,9 @@ func Execute() {
 func runApp(cmd *cobra.Command, args []string) {
 	var appConfig config.AppConfig
 	if err := viper.Unmarshal(&appConfig); err != nil {
-		errh.PrintErrorAndExit(err, 2)
+		logs.PrintErrorAndExit(err, 2)
 	}
 
+	logs.SetVerbose(appConfig.Verbose)
 	srv.Start(appConfig)
 }
