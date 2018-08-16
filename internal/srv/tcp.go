@@ -5,13 +5,14 @@ import (
 	"github.com/kasvith/kache/internal/arch"
 	"github.com/kasvith/kache/internal/config"
 	"github.com/kasvith/kache/internal/db"
-	"github.com/kasvith/kache/internal/errh"
+	"github.com/kasvith/kache/internal/klogs"
+	"io"
 	"log"
 	"net"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
-	"io"
 )
 
 type Clients struct {
@@ -78,14 +79,15 @@ func Start(config config.AppConfig) {
 	listener, err := net.Listen("tcp", addr)
 
 	if err != nil {
-		errh.LogErrorAndExit(err, 3)
+		klogs.Logger.Fatalf("error binding to port %d is already in use", config.Port)
+		os.Exit(3)
 	}
 
 	for {
 		conn, err := listener.Accept()
 
 		if err != nil {
-			errh.LogError("Error on connection with", conn.RemoteAddr().String(), ":", err.Error())
+			klogs.Logger.Error("Error on connection with", conn.RemoteAddr().String(), ":", err.Error())
 			conn.Close()
 			continue // we skip malformed user
 		}

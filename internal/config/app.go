@@ -6,4 +6,7 @@ type AppConfig struct {
 	Verbose    bool
 	MaxClients int
 	MaxTimeout int
+	Logging    bool
+	Logfile    string
+	Debug      bool
 }
