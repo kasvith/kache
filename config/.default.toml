@@ -1,6 +1,9 @@
 # Default config file
 
 host="127.0.0.1"
-port=6879
+port=7088
 maxClients=10000
 maxTimeout=120
+logging=true
+logfile="../logs/kache.log" #relative path for bin
+verbose=false
