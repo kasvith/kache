@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"strings"
 )
 
 var Logger *logrus.Entry
@@ -50,9 +51,10 @@ func InitLoggers(config config.AppConfig) {
 type KacheFormatter struct {
 }
 
-func (formatter *KacheFormatter) Format(e *logrus.Entry) ([]byte, error) {
+func (KacheFormatter) Format(e *logrus.Entry) ([]byte, error) {
 	buffer := bytes.Buffer{}
-	buffer.WriteString(fmt.Sprintf("[%s] %s(%d) : %s\n", e.Level.String(), e.Time.Format("2006-01-10 15:04:05"), e.Data["pid"], e.Message))
+	str := fmt.Sprintf("[%s] %s(%d): %s\n", strings.ToUpper(e.Level.String()[0:4]), e.Time.Format("2006-01-02 15:04:05"), e.Data["pid"], e.Message)
+	buffer.WriteString(str)
 
 	return buffer.Bytes(), nil
 }
