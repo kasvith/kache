@@ -1,3 +1,27 @@
+/*
+ * MIT License
+ *
+ * Copyright (c)  2018 Kasun Vithanage
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package srv
 
 import (
@@ -7,7 +31,6 @@ import (
 	"github.com/kasvith/kache/internal/db"
 	"github.com/kasvith/kache/internal/klogs"
 	"io"
-	"log"
 	"net"
 	"os"
 	"strconv"
@@ -16,8 +39,8 @@ import (
 )
 
 type Clients struct {
-	ConnectedClients int
-	mux              sync.Mutex
+	numClients int
+	mux        sync.Mutex
 }
 
 var ConnectedClients Clients
@@ -29,14 +52,23 @@ func (c *Clients) Increase() {
 	c.mux.Lock()
 	defer c.mux.Unlock()
 
-	c.ConnectedClients++
+	c.numClients++
 }
 
 func (c *Clients) Decrease() {
 	c.mux.Lock()
 	defer c.mux.Unlock()
 
-	c.ConnectedClients--
+	c.numClients--
+}
+
+func logOpenedClients() {
+	if ConnectedClients.numClients > 0 {
+		klogs.Logger.Info(ConnectedClients.numClients, " connections are now open")
+		return
+	}
+
+	klogs.Logger.Info("no connections are now open")
 }
 
 func handleConnection(conn net.Conn) {
@@ -69,9 +101,9 @@ func handleConnection(conn net.Conn) {
 		rw.Flush()
 	}
 
-	log.Println("Disconnected client from", conn.RemoteAddr())
+	klogs.Logger.Info("Disconnected client from ", conn.RemoteAddr())
 	ConnectedClients.Decrease()
-	log.Println(ConnectedClients.ConnectedClients, "connections are now open")
+	logOpenedClients()
 }
 
 func Start(config config.AppConfig) {
@@ -83,6 +115,8 @@ func Start(config config.AppConfig) {
 		os.Exit(3)
 	}
 
+	klogs.Logger.Infof("application is ready to accept connections on port %d", config.Port)
+
 	for {
 		conn, err := listener.Accept()
 
@@ -93,9 +127,9 @@ func Start(config config.AppConfig) {
 		}
 
 		// client connected
-		log.Println("Connected client on", conn.RemoteAddr())
+		klogs.Logger.Info("Connected client on ", conn.RemoteAddr())
 		ConnectedClients.Increase()
-		log.Println(ConnectedClients.ConnectedClients, "connections are now open")
+		logOpenedClients()
 
 		go handleConnection(conn)
 	}
