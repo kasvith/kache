@@ -35,41 +35,10 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"sync"
 )
-
-type Clients struct {
-	numClients int
-	mux        sync.Mutex
-}
-
-var ConnectedClients Clients
 
 var DB = db.NewDB()
 var dbCommand = &arch.DBCommand{}
-
-func (c *Clients) Increase() {
-	c.mux.Lock()
-	defer c.mux.Unlock()
-
-	c.numClients++
-}
-
-func (c *Clients) Decrease() {
-	c.mux.Lock()
-	defer c.mux.Unlock()
-
-	c.numClients--
-}
-
-func logOpenedClients() {
-	if ConnectedClients.numClients > 0 {
-		klogs.Logger.Info(ConnectedClients.numClients, " connections are now open")
-		return
-	}
-
-	klogs.Logger.Info("no connections are now open")
-}
 
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
@@ -101,9 +70,7 @@ func handleConnection(conn net.Conn) {
 		rw.Flush()
 	}
 
-	klogs.Logger.Info("Disconnected client from ", conn.RemoteAddr())
-	ConnectedClients.Decrease()
-	logOpenedClients()
+	ConnectedClients.logOnDisconnect(conn)
 }
 
 func Start(config config.AppConfig) {
@@ -127,9 +94,7 @@ func Start(config config.AppConfig) {
 		}
 
 		// client connected
-		klogs.Logger.Info("Connected client on ", conn.RemoteAddr())
-		ConnectedClients.Increase()
-		logOpenedClients()
+		ConnectedClients.logOnConnect(conn)
 
 		go handleConnection(conn)
 	}
