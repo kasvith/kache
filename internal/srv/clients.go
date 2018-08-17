@@ -22,8 +22,52 @@
  * SOFTWARE.
  */
 
-package main
+package srv
 
-func main() {
+import (
+	"github.com/kasvith/kache/internal/klogs"
+	"net"
+	"sync"
+)
 
+var ConnectedClients Clients
+
+type Clients struct {
+	numClients int
+	mux        sync.Mutex
+}
+
+func (c *Clients) increase() {
+	c.mux.Lock()
+	defer c.mux.Unlock()
+
+	c.numClients++
+}
+
+func (c *Clients) decrease() {
+	c.mux.Lock()
+	defer c.mux.Unlock()
+
+	c.numClients--
+}
+
+func logOpenedClients() {
+	if ConnectedClients.numClients > 0 {
+		klogs.Logger.Info(ConnectedClients.numClients, " connections are now open")
+		return
+	}
+
+	klogs.Logger.Info("no connections are now open")
+}
+
+func (c *Clients) logOnDisconnect(conn net.Conn) {
+	klogs.Logger.Info("disconnected client from ", conn.RemoteAddr())
+	c.decrease()
+	logOpenedClients()
+}
+
+func (c *Clients) logOnConnect(conn net.Conn) {
+	klogs.Logger.Info("connected client from ", conn.RemoteAddr())
+	c.increase()
+	logOpenedClients()
 }

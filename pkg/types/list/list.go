@@ -1,8 +1,33 @@
+/*
+ * MIT License
+ *
+ * Copyright (c)  2018 Kasun Vithanage
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package list
 
 import (
 	"container/list"
 	"errors"
+	"github.com/kasvith/kache/pkg/util"
 	"sync"
 )
 
@@ -97,7 +122,7 @@ func (list *TList) HPop() string {
 		return ""
 	}
 
-	return ToString(list.list.Remove(list.Head()))
+	return util.ToString(list.list.Remove(list.Head()))
 }
 
 // TPop pops out the element from tail
@@ -109,7 +134,7 @@ func (list *TList) TPop() string {
 		return ""
 	}
 
-	return ToString(list.list.Remove(list.Tail()))
+	return util.ToString(list.list.Remove(list.Tail()))
 }
 
 func (list *TList) convertPos(pos int) int {
@@ -143,15 +168,6 @@ func (list *TList) findAtIndex(pos int) *list.Element {
 	return nil
 }
 
-// ToString Convert an interface to string
-func ToString(i interface{}) string {
-	if s, ok := i.(string); ok {
-		return s
-	}
-
-	return ""
-}
-
 // Range will output set of keys based on index query
 func (list *TList) Range(start, stop int) []string {
 	list.mux.Lock()
@@ -177,7 +193,7 @@ func (list *TList) Range(start, stop int) []string {
 	res := make([]string, dist+1)
 
 	for i, j, e := start, 0, list.findAtIndex(start); e != nil && i <= stop; i, j, e = i+1, j+1, e.Next() {
-		res[j] = ToString(e.Value)
+		res[j] = util.ToString(e.Value)
 	}
 
 	return res[:]

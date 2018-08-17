@@ -18,4 +18,4 @@ vet:
 	go vet ./...
 
 clean:
-	rm -f bin/kache bin/kache-cli
+	rm -rf bin/*

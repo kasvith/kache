@@ -22,8 +22,15 @@
  * SOFTWARE.
  */
 
-package main
+package config
 
-func main() {
-
+type AppConfig struct {
+	Port       int
+	Host       string
+	Verbose    bool
+	MaxClients int
+	MaxTimeout int
+	Logging    bool
+	Logfile    string
+	Debug      bool
 }

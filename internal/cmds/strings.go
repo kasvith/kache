@@ -22,50 +22,49 @@
  * SOFTWARE.
  */
 
-package testsuite
+package cmds
 
 import (
-	"reflect"
-	"testing"
+	"github.com/kasvith/kache/internal/db"
+	"github.com/kasvith/kache/internal/protcl"
+	"github.com/kasvith/kache/pkg/util"
 )
 
-//AssertEqual Will do a typical assertation
-func AssertEqual(t *testing.T, expected interface{}, given interface{}) {
-	if expected != given {
-		t.Errorf("Assertion failed, excepted [%T] %v : given [%T] %v", expected, expected, given, given)
+func Get(d *db.DB, args []string) protcl.Message {
+	if len(args) != 1 {
+		return protcl.Message{Rep: nil, Err: &protcl.ErrInsufficientArgs{Cmd: "get"}}
 	}
+
+	val, err := d.Get(args[0])
+	if err != nil {
+		return protcl.Message{Rep: nil, Err: &protcl.ErrGeneric{Error: err}}
+	}
+
+	if val.Type != db.TypeString {
+		return protcl.Message{Rep: nil, Err: &protcl.ErrWrongType{}}
+	}
+
+	return protcl.Message{Rep: protcl.NewBulkStringReply(false, util.ToString(val.Value)), Err: nil}
 }
 
-func AssertStringSliceEqual(t *testing.T, expected []string, given []string) {
-	if !reflect.DeepEqual(expected, given) {
-		t.Errorf("Slice failed, excepted [%T] %v : given [%T] %v", expected, expected, given, given)
+func Set(d *db.DB, args []string) protcl.Message {
+	if len(args) != 2 {
+		return protcl.Message{Rep: nil, Err: &protcl.ErrInsufficientArgs{Cmd: "set"}}
 	}
+
+	key := args[0]
+	val := args[1]
+
+	d.Set(key, db.NewDataNode(db.TypeString, -1, val))
+
+	return protcl.Message{Rep: protcl.NewSimpleStringReply("OK"), Err: nil}
 }
 
-func AssertNil(t *testing.T, i interface{}) {
-	if !reflect.ValueOf(i).IsNil() {
-		t.Errorf("Given [%T] %v is not nil", i, i)
+func Exists(d *db.DB, args []string) protcl.Message {
+	if len(args) != 1 {
+		return protcl.Message{Rep: nil, Err: &protcl.ErrInsufficientArgs{Cmd: "get"}}
 	}
-}
+	found := d.Exists(args[0])
 
-func ExceptError(t *testing.T, excepted error, given error) {
-	if excepted.Error() != given.Error() {
-		t.Errorf("Excepted [%T] %v, found [%T] %v", excepted, excepted, given, given)
-	}
-}
-
-func ContainsElements(t *testing.T, expected []string, given []string) {
-	for elem := range expected {
-		found := false
-		for test := range given {
-			if elem == test {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			t.Errorf("Element %v(%T) was not found in given array %v(%T)", elem, elem, given, given)
-		}
-	}
+	return protcl.Message{Rep: protcl.NewIntegerReply(found), Err: nil}
 }
