@@ -79,7 +79,7 @@ func initConfig() {
 		viper.SetConfigFile(cfgFile)
 	} else {
 		loadingDefault = true
-		viper.SetConfigName(".default")
+		viper.SetConfigName("kache.default")
 		viper.AddConfigPath("../config")
 	}
 
