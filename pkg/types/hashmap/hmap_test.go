@@ -111,14 +111,14 @@ func TestHashMap_Delete(t *testing.T) {
 	hm.Set("key2", "val2")
 	hm.Set("key3", "val3")
 
-	deleted := hm.Delete("key1")
+	deleted := hm.Delete([]string{"key1"})
 
 	testsuite.AssertEqual(t, 1, deleted)
 
-	deleted = hm.Delete("key2", "key3")
+	deleted = hm.Delete([]string{"key2", "key3"})
 	testsuite.AssertEqual(t, 2, deleted)
 
-	deleted = hm.Delete("nonexistent")
+	deleted = hm.Delete([]string{"nonexistent"})
 	testsuite.AssertEqual(t, 0, deleted)
 }
 
@@ -138,20 +138,16 @@ func TestHashMap_IncrementBy(t *testing.T) {
 	hm := New()
 
 	// Test for non existent key
-	res, err := hm.IncrementBy("counter", "1")
+	res, err := hm.IncrementBy("counter", 1)
 	testsuite.AssertEqual(t, nil, err)
 	testsuite.AssertEqual(t, 1, res)
 
-	res, err = hm.IncrementBy("counter", "4")
+	res, err = hm.IncrementBy("counter", 4)
 	testsuite.AssertEqual(t, nil, err)
 	testsuite.AssertEqual(t, 5, res)
 
-	res, err = hm.IncrementBy("counter", "ty")
-	testsuite.AssertEqual(t, "invalid integer or integer out of range", err.Error())
-	testsuite.AssertEqual(t, 0, res)
-
 	hm.Set("key", "val")
-	res, err = hm.IncrementBy("key", "1")
+	res, err = hm.IncrementBy("key", 1)
 	testsuite.AssertEqual(t, "invalid type, excepted integer", err.Error())
 	testsuite.AssertEqual(t, 0, res)
 }
@@ -160,24 +156,20 @@ func TestHashMap_IncrementByFloat(t *testing.T) {
 	hm := New()
 
 	// Test for non existent key
-	res, err := hm.IncrementByFloat("counter", "10")
+	res, err := hm.IncrementByFloat("counter", 10)
 	testsuite.AssertEqual(t, nil, err)
 	testsuite.AssertEqual(t, float64(10), res)
 
-	fl, err := hm.IncrementByFloat("counter", "0.5")
+	fl, err := hm.IncrementByFloat("counter", 0.5)
 	testsuite.AssertEqual(t, nil, err)
 	testsuite.AssertEqual(t, 10.5, fl)
 
-	fl, err = hm.IncrementByFloat("counter", "-5")
+	fl, err = hm.IncrementByFloat("counter", -5)
 	testsuite.AssertEqual(t, nil, err)
 	testsuite.AssertEqual(t, 5.5, fl)
 
-	fl, err = hm.IncrementByFloat("counter", "ty")
-	testsuite.AssertEqual(t, "invalid float or float out of range", err.Error())
-	testsuite.AssertEqual(t, float64(0), fl)
-
 	hm.Set("key", "val")
-	fl, err = hm.IncrementByFloat("key", "1")
+	fl, err = hm.IncrementByFloat("key", 1.5)
 	testsuite.AssertEqual(t, "invalid type, excepted float", err.Error())
 	testsuite.AssertEqual(t, float64(0), fl)
 }
@@ -190,7 +182,7 @@ func TestHashMap_Len(t *testing.T) {
 	testsuite.AssertEqual(t, 1, hm.Len())
 	hm.Set("key2", "val")
 	testsuite.AssertEqual(t, 2, hm.Len())
-	hm.Delete("key2")
+	hm.Delete([]string{"key2"})
 	testsuite.AssertEqual(t, 1, hm.Len())
 }
 
@@ -213,7 +205,7 @@ func TestHashMap_GetBulk(t *testing.T) {
 	hm.Set("key1", "val1")
 	hm.Set("key2", "val2")
 
-	res := hm.GetBulk("key1", "nonexistent", "key2")
+	res := hm.GetBulk([]string{"key1", "nonexistent", "key2"})
 	testsuite.AssertStringSliceEqual(t, []string{"val1", "", "val2"}, res)
 }
 
