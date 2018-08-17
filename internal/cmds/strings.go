@@ -32,7 +32,7 @@ import (
 
 func Get(d *db.DB, args []string) protcl.Message {
 	if len(args) != 1 {
-		return protcl.Message{Rep: nil, Err: &protcl.ErrInsufficientArgs{Cmd: "get"}}
+		return protcl.Message{Rep: nil, Err: &protcl.ErrWrongNumberOfArgs{Cmd: "get"}}
 	}
 
 	val, err := d.Get(args[0])
@@ -49,7 +49,7 @@ func Get(d *db.DB, args []string) protcl.Message {
 
 func Set(d *db.DB, args []string) protcl.Message {
 	if len(args) != 2 {
-		return protcl.Message{Rep: nil, Err: &protcl.ErrInsufficientArgs{Cmd: "set"}}
+		return protcl.Message{Rep: nil, Err: &protcl.ErrWrongNumberOfArgs{Cmd: "set"}}
 	}
 
 	key := args[0]
@@ -62,7 +62,7 @@ func Set(d *db.DB, args []string) protcl.Message {
 
 func Exists(d *db.DB, args []string) protcl.Message {
 	if len(args) != 1 {
-		return protcl.Message{Rep: nil, Err: &protcl.ErrInsufficientArgs{Cmd: "get"}}
+		return protcl.Message{Rep: nil, Err: &protcl.ErrWrongNumberOfArgs{Cmd: "get"}}
 	}
 	found := d.Exists(args[0])
 
