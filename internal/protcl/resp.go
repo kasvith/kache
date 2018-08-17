@@ -94,12 +94,3 @@ func (rep *ArrayReply) Reply() string {
 
 	return builder.String()
 }
-
-type ErrorReply struct {
-	Prefix string
-	Err    string
-}
-
-func (rep *ErrorReply) Error() string {
-	return fmt.Sprintf("-%s %s\r\n", rep.Prefix, rep.Err)
-}

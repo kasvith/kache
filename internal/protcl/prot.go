@@ -24,11 +24,18 @@
 
 package protcl
 
+import "fmt"
+
 const (
 	REP_SIMPLE_STRING = "+"
 	REP_INTEGER       = ":"
 	REP_BULKSTRING    = "$"
 	REP_ERROR         = "-"
+)
+
+const (
+	WRONGTYP = "WRONGTYP"
+	ERR      = "ERR"
 )
 
 type Reply interface {
@@ -44,7 +51,11 @@ type Message struct {
 	Err Err
 }
 
-const (
-	WRONGTYP = "WRONGTYP"
-	ERR      = "ERR"
-)
+type ErrorReply struct {
+	Prefix string
+	Err    string
+}
+
+func (rep *ErrorReply) Error() string {
+	return fmt.Sprintf("-%s %s\r\n", rep.Prefix, rep.Err)
+}
