@@ -54,6 +54,7 @@ func getCommand(cmd string) (*Command, protcl.Err) {
 	return nil, &protcl.ErrUnknownCommand{}
 }
 
+// Execute executes a single command on the given database
 func (DBCommand) Execute(db *db.DB, cmd string, args []string) protcl.Message {
 	command, err := getCommand(cmd)
 	if err != nil {
