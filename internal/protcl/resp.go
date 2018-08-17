@@ -89,7 +89,7 @@ func (rep *ArrayReply) Reply() string {
 	builder.WriteString(fmt.Sprintf("*%d\r\n", length))
 
 	for _, re := range rep.Elems {
-		builder.WriteString(re.Reply() + "\r\n")
+		builder.WriteString(re.Reply())
 	}
 
 	return builder.String()
