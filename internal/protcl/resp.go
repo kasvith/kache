@@ -29,6 +29,40 @@ import (
 	"strings"
 )
 
+const (
+	REP_SIMPLE_STRING = "+"
+	REP_INTEGER       = ":"
+	REP_BULKSTRING    = "$"
+	REP_ERROR         = "-"
+)
+
+const (
+	WRONGTYP = "WRONGTYP"
+	ERR      = "ERR"
+)
+
+type Reply interface {
+	Reply() string
+}
+
+type Err interface {
+	Err() ErrorReply
+}
+
+type Message struct {
+	Rep Reply
+	Err Err
+}
+
+type ErrorReply struct {
+	Prefix string
+	Err    string
+}
+
+func (rep *ErrorReply) Error() string {
+	return fmt.Sprintf("-%s %s\r\n", rep.Prefix, rep.Err)
+}
+
 // IntegerReply Represents an integer reply
 type IntegerReply struct {
 	Value int
