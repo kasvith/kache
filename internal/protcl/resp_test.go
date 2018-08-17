@@ -50,9 +50,21 @@ func TestBulkStringReply_Reply(t *testing.T) {
 }
 
 func TestArrayReply_Reply(t *testing.T) {
-	replies := []Reply{NewBulkStringReply(false, "foo"), NewBulkStringReply(false, "foobar")}
-	arrRep := NewArrayReply(replies)
+	// nil array
+	nilRep := NewArrayReply(true, []Reply{})
+	testsuite.AssertEqual(t, "*-1\r\n", nilRep.Reply())
 
+	// normal array
+	replies := []Reply{NewBulkStringReply(false, "foo"), NewBulkStringReply(false, "foobar")}
+	arrRep := NewArrayReply(false, replies)
 	targetStr := "*2\r\n$3\r\nfoo\r\n$6\r\nfoobar\r\n"
 	testsuite.AssertEqual(t, targetStr, arrRep.Reply())
+
+	// array of arrays
+	arr1 := NewArrayReply(false, []Reply{NewBulkStringReply(false, "foo"), NewIntegerReply(1)})
+	arr2 := NewArrayReply(false, []Reply{NewSimpleStringReply("bar")})
+	arrOfArrReps := []Reply{arr1, arr2}
+	arrOfArrs := NewArrayReply(false, arrOfArrReps)
+	targetRep := "*2\r\n*2\r\n$3\r\nfoo\r\n:1\r\n*1\r\n+bar\r\n"
+	testsuite.AssertEqual(t, targetRep, arrOfArrs.Reply())
 }

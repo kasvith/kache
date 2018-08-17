@@ -76,13 +76,18 @@ func NewBulkStringReply(isNil bool, value string) *BulkStringReply {
 
 type ArrayReply struct {
 	Elems []Reply
+	IsNil bool
 }
 
-func NewArrayReply(elems []Reply) *ArrayReply {
-	return &ArrayReply{Elems: elems}
+func NewArrayReply(isNil bool, elems []Reply) *ArrayReply {
+	return &ArrayReply{Elems: elems, IsNil: isNil}
 }
 
 func (rep *ArrayReply) Reply() string {
+	if rep.IsNil {
+		return "*-1\r\n"
+	}
+
 	length := len(rep.Elems)
 	builder := strings.Builder{}
 
