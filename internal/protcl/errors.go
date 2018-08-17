@@ -39,12 +39,12 @@ func (e *ErrGeneric) Err() ErrorReply {
 	return ErrorReply{Err: e.Error.Error(), Prefix: ERR}
 }
 
-type ErrInsufficientArgs struct {
+type ErrWrongNumberOfArgs struct {
 	Cmd string
 }
 
-func (e *ErrInsufficientArgs) Err() ErrorReply {
-	return ErrorReply{Err: e.Cmd + " has insufficient arguments", Prefix: ERR}
+func (e *ErrWrongNumberOfArgs) Err() ErrorReply {
+	return ErrorReply{Err: e.Cmd + " has wrong number of arguments", Prefix: ERR}
 }
 
 type ErrUnknownCommand struct {
