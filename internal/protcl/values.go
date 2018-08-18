@@ -24,14 +24,20 @@
 
 package protcl
 
+type ValueType uint
+
 const (
-	TYP_INT = iota
+	TYP_INT ValueType = iota
 	TYP_STR
 	TYP_BLKSTR
 	TYP_ARR
 )
 
 type Value struct {
-	V    interface{}
-	Type int
+	Typ ValueType
+	Val interface{}
+}
+
+func NewValue(typ ValueType, i interface{}) *Value {
+	return &Value{Val: i, Typ: typ}
 }
