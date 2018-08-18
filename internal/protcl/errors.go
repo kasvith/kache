@@ -34,11 +34,11 @@ func (ErrWrongType) Error() string {
 }
 
 type ErrGeneric struct {
-	Error error
+	Err error
 }
 
-func (e *ErrGeneric) Err() ErrorReply {
-	return ErrorReply{Err: e.Error.Error(), Prefix: ERR}
+func (e *ErrGeneric) Error() string {
+	return fmt.Sprintf("%s: %s", ERR, e.Err)
 }
 
 type ErrWrongNumberOfArgs struct {

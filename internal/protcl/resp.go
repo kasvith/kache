@@ -34,6 +34,7 @@ const (
 	REP_INTEGER       = ":"
 	REP_BULKSTRING    = "$"
 	REP_ERROR         = "-"
+	REP_ARR           = "*"
 )
 
 const (
@@ -45,22 +46,25 @@ type Reply interface {
 	Reply() string
 }
 
-type Err interface {
-	Err() ErrorReply
-}
-
 type Message struct {
-	Rep Reply
-	Err Err
+	Reply
+	Err error
 }
 
-type ErrorReply struct {
-	Prefix string
-	Err    string
+func NewMessage(rep Reply, err error) *Message {
+	return &Message{Reply: rep, Err: err}
 }
 
-func (rep *ErrorReply) Error() string {
-	return fmt.Sprintf("-%s %s\r\n", rep.Prefix, rep.Err)
+func (msg *Message) RespError() string {
+	return fmt.Sprintf("-%s\r\n", msg.Err.Error())
+}
+
+func (msg *Message) RespReply() string {
+	return msg.Reply.Reply()
+}
+
+func NewIntegerReply(value int) *IntegerReply {
+	return &IntegerReply{Value: value}
 }
 
 // IntegerReply Represents an integer reply
@@ -73,8 +77,8 @@ func (rep *IntegerReply) Reply() string {
 	return fmt.Sprintf(":%d\r\n", rep.Value)
 }
 
-func NewIntegerReply(value int) *IntegerReply {
-	return &IntegerReply{Value: value}
+func NewSimpleStringReply(value string) *SimpleStringReply {
+	return &SimpleStringReply{Value: value}
 }
 
 // SimpleStringReply Binary unsafe strings
@@ -87,8 +91,8 @@ func (rep *SimpleStringReply) Reply() string {
 	return fmt.Sprintf("+%s\r\n", rep.Value)
 }
 
-func NewSimpleStringReply(value string) *SimpleStringReply {
-	return &SimpleStringReply{Value: value}
+func NewBulkStringReply(isNil bool, value string) *BulkStringReply {
+	return &BulkStringReply{Nil: isNil, Value: value}
 }
 
 type BulkStringReply struct {
@@ -102,10 +106,6 @@ func (rep *BulkStringReply) Reply() string {
 	}
 
 	return fmt.Sprintf("$%d\r\n%s\r\n", len(rep.Value), rep.Value)
-}
-
-func NewBulkStringReply(isNil bool, value string) *BulkStringReply {
-	return &BulkStringReply{Nil: isNil, Value: value}
 }
 
 type ArrayReply struct {

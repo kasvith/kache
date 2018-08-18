@@ -58,13 +58,12 @@ func handleConnection(conn net.Conn) {
 			continue
 		}
 
-		rep := dbCommand.Execute(DB, strings.ToLower(strs[0]), strs[1:])
+		message := dbCommand.Execute(DB, strings.ToLower(strs[0]), strs[1:])
 
-		if rep.Err == nil {
-			rw.WriteString(rep.Rep.Reply())
+		if message.Err == nil {
+			rw.WriteString(message.RespReply())
 		} else {
-			err := rep.Err.Err()
-			rw.WriteString(err.Error())
+			rw.WriteString(message.RespError())
 		}
 
 		rw.Flush()

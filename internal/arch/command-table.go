@@ -30,7 +30,7 @@ import (
 	"github.com/kasvith/kache/internal/protcl"
 )
 
-type CommandFunc func(*db.DB, []string) protcl.Message
+type CommandFunc func(*db.DB, []string) *protcl.Message
 
 type Command struct {
 	ModifyKeySpace bool
@@ -46,7 +46,7 @@ var CommandTable = map[string]Command{
 type DBCommand struct {
 }
 
-func getCommand(cmd string) (*Command, protcl.Err) {
+func getCommand(cmd string) (*Command, error) {
 	if v, ok := CommandTable[cmd]; ok {
 		return &v, nil
 	}
@@ -55,10 +55,10 @@ func getCommand(cmd string) (*Command, protcl.Err) {
 }
 
 // Execute executes a single command on the given database
-func (DBCommand) Execute(db *db.DB, cmd string, args []string) protcl.Message {
+func (DBCommand) Execute(db *db.DB, cmd string, args []string) *protcl.Message {
 	command, err := getCommand(cmd)
 	if err != nil {
-		return protcl.Message{Rep: nil, Err: err}
+		return protcl.NewMessage(nil, err)
 	}
 
 	return command.Fn(db, args)
