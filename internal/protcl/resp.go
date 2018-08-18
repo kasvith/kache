@@ -30,11 +30,11 @@ import (
 )
 
 const (
-	REP_SIMPLE_STRING = "+"
-	REP_INTEGER       = ":"
-	REP_BULKSTRING    = "$"
-	REP_ERROR         = "-"
-	REP_ARR           = "*"
+	REP_SIMPLE_STRING byte = '+'
+	REP_INTEGER            = ':'
+	REP_BULKSTRING         = '$'
+	REP_ERROR              = '-'
+	REP_ARR                = '*'
 )
 
 const (
