@@ -27,35 +27,12 @@ package cmds
 import (
 	"github.com/kasvith/kache/internal/db"
 	"github.com/kasvith/kache/internal/protcl"
-	"github.com/kasvith/kache/pkg/util"
 )
 
-func Get(d *db.DB, args []string) *protcl.Message {
+func Exists(d *db.DB, args []string) *protcl.Message {
 	if len(args) != 1 {
-		return protcl.NewMessage(nil, &protcl.ErrWrongNumberOfArgs{Cmd: "get"})
+		return protcl.NewMessage(nil, &protcl.ErrWrongNumberOfArgs{Cmd: "exists"})
 	}
-
-	val, err := d.Get(args[0])
-	if err != nil {
-		return protcl.NewMessage(nil, &protcl.ErrGeneric{Err: err})
-	}
-
-	if val.Type != db.TypeString {
-		return protcl.NewMessage(nil, &protcl.ErrWrongType{})
-	}
-
-	return protcl.NewMessage(protcl.NewBulkStringReply(false, util.ToString(val.Value)), nil)
-}
-
-func Set(d *db.DB, args []string) *protcl.Message {
-	if len(args) != 2 {
-		return protcl.NewMessage(nil, &protcl.ErrWrongNumberOfArgs{Cmd: "set"})
-	}
-
-	key := args[0]
-	val := args[1]
-
-	d.Set(key, db.NewDataNode(db.TypeString, -1, val))
-
-	return protcl.NewMessage(protcl.NewSimpleStringReply("OK"), nil)
+	found := d.Exists(args[0])
+	return protcl.NewMessage(protcl.NewIntegerReply(found), nil)
 }
