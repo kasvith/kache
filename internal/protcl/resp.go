@@ -55,12 +55,20 @@ func NewMessage(rep Reply, err error) *Message {
 	return &Message{Reply: rep, Err: err}
 }
 
-func (msg *Message) RespError() string {
-	return fmt.Sprintf("-%s\r\n", msg.Err.Error())
+func RespError(Err error) string {
+	return fmt.Sprintf("-%s\r\n", Err.Error())
 }
 
 func (msg *Message) RespReply() string {
 	return msg.Reply.Reply()
+}
+
+// RespCommand represents a command that can be executed by the kache server
+type RespCommand struct {
+	Name     string
+	Args     []string
+	Multi    bool
+	Commands []RespCommand
 }
 
 func NewIntegerReply(value int) *IntegerReply {
