@@ -30,11 +30,11 @@ import (
 	"github.com/kasvith/kache/internal/config"
 	"github.com/kasvith/kache/internal/db"
 	"github.com/kasvith/kache/internal/klogs"
+	"github.com/kasvith/kache/internal/protcl"
 	"io"
 	"net"
 	"os"
 	"strconv"
-	"strings"
 )
 
 var DB = db.NewDB()
@@ -44,29 +44,32 @@ func handleConnection(conn net.Conn) {
 	defer conn.Close()
 
 	for {
-		rw := bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn))
-		read, err := rw.ReadString('\n')
+		reader := protcl.NewReader(conn)
+		w := bufio.NewWriter(bufio.NewWriter(conn))
+		command, err := reader.ParseMessage()
 
-		if err != nil && err == io.EOF {
-			break
-		}
+		if err != nil {
+			// if eof stop now
+			if err == io.EOF {
+				break
+			}
 
-		strs := strings.Split(strings.TrimSpace(read), " ")
-
-		if len(strs) == 0 {
-			rw.Flush()
+			// anything else should be sent to client with prefix ERR
+			klogs.Logger.Debug(conn.RemoteAddr(), ": ", err.Error())
+			w.WriteString(err.Error())
+			w.Flush()
 			continue
 		}
 
-		message := dbCommand.Execute(DB, strings.ToLower(strs[0]), strs[1:])
+		message := dbCommand.Execute(DB, command.Name, command.Args)
 
 		if message.Err == nil {
-			rw.WriteString(message.RespReply())
+			w.WriteString(message.RespReply())
 		} else {
-			rw.WriteString(message.RespError())
+			w.WriteString(protcl.RespError(message.Err))
 		}
 
-		rw.Flush()
+		w.Flush()
 	}
 
 	ConnectedClients.logOnDisconnect(conn)

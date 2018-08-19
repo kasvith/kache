@@ -25,12 +25,15 @@
 package config
 
 type AppConfig struct {
-	Port       int
-	Host       string
-	Verbose    bool
-	MaxClients int
-	MaxTimeout int
-	Logging    bool
-	Logfile    string
-	Debug      bool
+	Port              int
+	Host              string
+	Verbose           bool
+	MaxClients        int
+	MaxTimeout        int
+	Logging           bool
+	Logfile           string
+	Debug             bool
+	MaxMultiBlkLength int // in bytes
 }
+
+var AppConf AppConfig
