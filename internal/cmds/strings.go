@@ -30,26 +30,26 @@ import (
 	"github.com/kasvith/kache/pkg/util"
 )
 
-func Get(d *db.DB, args []string) protcl.Message {
+func Get(d *db.DB, args []string) *protcl.Message {
 	if len(args) != 1 {
-		return protcl.Message{Rep: nil, Err: &protcl.ErrInsufficientArgs{Cmd: "get"}}
+		return protcl.NewMessage(nil, &protcl.ErrWrongNumberOfArgs{Cmd: "get"})
 	}
 
 	val, err := d.Get(args[0])
 	if err != nil {
-		return protcl.Message{Rep: nil, Err: &protcl.ErrGeneric{Error: err}}
+		return protcl.NewMessage(nil, &protcl.ErrGeneric{Err: err})
 	}
 
 	if val.Type != db.TypeString {
-		return protcl.Message{Rep: nil, Err: &protcl.ErrWrongType{}}
+		return protcl.NewMessage(nil, &protcl.ErrWrongType{})
 	}
 
-	return protcl.Message{Rep: protcl.NewBulkStringReply(false, util.ToString(val.Value)), Err: nil}
+	return protcl.NewMessage(protcl.NewBulkStringReply(false, util.ToString(val.Value)), nil)
 }
 
-func Set(d *db.DB, args []string) protcl.Message {
+func Set(d *db.DB, args []string) *protcl.Message {
 	if len(args) != 2 {
-		return protcl.Message{Rep: nil, Err: &protcl.ErrInsufficientArgs{Cmd: "set"}}
+		return protcl.NewMessage(nil, &protcl.ErrWrongNumberOfArgs{Cmd: "set"})
 	}
 
 	key := args[0]
@@ -57,14 +57,5 @@ func Set(d *db.DB, args []string) protcl.Message {
 
 	d.Set(key, db.NewDataNode(db.TypeString, -1, val))
 
-	return protcl.Message{Rep: protcl.NewSimpleStringReply("OK"), Err: nil}
-}
-
-func Exists(d *db.DB, args []string) protcl.Message {
-	if len(args) != 1 {
-		return protcl.Message{Rep: nil, Err: &protcl.ErrInsufficientArgs{Cmd: "get"}}
-	}
-	found := d.Exists(args[0])
-
-	return protcl.Message{Rep: protcl.NewIntegerReply(found), Err: nil}
+	return protcl.NewMessage(protcl.NewSimpleStringReply("OK"), nil)
 }

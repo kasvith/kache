@@ -22,10 +22,17 @@
  * SOFTWARE.
  */
 
-package main
+package cmds
 
-import "fmt"
+import (
+	"github.com/kasvith/kache/internal/db"
+	"github.com/kasvith/kache/internal/protcl"
+)
 
-func main() {
-	fmt.Println("more good stuffs to come, hang on")
+func Exists(d *db.DB, args []string) *protcl.Message {
+	if len(args) != 1 {
+		return protcl.NewMessage(nil, &protcl.ErrWrongNumberOfArgs{Cmd: "exists"})
+	}
+	found := d.Exists(args[0])
+	return protcl.NewMessage(protcl.NewIntegerReply(found), nil)
 }

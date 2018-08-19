@@ -29,6 +29,66 @@ import (
 	"strings"
 )
 
+const (
+	REP_SIMPLE_STRING byte = '+'
+	REP_INTEGER            = ':'
+	REP_BULKSTRING         = '$'
+	REP_ERROR              = '-'
+	REP_ARR                = '*'
+)
+
+const (
+	WRONGTYP = "WRONGTYP"
+	ERR      = "ERR"
+)
+
+type Reply interface {
+	Reply() string
+}
+
+type Message struct {
+	Reply
+	Err error
+}
+
+func NewMessage(rep Reply, err error) *Message {
+	return &Message{Reply: rep, Err: err}
+}
+
+func hasRespPrefix(str string) bool {
+	if strings.HasPrefix(str, WRONGTYP) || strings.HasPrefix(str, ERR) {
+		return true
+	}
+
+	return false
+}
+
+func RespError(Err error) string {
+	err := Err.Error()
+
+	if !hasRespPrefix(err) {
+		err = "ERR:" + err
+	}
+
+	return fmt.Sprintf("-%s\r\n", err)
+}
+
+func (msg *Message) RespReply() string {
+	return msg.Reply.Reply()
+}
+
+// RespCommand represents a command that can be executed by the kache server
+type RespCommand struct {
+	Name     string
+	Args     []string
+	Multi    bool
+	Commands []RespCommand
+}
+
+func NewIntegerReply(value int) *IntegerReply {
+	return &IntegerReply{Value: value}
+}
+
 // IntegerReply Represents an integer reply
 type IntegerReply struct {
 	Value int
@@ -39,8 +99,8 @@ func (rep *IntegerReply) Reply() string {
 	return fmt.Sprintf(":%d\r\n", rep.Value)
 }
 
-func NewIntegerReply(value int) *IntegerReply {
-	return &IntegerReply{Value: value}
+func NewSimpleStringReply(value string) *SimpleStringReply {
+	return &SimpleStringReply{Value: value}
 }
 
 // SimpleStringReply Binary unsafe strings
@@ -53,8 +113,8 @@ func (rep *SimpleStringReply) Reply() string {
 	return fmt.Sprintf("+%s\r\n", rep.Value)
 }
 
-func NewSimpleStringReply(value string) *SimpleStringReply {
-	return &SimpleStringReply{Value: value}
+func NewBulkStringReply(isNil bool, value string) *BulkStringReply {
+	return &BulkStringReply{Nil: isNil, Value: value}
 }
 
 type BulkStringReply struct {
@@ -70,36 +130,28 @@ func (rep *BulkStringReply) Reply() string {
 	return fmt.Sprintf("$%d\r\n%s\r\n", len(rep.Value), rep.Value)
 }
 
-func NewBulkStringReply(isNil bool, value string) *BulkStringReply {
-	return &BulkStringReply{Nil: isNil, Value: value}
-}
-
 type ArrayReply struct {
 	Elems []Reply
+	IsNil bool
 }
 
-func NewArrayReply(elems []Reply) *ArrayReply {
-	return &ArrayReply{Elems: elems}
+func NewArrayReply(isNil bool, elems []Reply) *ArrayReply {
+	return &ArrayReply{Elems: elems, IsNil: isNil}
 }
 
 func (rep *ArrayReply) Reply() string {
+	if rep.IsNil {
+		return "*-1\r\n"
+	}
+
 	length := len(rep.Elems)
 	builder := strings.Builder{}
 
 	builder.WriteString(fmt.Sprintf("*%d\r\n", length))
 
 	for _, re := range rep.Elems {
-		builder.WriteString(re.Reply() + "\r\n")
+		builder.WriteString(re.Reply())
 	}
 
 	return builder.String()
-}
-
-type ErrorReply struct {
-	Prefix string
-	Err    string
-}
-
-func (rep *ErrorReply) Error() string {
-	return fmt.Sprintf("-%s %s\r\n", rep.Prefix, rep.Err)
 }

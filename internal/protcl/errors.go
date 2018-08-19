@@ -24,33 +24,35 @@
 
 package protcl
 
+import "fmt"
+
 type ErrWrongType struct {
 }
 
-func (ErrWrongType) Err() ErrorReply {
-	return ErrorReply{Err: "Invalid operation against key holding invalid type of value", Prefix: WRONGTYP}
+func (ErrWrongType) Error() string {
+	return fmt.Sprintf("%s: invalid operation against key holding invalid type of value", WRONGTYP)
 }
 
 type ErrGeneric struct {
-	Error error
+	Err error
 }
 
-func (e *ErrGeneric) Err() ErrorReply {
-	return ErrorReply{Err: e.Error.Error(), Prefix: ERR}
+func (e *ErrGeneric) Error() string {
+	return fmt.Sprintf("%s: %s", ERR, e.Err)
 }
 
-type ErrInsufficientArgs struct {
+type ErrWrongNumberOfArgs struct {
 	Cmd string
 }
 
-func (e *ErrInsufficientArgs) Err() ErrorReply {
-	return ErrorReply{Err: e.Cmd + " has insufficient arguments", Prefix: ERR}
+func (e *ErrWrongNumberOfArgs) Error() string {
+	return fmt.Sprintf("%s: %s has wrong number of arguments", WRONGTYP, e.Cmd)
 }
 
 type ErrUnknownCommand struct {
-	cmd string
+	Cmd string
 }
 
-func (e *ErrUnknownCommand) Err() ErrorReply {
-	return ErrorReply{Err: "unknown command " + e.cmd, Prefix: ERR}
+func (e *ErrUnknownCommand) Error() string {
+	return fmt.Sprintf("%s: unknown command %s", ERR, e.Cmd)
 }

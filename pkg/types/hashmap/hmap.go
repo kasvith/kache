@@ -87,7 +87,7 @@ func (m *HashMap) Get(key string) string {
 	return m.m[key]
 }
 
-func (m *HashMap) GetBulk(keys ...string) []string {
+func (m *HashMap) GetBulk(keys []string) []string {
 	m.mux.Lock()
 	defer m.mux.Unlock()
 
@@ -144,7 +144,7 @@ func (m *HashMap) Fields() []string {
 	return paris
 }
 
-func (m *HashMap) Delete(keys ...string) int {
+func (m *HashMap) Delete(keys []string) int {
 	m.mux.Lock()
 	defer m.mux.Unlock()
 
@@ -172,22 +172,15 @@ func (m *HashMap) Exists(key string) int {
 	return 0
 }
 
-func (m *HashMap) IncrementBy(key, amount string) (int, error) {
+func (m *HashMap) IncrementBy(key string, amount int) (int, error) {
 	m.mux.Lock()
 	defer m.mux.Unlock()
-
-	// Convert value to int
-	val, err := strconv.Atoi(amount)
-
-	if err != nil {
-		return 0, errors.New("invalid integer or integer out of range")
-	}
 
 	target, found := m.m[key]
 
 	if !found {
-		m.m[key] = amount
-		return val, nil
+		m.m[key] = strconv.Itoa(amount)
+		return amount, nil
 	}
 
 	// we have a hit
@@ -197,28 +190,21 @@ func (m *HashMap) IncrementBy(key, amount string) (int, error) {
 		return 0, errors.New("invalid type, excepted integer")
 	}
 
-	newVal := targetVal + val
+	newVal := targetVal + amount
 	m.m[key] = strconv.Itoa(newVal)
 
 	return newVal, nil
 }
 
-func (m *HashMap) IncrementByFloat(key, amount string) (float64, error) {
+func (m *HashMap) IncrementByFloat(key string, amount float64) (float64, error) {
 	m.mux.Lock()
 	defer m.mux.Unlock()
-
-	// Convert value to int
-	val, err := strconv.ParseFloat(amount, 64)
-
-	if err != nil {
-		return 0, errors.New("invalid float or float out of range")
-	}
 
 	target, found := m.m[key]
 
 	if !found {
-		m.m[key] = strconv.FormatFloat(val, 'f', 6, 64)
-		return val, nil
+		m.m[key] = strconv.FormatFloat(amount, 'f', 6, 64)
+		return amount, nil
 	}
 
 	// we have a hit
@@ -228,7 +214,7 @@ func (m *HashMap) IncrementByFloat(key, amount string) (float64, error) {
 		return 0, errors.New("invalid type, excepted float")
 	}
 
-	newVal := targetVal + val
+	newVal := targetVal + amount
 	m.m[key] = strconv.FormatFloat(newVal, 'f', 6, 64)
 
 	return newVal, nil

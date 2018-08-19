@@ -24,27 +24,20 @@
 
 package protcl
 
-const (
-	REP_SIMPLE_STRING = "+"
-	REP_INTEGER       = ":"
-	REP_BULKSTRING    = "$"
-	REP_ERROR         = "-"
-)
-
-type Reply interface {
-	Reply() string
-}
-
-type Err interface {
-	Err() ErrorReply
-}
-
-type Message struct {
-	Rep Reply
-	Err Err
-}
+type ValueType uint
 
 const (
-	WRONGTYP = "WRONGTYP"
-	ERR      = "ERR"
+	TYP_INT ValueType = iota
+	TYP_STR
+	TYP_BLKSTR
+	TYP_ARR
 )
+
+type Value struct {
+	Typ ValueType
+	Val interface{}
+}
+
+func NewValue(typ ValueType, i interface{}) *Value {
+	return &Value{Val: i, Typ: typ}
+}

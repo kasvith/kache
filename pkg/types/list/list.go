@@ -42,45 +42,7 @@ func New() *TList {
 	return &TList{list: list.New(), mux: &sync.Mutex{}}
 }
 
-// HPush Inserts an item to the head of the list
-func (list *TList) HPush(val ...string) error {
-	if len(val) == 0 {
-		return errors.New("no items to insert")
-	}
-
-	list.mux.Lock()
-	defer list.mux.Unlock()
-
-	if len(val) == 1 {
-		list.list.PushFront(val[0])
-		return nil
-	} else {
-		newList := buildValueList(true, val...)
-		list.list.PushFrontList(newList)
-		return nil
-	}
-}
-
-// TPush Inserts an item to the tail of the list
-func (list *TList) TPush(val ...string) error {
-	if len(val) == 0 {
-		return errors.New("no items to insert")
-	}
-
-	list.mux.Lock()
-	defer list.mux.Unlock()
-
-	if len(val) == 1 {
-		list.list.PushBack(val[0])
-		return nil
-	} else {
-		newList := buildValueList(false, val...)
-		list.list.PushBackList(newList)
-		return nil
-	}
-}
-
-func buildValueList(front bool, val ...string) *list.List {
+func buildValueList(front bool, val []string) *list.List {
 	l := list.New()
 
 	if front == true {
@@ -96,6 +58,44 @@ func buildValueList(front bool, val ...string) *list.List {
 	}
 
 	return l
+}
+
+// HPush Inserts an item to the head of the list
+func (list *TList) HPush(val []string) error {
+	if len(val) == 0 {
+		return errors.New("no items to insert")
+	}
+
+	list.mux.Lock()
+	defer list.mux.Unlock()
+
+	if len(val) == 1 {
+		list.list.PushFront(val[0])
+		return nil
+	} else {
+		newList := buildValueList(true, val)
+		list.list.PushFrontList(newList)
+		return nil
+	}
+}
+
+// TPush Inserts an item to the tail of the list
+func (list *TList) TPush(val []string) error {
+	if len(val) == 0 {
+		return errors.New("no items to insert")
+	}
+
+	list.mux.Lock()
+	defer list.mux.Unlock()
+
+	if len(val) == 1 {
+		list.list.PushBack(val[0])
+		return nil
+	} else {
+		newList := buildValueList(false, val)
+		list.list.PushBackList(newList)
+		return nil
+	}
 }
 
 // Head Gets head of the list

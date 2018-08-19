@@ -36,7 +36,7 @@ func TestPushSingleValue(t *testing.T) {
 
 	val := "some"
 
-	err := l.HPush(val)
+	err := l.HPush([]string{val})
 
 	if err != nil {
 		t.Error(err)
@@ -62,7 +62,7 @@ func TestLen(t *testing.T) {
 	l := New()
 
 	for i := 0; i < 10; i++ {
-		l.HPush(strconv.Itoa(i))
+		l.HPush([]string{strconv.Itoa(i)})
 	}
 
 	testsuite.AssertEqual(t, 10, l.Len())
@@ -72,7 +72,7 @@ func TestFindAtIndexHead(t *testing.T) {
 	l := New()
 
 	for i := 0; i < 10; i++ {
-		l.HPush(strconv.Itoa(i))
+		l.HPush([]string{strconv.Itoa(i)})
 	}
 
 	e1 := l.findAtIndex(0)
@@ -84,7 +84,7 @@ func TestFindAtIndexTail(t *testing.T) {
 	l := New()
 
 	for i := 0; i < 10; i++ {
-		l.HPush(strconv.Itoa(i))
+		l.HPush([]string{strconv.Itoa(i)})
 	}
 
 	e2 := l.findAtIndex(l.Len() - 1)
@@ -96,7 +96,7 @@ func TestFindAtIndexNull(t *testing.T) {
 	l := New()
 
 	for i := 0; i < 10; i++ {
-		l.HPush(strconv.Itoa(i))
+		l.HPush([]string{strconv.Itoa(i)})
 	}
 
 	e2 := l.findAtIndex(100)
@@ -107,7 +107,7 @@ func TestFindAtIndexMiddle(t *testing.T) {
 	l := New()
 
 	for i := 0; i < 10; i++ {
-		l.HPush(strconv.Itoa(i))
+		l.HPush([]string{strconv.Itoa(i)})
 	}
 
 	e2 := l.findAtIndex(4)
@@ -121,7 +121,7 @@ func TestTList_RangeAllItems(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
 		strs[i] = strconv.Itoa(9 - i)
-		l.HPush(strconv.Itoa(i))
+		l.HPush([]string{strconv.Itoa(i)})
 	}
 
 	res := l.Range(0, -1)
@@ -134,7 +134,7 @@ func TestTList_RangeMinusDistance(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
 		strs[i] = strconv.Itoa(9 - i)
-		l.HPush(strconv.Itoa(i))
+		l.HPush([]string{strconv.Itoa(i)})
 	}
 
 	res := l.Range(5, 2)
@@ -147,7 +147,7 @@ func TestTList_RangeStopOutOfBound(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
 		strs[i] = strconv.Itoa(9 - i)
-		l.HPush(strconv.Itoa(i))
+		l.HPush([]string{strconv.Itoa(i)})
 	}
 
 	res := l.Range(0, 100)
@@ -158,7 +158,7 @@ func TestTList_RangeStartOutOfBound(t *testing.T) {
 	l := New()
 
 	for i := 0; i < 10; i++ {
-		l.HPush(strconv.Itoa(i))
+		l.HPush([]string{strconv.Itoa(i)})
 	}
 
 	res := l.Range(100, -1)
@@ -171,7 +171,7 @@ func TestTList_RangeTwoFromTail(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
 		strs[i] = strconv.Itoa(9 - i)
-		l.HPush(strconv.Itoa(i))
+		l.HPush([]string{strconv.Itoa(i)})
 	}
 
 	res := l.Range(-2, -1)
@@ -184,7 +184,7 @@ func TestTList_RangeTwoFromMiddle(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
 		strs[i] = strconv.Itoa(9 - i)
-		l.HPush(strconv.Itoa(i))
+		l.HPush([]string{strconv.Itoa(i)})
 	}
 
 	res := l.Range(2, 5)
@@ -197,7 +197,7 @@ func TestTList_RangeOneFromHead(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
 		strs[i] = strconv.Itoa(9 - i)
-		l.HPush(strconv.Itoa(i))
+		l.HPush([]string{strconv.Itoa(i)})
 	}
 
 	res := l.Range(0, 0)
@@ -210,7 +210,7 @@ func TestTList_RangeOneFromTail(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
 		strs[i] = strconv.Itoa(9 - i)
-		l.HPush(strconv.Itoa(i))
+		l.HPush([]string{strconv.Itoa(i)})
 	}
 
 	res := l.Range(-1, -1)
@@ -223,7 +223,7 @@ func TestTList_HPop(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
 		strs[i] = strconv.Itoa(9 - i)
-		l.HPush(strconv.Itoa(i))
+		l.HPush([]string{strconv.Itoa(i)})
 	}
 
 	elem := l.HPop()
@@ -237,7 +237,7 @@ func TestTList_TPop(t *testing.T) {
 	l := New()
 
 	for i := 0; i < 10; i++ {
-		l.HPush(strconv.Itoa(i))
+		l.HPush([]string{strconv.Itoa(i)})
 	}
 
 	elem := l.TPop()
@@ -253,7 +253,7 @@ func TestTList_TPush(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
 		strs[i] = strconv.Itoa(9 - i)
-		l.TPush(strconv.Itoa(i))
+		l.TPush([]string{strconv.Itoa(i)})
 	}
 
 	elem := l.HPop()
@@ -273,12 +273,12 @@ func TestTList_TPushListHead(t *testing.T) {
 		vals[i] = strconv.Itoa(i)
 	}
 
-	l.HPush(vals...)
+	l.HPush(vals)
 
 	res := l.Range(0, -1)
 	testsuite.AssertStringSliceEqual(t, strs, res)
 
-	l.HPush([]string{"0", "1"}...)
+	l.HPush([]string{"0", "1"})
 	res = l.Range(0, -1)
 	testsuite.AssertStringSliceEqual(t, []string{"1", "0", "9", "8", "7", "6", "5", "4", "3", "2", "1", "0"}, res)
 }
@@ -293,26 +293,26 @@ func TestTList_TPushListTail(t *testing.T) {
 		vals[i] = strconv.Itoa(i)
 	}
 
-	l.TPush(vals...)
+	l.TPush(vals)
 
 	res := l.Range(0, -1)
 	testsuite.AssertStringSliceEqual(t, vals, res)
 
-	l.TPush([]string{"0", "1"}...)
+	l.TPush([]string{"0", "1"})
 	res = l.Range(0, -1)
 	testsuite.AssertStringSliceEqual(t, []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "1"}, res)
 }
 
 func TestTList_HPushNil(t *testing.T) {
 	l := New()
-	err := l.HPush([]string{}...)
+	err := l.HPush([]string{})
 
 	testsuite.ExceptError(t, errors.New("no items to insert"), err)
 }
 
 func TestTList_TPushNil(t *testing.T) {
 	l := New()
-	err := l.TPush([]string{}...)
+	err := l.TPush([]string{})
 
 	testsuite.ExceptError(t, errors.New("no items to insert"), err)
 }
@@ -343,7 +343,7 @@ func TestTList_TrimFullList(t *testing.T) {
 	l := New()
 
 	for i := 0; i < 10; i++ {
-		l.HPush(strconv.Itoa(i))
+		l.HPush([]string{strconv.Itoa(i)})
 	}
 
 	// list now trimmed to 2 elements
@@ -356,7 +356,7 @@ func TestTList_TrimAddMoreAndAssert(t *testing.T) {
 	l := New()
 
 	for i := 0; i < 10; i++ {
-		l.HPush(strconv.Itoa(i))
+		l.HPush([]string{strconv.Itoa(i)})
 	}
 
 	// list now trimmed to 2 elements
@@ -365,7 +365,7 @@ func TestTList_TrimAddMoreAndAssert(t *testing.T) {
 	testsuite.AssertStringSliceEqual(t, []string{"9", "8"}, l.Range(0, -1))
 
 	// push new elem
-	l.HPush("a")
+	l.HPush([]string{"a"})
 
 	// list now trimmed to 2 elements
 	l.Trim(0, 1)
@@ -381,7 +381,7 @@ func TestTList_TrimMinusStart(t *testing.T) {
 	l := New()
 
 	for i := 0; i < 10; i++ {
-		l.HPush(strconv.Itoa(i))
+		l.HPush([]string{strconv.Itoa(i)})
 	}
 
 	// list now trimmed to 2 elements
@@ -394,7 +394,7 @@ func TestTList_TrimExceededStopLimit(t *testing.T) {
 	l := New()
 
 	for i := 0; i < 10; i++ {
-		l.HPush(strconv.Itoa(i))
+		l.HPush([]string{strconv.Itoa(i)})
 	}
 
 	// list now trimmed to 2 elements
@@ -407,7 +407,7 @@ func TestTList_TrimStopLesserThanStart(t *testing.T) {
 	l := New()
 
 	for i := 0; i < 10; i++ {
-		l.HPush(strconv.Itoa(i))
+		l.HPush([]string{strconv.Itoa(i)})
 	}
 
 	// list now trimmed to 2 elements
@@ -420,7 +420,7 @@ func TestTList_TrimHead(t *testing.T) {
 	l := New()
 
 	for i := 0; i < 10; i++ {
-		l.HPush(strconv.Itoa(i))
+		l.HPush([]string{strconv.Itoa(i)})
 	}
 
 	// list now trimmed to 2 elements
