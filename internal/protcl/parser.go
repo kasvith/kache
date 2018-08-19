@@ -29,17 +29,33 @@ import (
 	"errors"
 	"fmt"
 	"github.com/kasvith/kache/internal/config"
-	"github.com/kasvith/kache/internal/klogs"
 	"io"
 	"strconv"
 	"strings"
 )
 
-type ParseError struct {
+var (
+	ErrParse             = errors.New("parse error")
+	ErrValueOutOfRange   = errors.New("value out of range")
+	ErrInvalidCommand    = errors.New("invalid command")
+	ErrBufferExceeded    = errors.New("buffer exceeded")
+	ErrUnexpectedLineEnd = errors.New("unexpected line end")
+)
+
+type ErrInvalidToken struct {
+	Token byte
 }
 
-func (ParseError) Error() string {
-	return "-ERR:parse error"
+func (e *ErrInvalidToken) Error() string {
+	return fmt.Sprintf("excepted $, found %c", e.Token)
+}
+
+type ErrInvalidBlkStringLength struct {
+	Excepted, Given int
+}
+
+func (e *ErrInvalidBlkStringLength) Error() string {
+	return fmt.Sprintf("invalid bulk string length, excepted %d processed %d", e.Excepted, e.Given)
 }
 
 type Reader struct {
@@ -55,6 +71,9 @@ func (r *Reader) ParseMessage() (*RespCommand, error) {
 }
 
 func parse(r *bufio.Reader) (*RespCommand, error) {
+	// TODO: these reads can easily overflow the system buffer and crash the program, they need to be max buffer protected
+	// for now we use default bufio package, we need a custom reader
+
 	// we have two kind of messages to parse
 	// a redis array is an acceptable command
 	// a simple string with space separated is also acceptable
@@ -63,8 +82,11 @@ func parse(r *bufio.Reader) (*RespCommand, error) {
 	buf, err := r.ReadBytes('\n')
 
 	if err != nil {
-		klogs.Logger.Debugln(err)
-		return nil, err
+		if err == io.EOF {
+			return nil, err
+		}
+
+		return nil, ErrParse
 	}
 
 	// Clients require to send commands with CRLF
@@ -73,22 +95,19 @@ func parse(r *bufio.Reader) (*RespCommand, error) {
 		// this is an array of redis strings
 		// arr len is in the buffer
 
-		fmt.Println(buf)
-
 		if err := hasCRLF(buf); err != nil {
+			// not a EOF, safe to return
 			return nil, err
 		}
 
 		mblkLen, err := strconv.Atoi(string(buf[1 : len(buf)-2]))
 
 		if err != nil {
-			return nil, errors.New("value out of range")
+			return nil, ErrValueOutOfRange
 		}
 
 		// we now have multibulk length, now need to loop that amount
 		// TODO check for maximum number of array elements to process to handle memory issues
-
-		fmt.Println("arr", mblkLen)
 
 		strs := make([]string, mblkLen)
 		for i := 0; i < mblkLen; i++ {
@@ -98,12 +117,13 @@ func parse(r *bufio.Reader) (*RespCommand, error) {
 			}
 
 			strs[i] = str
-			fmt.Println(str)
 		}
 
-		fmt.Printf("%v\n", mblkLen)
+		if mblkLen == 0 {
+			return nil, ErrInvalidCommand
+		}
 
-		return nil, errors.New("ERR:not yet implemented")
+		return &RespCommand{Name: strs[0], Args: strs[1:]}, nil
 	default:
 		// probably the read bytes contains the string
 		strCmd := string(buf)
@@ -115,35 +135,26 @@ func parse(r *bufio.Reader) (*RespCommand, error) {
 		args := strings.Split(trimmed, " ")
 
 		if len(args) == 0 {
-			return nil, errors.New("ERR:no command")
+			return nil, ErrInvalidCommand
 		}
 
 		return &RespCommand{Name: strings.ToLower(args[0]), Args: args[1:]}, nil
 	}
-
-	return nil, errors.New("ERR:not yet implemented")
-}
-
-func hasCRLF(buf []byte) error {
-	if len(buf) >= 2 && buf[len(buf)-1] == '\n' && buf[len(buf)-2] == '\r' {
-		return nil
-	}
-
-	return errors.New("invalid line end")
 }
 
 func parseBlkString(r *bufio.Reader) (string, error) {
 	// read a byte
 	buf, err := r.ReadBytes('\n')
 	if err != nil {
-		return "", err
+		if err == io.EOF {
+			return "", err
+		}
+
+		return "", ErrParse
 	}
 
-	fmt.Println(buf)
-
 	if len(buf) > 0 && buf[0] != REP_BULKSTRING {
-		fmt.Println(buf[0])
-		return "", errors.New("invalid bulk string")
+		return "", &ErrInvalidToken{Token: buf[0]}
 	}
 
 	if err = hasCRLF(buf); err != nil {
@@ -156,45 +167,40 @@ func parseBlkString(r *bufio.Reader) (string, error) {
 	}
 
 	if llen > config.AppConf.MaxMultiBlkLength {
-		return "", errors.New("buffer exceeded")
+		return "", ErrBufferExceeded
 	}
-
-	fmt.Println("llen", llen)
 
 	// we need to read exactly llen bytes from the stream
-	strBuf := make([]byte, llen)
-	n, err := r.Read(strBuf)
+	buf, err = r.ReadBytes('\n')
 
-	fmt.Println("buf", strBuf)
-
-	if err != nil {
-		return "", err
-	}
-
-	if n != llen || (llen >= 2 && (strBuf[llen-2] == '\r' || strBuf[llen-1] == '\n')) {
-		return "", errors.New("error parsing bulk string")
-	}
-
-	// read trailing CRLF
-	rest, err := r.Peek(2)
 	if err != nil {
 		if err == io.EOF {
 			return "", err
 		}
 
-		return "", errors.New("error reading line end")
+		return "", ErrParse
 	}
 
-	if rest[0] != '\r' && rest[1] != '\n' {
-		return "", errors.New("error reading line end")
-	}
-
-	// discard crlf
-	_, err = r.Discard(2)
-
+	// error is not EOF
+	err = hasCRLF(buf)
 	if err != nil {
 		return "", err
 	}
 
-	return string(strBuf), nil
+	str := buf[:len(buf)-2]
+
+	if len(str) != llen {
+		return "", &ErrInvalidBlkStringLength{Excepted: llen, Given: len(str)}
+	}
+
+	return string(str), nil
+}
+
+// does not return EOF as error
+func hasCRLF(buf []byte) error {
+	if len(buf) >= 2 && buf[len(buf)-1] == '\n' && buf[len(buf)-2] == '\r' {
+		return nil
+	}
+
+	return ErrUnexpectedLineEnd
 }

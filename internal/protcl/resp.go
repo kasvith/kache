@@ -55,8 +55,22 @@ func NewMessage(rep Reply, err error) *Message {
 	return &Message{Reply: rep, Err: err}
 }
 
+func hasRespPrefix(str string) bool {
+	if strings.HasPrefix(str, WRONGTYP) || strings.HasPrefix(str, ERR) {
+		return true
+	}
+
+	return false
+}
+
 func RespError(Err error) string {
-	return fmt.Sprintf("-%s\r\n", Err.Error())
+	err := Err.Error()
+
+	if !hasRespPrefix(err) {
+		err = "ERR:" + err
+	}
+
+	return fmt.Sprintf("-%s\r\n", err)
 }
 
 func (msg *Message) RespReply() string {

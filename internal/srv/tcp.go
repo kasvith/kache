@@ -56,7 +56,7 @@ func handleConnection(conn net.Conn) {
 
 			// anything else should be sent to client with prefix ERR
 			klogs.Logger.Debug(conn.RemoteAddr(), ": ", err.Error())
-			w.WriteString(err.Error())
+			w.WriteString(protcl.RespError(err))
 			w.Flush()
 			continue
 		}
