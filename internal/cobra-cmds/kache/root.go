@@ -37,10 +37,10 @@ import (
 var verbose bool
 var cfgFile string
 
-var rootCmd = &cobra.Command{
+var RootCmd = &cobra.Command{
 	Use:   "kache",
 	Short: "kache is a simple distributed in memory database",
-	Long:  `A fast and flexible in memory database built with go`,
+	Long:  `A fast and a flexible in memory database built with go`,
 	Run:   runApp,
 }
 
@@ -48,29 +48,29 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	// Flags
-	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
-	rootCmd.PersistentFlags().BoolP("debug", "d", false, "output debug information")
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "configuration file")
-	rootCmd.PersistentFlags().Bool("logging", true, "set application logs")
-	rootCmd.PersistentFlags().String("logfile", "", "application log file")
-	rootCmd.PersistentFlags().String("logtype", "default",
+	RootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
+	RootCmd.PersistentFlags().BoolP("debug", "d", false, "output debug information")
+	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "configuration file")
+	RootCmd.PersistentFlags().Bool("logging", true, "set application logs")
+	RootCmd.PersistentFlags().String("logfile", "", "application log file")
+	RootCmd.PersistentFlags().String("logtype", "default",
 		`kache can output logs in different formats like json or logfmt. The default one is custom to kache.`)
 
-	rootCmd.Flags().StringP("host", "", "127.0.0.1", "host for running application")
-	rootCmd.Flags().IntP("port", "p", 7088, "port for running application")
-	rootCmd.Flags().IntP("maxClients", "", 10000, "max connections can be handled")
-	rootCmd.Flags().IntP("maxTimeout", "", 120, "max timeout for clients(in seconds)")
+	RootCmd.Flags().StringP("host", "", "127.0.0.1", "host for running application")
+	RootCmd.Flags().IntP("port", "p", 7088, "port for running application")
+	RootCmd.Flags().IntP("maxClients", "", 10000, "max connections can be handled")
+	RootCmd.Flags().IntP("maxTimeout", "", 120, "max timeout for clients(in seconds)")
 
 	// Bind the flags to config
-	viper.BindPFlag("port", rootCmd.Flags().Lookup("port"))
-	viper.BindPFlag("host", rootCmd.Flags().Lookup("host"))
-	viper.BindPFlag("maxClients", rootCmd.Flags().Lookup("maxClients"))
-	viper.BindPFlag("maxTimeout", rootCmd.Flags().Lookup("maxTimeout"))
-	viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
-	viper.BindPFlag("logging", rootCmd.PersistentFlags().Lookup("logging"))
-	viper.BindPFlag("logfile", rootCmd.PersistentFlags().Lookup("logfile"))
-	viper.BindPFlag("logtype", rootCmd.PersistentFlags().Lookup("logtype"))
-	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
+	viper.BindPFlag("port", RootCmd.Flags().Lookup("port"))
+	viper.BindPFlag("host", RootCmd.Flags().Lookup("host"))
+	viper.BindPFlag("maxClients", RootCmd.Flags().Lookup("maxClients"))
+	viper.BindPFlag("maxTimeout", RootCmd.Flags().Lookup("maxTimeout"))
+	viper.BindPFlag("verbose", RootCmd.PersistentFlags().Lookup("verbose"))
+	viper.BindPFlag("logging", RootCmd.PersistentFlags().Lookup("logging"))
+	viper.BindPFlag("logfile", RootCmd.PersistentFlags().Lookup("logfile"))
+	viper.BindPFlag("logtype", RootCmd.PersistentFlags().Lookup("logtype"))
+	viper.BindPFlag("debug", RootCmd.PersistentFlags().Lookup("debug"))
 }
 
 func initConfig() {
@@ -108,9 +108,9 @@ func initConfig() {
 
 func Execute() {
 	// Commands
-	rootCmd.AddCommand(versionCmd)
+	RootCmd.AddCommand(VersionCmd)
 
-	if err := rootCmd.Execute(); err != nil {
+	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}

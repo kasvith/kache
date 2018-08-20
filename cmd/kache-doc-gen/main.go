@@ -22,21 +22,20 @@
  * SOFTWARE.
  */
 
-package kache
+package main
 
 import (
-	"fmt"
-	"github.com/spf13/cobra"
+	"github.com/kasvith/kache/internal/cobra-cmds/kache"
+	"github.com/spf13/cobra/doc"
+	"log"
 )
 
-const APPVER = "1.0.0"
+func main() {
+	// import all commands
+	kache.RootCmd.AddCommand(kache.VersionCmd)
+	err := doc.GenMarkdownTree(kache.RootCmd, "./")
 
-var VersionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Display application version",
-	Long:  `Display application version on the screen`,
-	Run: func(cmd *cobra.Command, args []string) {
-		// TODO automated build version to be added
-		fmt.Println("Version", APPVER)
-	},
+	if err != nil {
+		log.Fatal(err)
+	}
 }
