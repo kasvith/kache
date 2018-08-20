@@ -103,7 +103,7 @@ kache [flags]
 Special note : According to your environment executable will be built, for windows users it will need to add `.exe` to the end of `-o` flag like `go build -o bin/kache ./cmd/kache`
 
 # Contributions
-kache is an opensource project. Contributions are welcome
+**kache** is an **opensource** project. Contributions are welcome
 
 - Fork the repo and star it :star:
 - Open issues :boom:
