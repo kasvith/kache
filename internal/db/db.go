@@ -49,7 +49,6 @@ func NewDB() *DB {
 func (db *DB) Get(key string) (*DataNode, error) {
 	db.mux.Lock()
 	defer db.mux.Unlock()
-
 	if v, ok := db.file[key]; ok {
 		return v, nil
 	}
@@ -59,15 +58,24 @@ func (db *DB) Get(key string) (*DataNode, error) {
 
 func (db *DB) Set(key string, val *DataNode) {
 	db.mux.Lock()
+	db.file[key] = val
+	db.mux.Unlock()
+}
+
+func (db *DB) GetIfNotSet(key string, val *DataNode) (value *DataNode, found bool) {
+	db.mux.Lock()
 	defer db.mux.Unlock()
 
+	if v, found := db.file[key]; found {
+		return v, true
+	}
 	db.file[key] = val
+
+	return val, false
 }
 
 func (db *DB) Del(keys []string) int {
 	db.mux.Lock()
-	defer db.mux.Unlock()
-
 	del := 0
 	for _, k := range keys {
 		if _, ok := db.file[k]; ok {
@@ -75,6 +83,7 @@ func (db *DB) Del(keys []string) int {
 			del++
 		}
 	}
+	db.mux.Unlock()
 
 	return del
 }
@@ -82,7 +91,6 @@ func (db *DB) Del(keys []string) int {
 func (db *DB) Exists(key string) int {
 	db.mux.Lock()
 	defer db.mux.Unlock()
-
 	if _, ok := db.file[key]; ok {
 		return 1
 	}

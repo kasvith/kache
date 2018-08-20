@@ -36,3 +36,8 @@ func Exists(d *db.DB, args []string) *protcl.Message {
 	found := d.Exists(args[0])
 	return protcl.NewMessage(protcl.NewIntegerReply(found), nil)
 }
+
+func Del(d *db.DB, args []string) *protcl.Message {
+	deleted := d.Del(args)
+	return protcl.NewMessage(protcl.NewIntegerReply(deleted), nil)
+}

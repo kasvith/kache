@@ -29,6 +29,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/kasvith/kache/internal/config"
+	"github.com/kasvith/kache/pkg/util"
 	"io"
 	"strconv"
 	"strings"
@@ -132,7 +133,12 @@ func parse(r *bufio.Reader) (*RespCommand, error) {
 		trimmed := strings.TrimSpace(strCmd)
 
 		// split args by space
-		args := strings.Split(trimmed, " ")
+		args, err := util.SplitSpacesWithQuotes(trimmed)
+
+		// error is unbalanced quote
+		if err != nil {
+			return nil, err
+		}
 
 		if len(args) == 0 {
 			return nil, ErrInvalidCommand

@@ -22,45 +22,39 @@
  * SOFTWARE.
  */
 
-package protcl
+package util
 
-import "fmt"
+import (
+	"github.com/kasvith/kache/pkg/testsuite"
+	"testing"
+)
 
-type ErrCastFailedToInt struct {
-	Val interface{}
+func TestSplitSpacesWithQuotes(t *testing.T) {
+	// test for balanced quotes
+	s := `  lorem ipsum       "foo bar "   `
+	res, err := SplitSpacesWithQuotes(s)
+	testsuite.AssertEqual(t, nil, err)
+	excpted := []string{"lorem", "ipsum", "foo bar "}
+	testsuite.AssertStringSliceEqual(t, excpted, res)
+
+	// test for characters quotes
+	s = `  lorem ipsum       "foo bar &'' "   `
+	res, err = SplitSpacesWithQuotes(s)
+	testsuite.AssertEqual(t, nil, err)
+	excpted = []string{"lorem", "ipsum", "foo bar &'' "}
+	testsuite.AssertStringSliceEqual(t, excpted, res)
+
+	// test for unbalanced quotes
+	unb := ` foo "bar""`
+	res, err = SplitSpacesWithQuotes(unb)
+	testsuite.AssertEqual(t, ErrUnbalancedQuotes, err)
+	testsuite.AssertStringSliceEqual(t, []string{}, res)
+
 }
 
-func (e *ErrCastFailedToInt) Error() string {
-	return fmt.Sprintf("%s: error casting %v to int", ERR, e.Val)
-}
-
-type ErrWrongType struct {
-}
-
-func (ErrWrongType) Error() string {
-	return fmt.Sprintf("%s: invalid operation against key holding invalid type of value", WRONGTYP)
-}
-
-type ErrGeneric struct {
-	Err error
-}
-
-func (e *ErrGeneric) Error() string {
-	return fmt.Sprintf("%s: %s", ERR, e.Err)
-}
-
-type ErrWrongNumberOfArgs struct {
-	Cmd string
-}
-
-func (e *ErrWrongNumberOfArgs) Error() string {
-	return fmt.Sprintf("%s: %s has wrong number of arguments", WRONGTYP, e.Cmd)
-}
-
-type ErrUnknownCommand struct {
-	Cmd string
-}
-
-func (e *ErrUnknownCommand) Error() string {
-	return fmt.Sprintf("%s: unknown command %s", ERR, e.Cmd)
+func BenchmarkSplitSpacesWithQuotes(b *testing.B) {
+	testString := ` foo     bar "foo bar bar"    foo     bar "foo bar bar" foo     bar "foo bar bar" foo     bar "foo bar bar"`
+	for i := 0; i < b.N; i++ {
+		_, _ = SplitSpacesWithQuotes(testString)
+	}
 }

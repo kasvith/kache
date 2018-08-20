@@ -24,6 +24,15 @@
 
 package util
 
+import (
+	"bytes"
+	"errors"
+)
+
+var (
+	ErrUnbalancedQuotes = errors.New("unbalanced quotes")
+)
+
 // ToString Convert an interface to string
 func ToString(i interface{}) string {
 	if s, ok := i.(string); ok {
@@ -31,4 +40,61 @@ func ToString(i interface{}) string {
 	}
 
 	return ""
+}
+
+// SplitSpacesWithQuotes will split the string by spaces and preserve texts inside " " marks
+// error is returned when an unbalanced quote was found in the string
+
+// TODO: need to handle special cases like \" \'
+func SplitSpacesWithQuotes(s string) ([]string, error) {
+	var ret []string
+	const (
+		space    = ' '
+		dblQuote = '"'
+	)
+
+	var (
+		buf          bytes.Buffer
+		pos          = 0
+		insideQuotes = false
+	)
+
+	for pos < len(s) {
+		char := s[pos]
+
+		if char == dblQuote {
+			insideQuotes = !insideQuotes
+			ret = appendIfBufferNotEmpty(&buf, ret)
+			pos++
+			continue
+		}
+
+		if char == space && !insideQuotes {
+			// well skip it
+			ret = appendIfBufferNotEmpty(&buf, ret)
+			pos++
+			continue
+		}
+
+		buf.WriteByte(char)
+		pos++
+	}
+
+	// we have unbalanced quotes
+	if insideQuotes {
+		return []string{}, ErrUnbalancedQuotes
+	}
+
+	ret = appendIfBufferNotEmpty(&buf, ret)
+
+	return ret, nil
+}
+
+func appendIfBufferNotEmpty(buf *bytes.Buffer, list []string) []string {
+	if len(buf.String()) > 0 {
+		list = append(list, buf.String())
+		buf.Reset()
+	}
+
+	return list
 }

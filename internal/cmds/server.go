@@ -22,45 +22,22 @@
  * SOFTWARE.
  */
 
-package protcl
+package cmds
 
-import "fmt"
+import (
+	"github.com/kasvith/kache/internal/db"
+	"github.com/kasvith/kache/internal/protcl"
+)
 
-type ErrCastFailedToInt struct {
-	Val interface{}
-}
+func Ping(d *db.DB, args []string) *protcl.Message {
+	ll := len(args)
+	if ll > 1 {
+		return protcl.NewMessage(nil, &protcl.ErrWrongNumberOfArgs{Cmd: "ping"})
+	}
 
-func (e *ErrCastFailedToInt) Error() string {
-	return fmt.Sprintf("%s: error casting %v to int", ERR, e.Val)
-}
+	if ll == 0 {
+		return protcl.NewMessage(protcl.NewSimpleStringReply("PONG"), nil)
+	}
 
-type ErrWrongType struct {
-}
-
-func (ErrWrongType) Error() string {
-	return fmt.Sprintf("%s: invalid operation against key holding invalid type of value", WRONGTYP)
-}
-
-type ErrGeneric struct {
-	Err error
-}
-
-func (e *ErrGeneric) Error() string {
-	return fmt.Sprintf("%s: %s", ERR, e.Err)
-}
-
-type ErrWrongNumberOfArgs struct {
-	Cmd string
-}
-
-func (e *ErrWrongNumberOfArgs) Error() string {
-	return fmt.Sprintf("%s: %s has wrong number of arguments", WRONGTYP, e.Cmd)
-}
-
-type ErrUnknownCommand struct {
-	Cmd string
-}
-
-func (e *ErrUnknownCommand) Error() string {
-	return fmt.Sprintf("%s: unknown command %s", ERR, e.Cmd)
+	return protcl.NewMessage(protcl.NewBulkStringReply(false, args[0]), nil)
 }

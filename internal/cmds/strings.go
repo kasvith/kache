@@ -28,6 +28,7 @@ import (
 	"github.com/kasvith/kache/internal/db"
 	"github.com/kasvith/kache/internal/protcl"
 	"github.com/kasvith/kache/pkg/util"
+	"strconv"
 )
 
 func Get(d *db.DB, args []string) *protcl.Message {
@@ -58,4 +59,50 @@ func Set(d *db.DB, args []string) *protcl.Message {
 	d.Set(key, db.NewDataNode(db.TypeString, -1, val))
 
 	return protcl.NewMessage(protcl.NewSimpleStringReply("OK"), nil)
+}
+
+func Incr(d *db.DB, args []string) *protcl.Message {
+	if len(args) != 1 {
+		return protcl.NewMessage(nil, &protcl.ErrWrongNumberOfArgs{Cmd: "incr"})
+	}
+
+	return accumulateBy(d, args[0], 1, true)
+}
+
+func Decr(d *db.DB, args []string) *protcl.Message {
+	if len(args) != 1 {
+		return protcl.NewMessage(nil, &protcl.ErrWrongNumberOfArgs{Cmd: "decr"})
+	}
+
+	return accumulateBy(d, args[0], -1, true)
+}
+
+// accumulateBy will accumulate the value of key by given amount
+func accumulateBy(d *db.DB, key string, v int, incr bool) *protcl.Message {
+	val, found := d.GetIfNotSet(key, db.NewDataNode(db.TypeString, -1, strconv.Itoa(v)))
+
+	if !found {
+		return protcl.NewMessage(protcl.NewIntegerReply(v), nil)
+	}
+
+	if val.Type != db.TypeString {
+		return protcl.NewMessage(nil, protcl.ErrWrongType{})
+	}
+
+	i, err := strconv.Atoi(util.ToString(val.Value))
+
+	if err != nil {
+		return protcl.NewMessage(nil, &protcl.ErrCastFailedToInt{Val: val.Value})
+	}
+
+	var n int
+	if incr {
+		n = i + v
+	} else {
+		n = i - v
+	}
+
+	d.Set(key, db.NewDataNode(db.TypeString, -1, strconv.Itoa(n)))
+
+	return protcl.NewMessage(protcl.NewIntegerReply(n), nil)
 }

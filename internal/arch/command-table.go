@@ -38,9 +38,18 @@ type Command struct {
 }
 
 var CommandTable = map[string]Command{
-	"get":    {ModifyKeySpace: false, Fn: cmds.Get},
-	"set":    {ModifyKeySpace: true, Fn: cmds.Set},
+	// server
+	"ping": {ModifyKeySpace: false, Fn: cmds.Ping},
+
+	// key space
 	"exists": {ModifyKeySpace: false, Fn: cmds.Exists},
+	"del":    {ModifyKeySpace: true, Fn: cmds.Del},
+
+	// strings
+	"get":  {ModifyKeySpace: false, Fn: cmds.Get},
+	"set":  {ModifyKeySpace: true, Fn: cmds.Set},
+	"incr": {ModifyKeySpace: true, Fn: cmds.Incr},
+	"decr": {ModifyKeySpace: true, Fn: cmds.Decr},
 }
 
 type DBCommand struct {
