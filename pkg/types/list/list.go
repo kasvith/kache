@@ -34,12 +34,12 @@ import (
 // TList Linked list representation in the memory, it's thread safe
 type TList struct {
 	list *list.List
-	mux  *sync.Mutex
+	mux  *sync.RWMutex
 }
 
 // New Creates a new List
 func New() *TList {
-	return &TList{list: list.New(), mux: &sync.Mutex{}}
+	return &TList{list: list.New(), mux: &sync.RWMutex{}}
 }
 
 func buildValueList(front bool, val []string) *list.List {
@@ -170,8 +170,8 @@ func (list *TList) findAtIndex(pos int) *list.Element {
 
 // Range will output set of keys based on index query
 func (list *TList) Range(start, stop int) []string {
-	list.mux.Lock()
-	defer list.mux.Unlock()
+	list.mux.RLock()
+	defer list.mux.RUnlock()
 
 	start = list.convertPos(start)
 	stop = list.convertPos(stop)

@@ -33,11 +33,11 @@ import (
 
 type HashMap struct {
 	m   map[string]string
-	mux *sync.Mutex
+	mux *sync.RWMutex
 }
 
 func New() *HashMap {
-	return &HashMap{m: make(map[string]string), mux: &sync.Mutex{}}
+	return &HashMap{m: make(map[string]string), mux: &sync.RWMutex{}}
 }
 
 func (m *HashMap) Set(key, value string) int {
@@ -81,15 +81,15 @@ func (m *HashMap) SetBulk(fields []string) (string, error) {
 }
 
 func (m *HashMap) Get(key string) string {
-	m.mux.Lock()
-	defer m.mux.Unlock()
+	m.mux.RLock()
+	defer m.mux.RUnlock()
 
 	return m.m[key]
 }
 
 func (m *HashMap) GetBulk(keys []string) []string {
-	m.mux.Lock()
-	defer m.mux.Unlock()
+	m.mux.RLock()
+	defer m.mux.RUnlock()
 
 	results := make([]string, len(keys))
 
@@ -101,8 +101,8 @@ func (m *HashMap) GetBulk(keys []string) []string {
 }
 
 func (m *HashMap) Keys() []string {
-	m.mux.Lock()
-	defer m.mux.Unlock()
+	m.mux.RLock()
+	defer m.mux.RUnlock()
 
 	keys := make([]string, len(m.m))
 	i := 0
@@ -115,8 +115,8 @@ func (m *HashMap) Keys() []string {
 }
 
 func (m *HashMap) Vals() []string {
-	m.mux.Lock()
-	defer m.mux.Unlock()
+	m.mux.RLock()
+	defer m.mux.RUnlock()
 
 	vals := make([]string, len(m.m))
 	i := 0
@@ -129,8 +129,8 @@ func (m *HashMap) Vals() []string {
 }
 
 func (m *HashMap) Fields() []string {
-	m.mux.Lock()
-	defer m.mux.Unlock()
+	m.mux.RLock()
+	defer m.mux.RUnlock()
 
 	paris := make([]string, len(m.m)*2)
 	i := 0
@@ -160,8 +160,8 @@ func (m *HashMap) Delete(keys []string) int {
 }
 
 func (m *HashMap) Exists(key string) int {
-	m.mux.Lock()
-	defer m.mux.Unlock()
+	m.mux.RLock()
+	defer m.mux.RUnlock()
 
 	_, found := m.m[key]
 
@@ -221,15 +221,15 @@ func (m *HashMap) IncrementByFloat(key string, amount float64) (float64, error) 
 }
 
 func (m *HashMap) Len() int {
-	m.mux.Lock()
-	defer m.mux.Unlock()
+	m.mux.RLock()
+	defer m.mux.RUnlock()
 
 	return len(m.m)
 }
 
 func (m *HashMap) FLen(key string) int {
-	m.mux.Lock()
-	defer m.mux.Unlock()
+	m.mux.RLock()
+	defer m.mux.RUnlock()
 
 	return utf8.RuneCountInString(m.m[key])
 }
