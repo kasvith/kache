@@ -14,6 +14,7 @@ A simple and a flexible in memory cache
 # Roadmap
 - [x] Kache Server
 - [x] Basic Commands as a POC
+- [ ] Cluster Mode
 - [ ] Snapshots of data
 - [ ] Kache CLI
 - [ ] Client Libraries for popular languages
