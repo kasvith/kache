@@ -9,7 +9,7 @@ A simple and a flexible in memory cache
 
 # What is kache
 **kache** aims to develop a *redis compatible in memory db* with [golang](https://golang.org/ "go"). Currently kache is powered up with **[RESP Protocol](https://redis.io/topics/protocol "RESP")**.
-**kache** also supports simple text protocol so you can issue commands to kache using netcat or telnet as you please. kache has powered with many features manging a simple codebase with golang.
+**kache** also supports simple text protocol so you can issue commands to kache using netcat or telnet as you please. kache has powered with many features managing a simple codebase with golang.
 
 # Roadmap
 - [x] Kache Server
