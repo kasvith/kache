@@ -105,8 +105,8 @@ Special note : According to your environment executable will be built, for windo
 # Contributions
 **kache** is an **opensource** project. Contributions are welcome
 
-- Fork the repo and star it :star:
-- Open issues :boom:
-- Raise PRs for issues :raised_hand:
-- Help on documentation :page_facing_up:
+- Fork the repo and star it
+- Open issues
+- Raise PRs for issues
+- Help on documentation
 - [Slack](https://kache-db.slack.com/ "Slack")
