@@ -7,6 +7,8 @@ A simple and a flexible in memory cache
 [![codecov](https://codecov.io/gh/kasvith/kache/branch/master/graph/badge.svg)](https://codecov.io/gh/kasvith/kache)
 [![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/kasvith/kache/blob/master/LICENSE)
 
+![gopher is looking at kache](https://user-images.githubusercontent.com/13379595/44355952-a3e7e480-a4cb-11e8-901f-aed77cfd63db.png)
+
 # What is kache
 **kache** aims to develop a *redis compatible in memory db* with [golang](https://golang.org/ "go"). Currently kache is powered up with **[RESP Protocol](https://redis.io/topics/protocol "RESP")**.
 **kache** also supports simple text protocol so you can issue commands to kache using netcat or telnet as you please. kache has powered with many features managing a simple codebase with golang.
