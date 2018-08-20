@@ -50,8 +50,25 @@ func InitLoggers(config config.AppConfig) {
 		logrusLogger.SetLevel(logrus.WarnLevel)
 	}
 
-	logrusLogger.Formatter = &kacheFormatter{}
-	Logger = logrusLogger.WithFields(logrus.Fields{"pid": os.Getpid()})
+	fields := logrus.Fields{"pid": os.Getpid()}
+
+	switch strings.ToLower(config.LogType) {
+	case "json":
+		logrusLogger.Formatter = &logrus.JSONFormatter{}
+		break
+	case "logfmt":
+		logrusLogger.Formatter = &logrus.TextFormatter{DisableColors: true, ForceColors: false}
+		break
+	case "default":
+		logrusLogger.Formatter = &kacheFormatter{}
+		break
+	default:
+		logrusLogger.Formatter = &kacheFormatter{}
+		logrusLogger.WithFields(fields).Warnf("%s format is unknown, continuing with default", config.LogType)
+		break
+	}
+
+	Logger = logrusLogger.WithFields(fields)
 
 	// if we dont want logging, just discard all to a null device
 	if config.Logging == false {

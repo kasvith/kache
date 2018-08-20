@@ -50,9 +50,11 @@ func init() {
 	// Flags
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 	rootCmd.PersistentFlags().BoolP("debug", "d", false, "output debug information")
-	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "", "", "configuration file")
-	rootCmd.PersistentFlags().BoolP("logging", "", true, "set application logs")
-	rootCmd.PersistentFlags().StringP("logfile", "", "", "application log file")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "configuration file")
+	rootCmd.PersistentFlags().Bool("logging", true, "set application logs")
+	rootCmd.PersistentFlags().String("logfile", "", "application log file")
+	rootCmd.PersistentFlags().String("logtype", "default",
+		`kache can output logs in different formats like json or logfmt. The default one is custom to kache.`)
 
 	rootCmd.Flags().StringP("host", "", "127.0.0.1", "host for running application")
 	rootCmd.Flags().IntP("port", "p", 7088, "port for running application")
@@ -67,6 +69,7 @@ func init() {
 	viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
 	viper.BindPFlag("logging", rootCmd.PersistentFlags().Lookup("logging"))
 	viper.BindPFlag("logfile", rootCmd.PersistentFlags().Lookup("logfile"))
+	viper.BindPFlag("logtype", rootCmd.PersistentFlags().Lookup("logtype"))
 	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
 }
 

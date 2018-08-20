@@ -34,6 +34,7 @@ type AppConfig struct {
 	Logfile           string
 	Debug             bool
 	MaxMultiBlkLength int // in bytes
+	LogType           string
 }
 
 var AppConf AppConfig
