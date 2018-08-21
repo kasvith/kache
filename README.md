@@ -88,8 +88,8 @@ kache [flags]
 - Fork the repo
 - Go to your **GOPATH** if you don't know about it learn from [here](https://github.com/golang/go/wiki/SettingGOPATH "here")
 - Create a directory called github.com and go into it
-- Create a directory to match your github username, for me its **kasvith**, go into it
-- Clone the repo into that directory and go into it
+- Create a directory called **kasvith**, go into it
+- Clone the repo into that directory and cd to it
 
 > Make sure you have an active internet connection as for the first time it will download some depedencies.
 
