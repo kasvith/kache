@@ -30,11 +30,11 @@ import (
 
 type Set struct {
 	m   map[string]int
-	mux *sync.Mutex
+	mux *sync.RWMutex
 }
 
 func New() *Set {
-	return &Set{m: make(map[string]int), mux: &sync.Mutex{}}
+	return &Set{m: make(map[string]int), mux: &sync.RWMutex{}}
 }
 
 func NewFromSlice(data []string) *Set {
@@ -43,12 +43,12 @@ func NewFromSlice(data []string) *Set {
 		m[value] = 1
 	}
 
-	return &Set{m: m, mux: &sync.Mutex{}}
+	return &Set{m: m, mux: &sync.RWMutex{}}
 }
 
 func (set *Set) getMap() map[string]int {
-	set.mux.Lock()
-	defer set.mux.Unlock()
+	set.mux.RLock()
+	defer set.mux.RUnlock()
 
 	m := make(map[string]int)
 
@@ -77,8 +77,8 @@ func (set *Set) Add(keys []string) int {
 
 // Card this will return number of elements in the set
 func (set *Set) Card() int {
-	set.mux.Lock()
-	defer set.mux.Unlock()
+	set.mux.RLock()
+	defer set.mux.RUnlock()
 
 	return len(set.m)
 }
@@ -95,8 +95,8 @@ func elems(m map[string]int) []string {
 }
 
 func (set *Set) Elems() []string {
-	set.mux.Lock()
-	defer set.mux.Unlock()
+	set.mux.RLock()
+	defer set.mux.RUnlock()
 
 	return elems(set.m)
 }
@@ -111,10 +111,9 @@ func duplicateMap(m map[string]int) map[string]int {
 }
 
 func (set *Set) Diff(sets []Set) []string {
-	set.mux.Lock()
-	defer set.mux.Unlock()
-
+	set.mux.RLock()
 	dup := duplicateMap(set.m)
+	set.mux.RUnlock()
 
 	for i := 0; i < len(sets); i++ {
 		for _, key := range sets[i].Elems() {
@@ -126,8 +125,9 @@ func (set *Set) Diff(sets []Set) []string {
 }
 
 func (set *Set) DiffS(sets []Set) *Set {
-	set.mux.Lock()
-	defer set.mux.Unlock()
+	set.mux.RLock()
+	defer set.mux.RUnlock()
+
 	dup := duplicateMap(set.m)
 
 	for i := 0; i < len(sets); i++ {
@@ -136,12 +136,12 @@ func (set *Set) DiffS(sets []Set) *Set {
 		}
 	}
 
-	return &Set{m: dup, mux: &sync.Mutex{}}
+	return &Set{m: dup, mux: &sync.RWMutex{}}
 }
 
 func (set *Set) Exists(key string) int {
-	set.mux.Lock()
-	defer set.mux.Unlock()
+	set.mux.RLock()
+	defer set.mux.RUnlock()
 
 	if _, found := set.m[key]; found {
 		return 1
@@ -186,6 +186,7 @@ func IntersectionS(sets []Set) *Set {
 func Move(key string, src, dest *Set) int {
 	src.mux.Lock()
 	defer src.mux.Unlock()
+
 	if _, found := src.m[key]; found {
 		delete(src.m, key)
 		dest.mux.Lock()
@@ -250,7 +251,7 @@ func UnionS(sets []Set) *Set {
 		}
 	}
 
-	return &Set{m: m, mux: &sync.Mutex{}}
+	return &Set{m: m, mux: &sync.RWMutex{}}
 }
 
 // TODO implement pop and randomelement
