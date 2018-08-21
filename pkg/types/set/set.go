@@ -169,10 +169,15 @@ func Intersection(sets []Set) []string {
 	// iterate through minimum set to find the intersection
 	results := make([]string, 0)
 	for _, v := range minSet.Elems() {
+		allIntersected := true
 		for i := 0; i < len(sets); i++ {
-			if sets[i].Exists(v) == 1 {
-				results = append(results, v)
+			if sets[i].Exists(v) == 0 {
+				allIntersected = false
+				break
 			}
+		}
+		if allIntersected {
+			results = append(results, v)
 		}
 	}
 
