@@ -42,13 +42,13 @@ var DB = db.NewDB()
 var dbCommand = &arch.DBCommand{}
 
 func handleConnection(conn net.Conn) {
+	// TODO determine client type by first issued command to kache, this can improve performance
+
+	reader := protcl.NewReader(conn)
+	writer := bufio.NewWriter(conn)
 	defer conn.Close()
 
 	for {
-		reader := protcl.NewReader(conn)
-
-		// TODO determine client type by first issued command to kache, this can improve performance
-		w := bufio.NewWriter(conn)
 		command, err := reader.ParseMessage()
 
 		if err != nil {
@@ -59,20 +59,20 @@ func handleConnection(conn net.Conn) {
 
 			// anything else should be sent to client with prefix ERR
 			klogs.Logger.Debug(conn.RemoteAddr(), ": ", err.Error())
-			w.WriteString(protcl.RespError(err))
-			w.Flush()
+			writer.WriteString(protcl.RespError(err))
+			writer.Flush()
 			continue
 		}
 
 		message := dbCommand.Execute(DB, command.Name, command.Args)
 
 		if message.Err == nil {
-			w.WriteString(message.RespReply())
+			writer.WriteString(message.RespReply())
 		} else {
-			w.WriteString(protcl.RespError(message.Err))
+			writer.WriteString(protcl.RespError(message.Err))
 		}
 
-		w.Flush()
+		writer.Flush()
 	}
 
 	ConnectedClients.logOnDisconnect(conn)
