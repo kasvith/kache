@@ -125,7 +125,7 @@ func parse(r *bufio.Reader) (*RespCommand, error) {
 			return nil, ErrInvalidCommand
 		}
 
-		return &RespCommand{Name: strs[0], Args: strs[1:]}, nil
+		return &RespCommand{Name: strings.ToLower(strs[0]), Args: strs[1:]}, nil
 	default:
 		// probably the read bytes contains the string
 		strCmd := string(buf)
