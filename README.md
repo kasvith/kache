@@ -17,6 +17,7 @@ A simple and a flexible in memory cache
 - [x] Kache Server
 - [x] Basic Commands as a POC
 - [ ] Cluster Mode
+- [ ] Pub/Sub Pattern
 - [ ] Snapshots of data
 - [ ] Kache CLI
 - [ ] Client Libraries for popular languages
