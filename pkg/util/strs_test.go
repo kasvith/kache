@@ -27,35 +27,37 @@ package util
 import (
 	"testing"
 
-	"github.com/kasvith/kache/pkg/testsuite"
+	testifyAssert "github.com/stretchr/testify/assert"
 )
 
 func TestSplitSpacesWithQuotes(t *testing.T) {
 	// test for balanced quotes
+	assert := testifyAssert.New(t)
+
 	s := `  lorem ipsum       "foo bar "   `
 	res, err := SplitSpacesWithQuotes(s)
-	testsuite.AssertEqual(t, nil, err)
+	assert.Nil(err)
 	excpted := []string{"lorem", "ipsum", "foo bar "}
-	testsuite.AssertStringSliceEqual(t, excpted, res)
+	assert.Equal(excpted, res)
 
 	// test for characters quotes
 	s = `  lorem ipsum       "foo bar &'' "   `
 	res, err = SplitSpacesWithQuotes(s)
-	testsuite.AssertEqual(t, nil, err)
+	assert.Nil(err)
 	excpted = []string{"lorem", "ipsum", "foo bar &'' "}
-	testsuite.AssertStringSliceEqual(t, excpted, res)
+	assert.Equal(excpted, res)
 
 	// test for unbalanced quotes
 	unb := ` foo "bar""`
 	res, err = SplitSpacesWithQuotes(unb)
-	testsuite.AssertEqual(t, ErrUnbalancedQuotes, err)
-	testsuite.AssertStringSliceEqual(t, []string{}, res)
+	assert.Equal(ErrUnbalancedQuotes, err)
+	assert.Len(res, 0)
 
 }
 
 func BenchmarkSplitSpacesWithQuotes(b *testing.B) {
 	testString := ` foo     bar "foo bar bar"    foo     bar "foo bar bar" foo     bar "foo bar bar" foo     bar "foo bar bar"`
 	for i := 0; i < b.N; i++ {
-		_, _ = SplitSpacesWithQuotes(testString)
+		SplitSpacesWithQuotes(testString)
 	}
 }

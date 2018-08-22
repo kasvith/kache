@@ -2,6 +2,22 @@
 
 
 [[projects]]
+  digest = "1:7cb4fdca4c251b3ef8027c90ea35f70c7b661a593b9eeae34753c65499098bb1"
+  name = "github.com/cpuguy83/go-md2man"
+  packages = ["md2man"]
+  pruneopts = "UT"
+  revision = "20f5889cbdc3c73dbd2862796665e7c465ade7d1"
+  version = "v1.0.8"
+
+[[projects]]
+  digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
+  name = "github.com/davecgh/go-spew"
+  packages = ["spew"]
+  pruneopts = "UT"
+  revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
+  version = "v1.1.1"
+
+[[projects]]
   digest = "1:abeb38ade3f32a92943e5be54f55ed6d6e3b6602761d74b4aab4c9dd45c18abd"
   name = "github.com/fsnotify/fsnotify"
   packages = ["."]
@@ -61,6 +77,22 @@
   version = "v1.2.0"
 
 [[projects]]
+  digest = "1:0028cb19b2e4c3112225cd871870f2d9cf49b9b4276531f03438a88e94be86fe"
+  name = "github.com/pmezard/go-difflib"
+  packages = ["difflib"]
+  pruneopts = "UT"
+  revision = "792786c7400a136282c1664665ae0a8db921c6c2"
+  version = "v1.0.0"
+
+[[projects]]
+  digest = "1:8bc629776d035c003c7814d4369521afe67fdb8efc4b5f66540d29343b98cf23"
+  name = "github.com/russross/blackfriday"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "55d61fa8aa702f59229e6cff85793c22e580eaf5"
+  version = "v1.5.1"
+
+[[projects]]
   digest = "1:d867dfa6751c8d7a435821ad3b736310c2ed68945d05b50fb9d23aee0540c8cc"
   name = "github.com/sirupsen/logrus"
   packages = ["."]
@@ -88,9 +120,12 @@
   version = "v1.2.0"
 
 [[projects]]
-  digest = "1:645cabccbb4fa8aab25a956cbcbdf6a6845ca736b2c64e197ca7cbb9d210b939"
+  digest = "1:e01b05ba901239c783dfe56450bcde607fc858908529868259c9a8765dc176d0"
   name = "github.com/spf13/cobra"
-  packages = ["."]
+  packages = [
+    ".",
+    "doc",
+  ]
   pruneopts = "UT"
   revision = "ef82de70bb3f60c65fb8eebacbb2d122ef517385"
   version = "v0.0.3"
@@ -118,6 +153,14 @@
   pruneopts = "UT"
   revision = "907c19d40d9a6c9bb55f040ff4ae45271a4754b9"
   version = "v1.1.0"
+
+[[projects]]
+  digest = "1:18752d0b95816a1b777505a97f71c7467a8445b8ffb55631a7bf779f6ba4fa83"
+  name = "github.com/stretchr/testify"
+  packages = ["assert"]
+  pruneopts = "UT"
+  revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
+  version = "v1.2.2"
 
 [[projects]]
   branch = "master"
@@ -167,7 +210,9 @@
   input-imports = [
     "github.com/sirupsen/logrus",
     "github.com/spf13/cobra",
+    "github.com/spf13/cobra/doc",
     "github.com/spf13/viper",
+    "github.com/stretchr/testify/assert",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
