@@ -60,7 +60,7 @@ func getCommand(cmd string) (*Command, error) {
 		return &v, nil
 	}
 
-	return nil, &protcl.ErrUnknownCommand{}
+	return nil, &protcl.ErrUnknownCommand{Cmd: cmd}
 }
 
 // Execute executes a single command on the given database
