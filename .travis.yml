@@ -5,8 +5,11 @@ go:
 
 before_install:
   - make dep
+  - go get -u golang.org/x/tools/...
 
 script:
+  - ./cmd/check_fmt.sh
+  - ./cmd/check_imports.sh
   - make vet
   - make test
   - go test ./... -race -coverprofile=coverage.txt -covermode=atomic

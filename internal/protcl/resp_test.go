@@ -25,8 +25,9 @@
 package protcl
 
 import (
-	"github.com/kasvith/kache/pkg/testsuite"
 	"testing"
+
+	"github.com/kasvith/kache/pkg/testsuite"
 )
 
 func TestIntegerReply_Reply(t *testing.T) {

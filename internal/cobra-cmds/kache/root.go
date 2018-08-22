@@ -26,12 +26,14 @@ package kache
 
 import (
 	"fmt"
+	"os"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+
 	"github.com/kasvith/kache/internal/config"
 	"github.com/kasvith/kache/internal/klogs"
 	"github.com/kasvith/kache/internal/srv"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"os"
 )
 
 var verbose bool

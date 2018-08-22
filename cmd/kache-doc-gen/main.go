@@ -25,9 +25,11 @@
 package main
 
 import (
-	"github.com/kasvith/kache/internal/cobra-cmds/kache"
-	"github.com/spf13/cobra/doc"
 	"log"
+
+	"github.com/spf13/cobra/doc"
+
+	"github.com/kasvith/kache/internal/cobra-cmds/kache"
 )
 
 func main() {

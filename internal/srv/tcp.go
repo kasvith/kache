@@ -26,15 +26,16 @@ package srv
 
 import (
 	"bufio"
+	"io"
+	"net"
+	"os"
+	"strconv"
+
 	"github.com/kasvith/kache/internal/arch"
 	"github.com/kasvith/kache/internal/config"
 	"github.com/kasvith/kache/internal/db"
 	"github.com/kasvith/kache/internal/klogs"
 	"github.com/kasvith/kache/internal/protcl"
-	"io"
-	"net"
-	"os"
-	"strconv"
 )
 
 var DB = db.NewDB()

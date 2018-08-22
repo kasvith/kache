@@ -25,8 +25,9 @@
 package util
 
 import (
-	"github.com/kasvith/kache/pkg/testsuite"
 	"testing"
+
+	"github.com/kasvith/kache/pkg/testsuite"
 )
 
 func TestSplitSpacesWithQuotes(t *testing.T) {

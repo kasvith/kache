@@ -25,10 +25,11 @@
 package cmds
 
 import (
+	"strconv"
+
 	"github.com/kasvith/kache/internal/db"
 	"github.com/kasvith/kache/internal/protcl"
 	"github.com/kasvith/kache/pkg/util"
-	"strconv"
 )
 
 func Get(d *db.DB, args []string) *protcl.Message {

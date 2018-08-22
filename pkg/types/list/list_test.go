@@ -26,9 +26,10 @@ package list
 
 import (
 	"errors"
-	"github.com/kasvith/kache/pkg/testsuite"
 	"strconv"
 	"testing"
+
+	"github.com/kasvith/kache/pkg/testsuite"
 )
 
 func TestPushSingleValue(t *testing.T) {

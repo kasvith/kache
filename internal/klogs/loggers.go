@@ -27,14 +27,16 @@ package klogs
 import (
 	"bytes"
 	"fmt"
-	"github.com/kasvith/kache/internal/config"
-	"github.com/kasvith/kache/internal/sys"
-	"github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/sirupsen/logrus"
+
+	"github.com/kasvith/kache/internal/config"
+	"github.com/kasvith/kache/internal/sys"
 )
 
 var Logger *logrus.Entry

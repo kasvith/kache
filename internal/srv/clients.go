@@ -25,9 +25,10 @@
 package srv
 
 import (
-	"github.com/kasvith/kache/internal/klogs"
 	"net"
 	"sync"
+
+	"github.com/kasvith/kache/internal/klogs"
 )
 
 var ConnectedClients Clients

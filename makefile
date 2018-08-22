@@ -17,5 +17,9 @@ test:
 vet:
 	go vet ./...
 
+fmt:
+	gofmt -w `find . -name '*.go' | grep -v vendor`
+	goimports -w -local='github.com/kasvith/kache' `find . -name '*.go' | grep -v vendor`
+
 clean:
 	rm -rf bin/*

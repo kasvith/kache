@@ -27,8 +27,9 @@ package list
 import (
 	"container/list"
 	"errors"
-	"github.com/kasvith/kache/pkg/util"
 	"sync"
+
+	"github.com/kasvith/kache/pkg/util"
 )
 
 // TList Linked list representation in the memory, it's thread safe

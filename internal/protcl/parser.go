@@ -28,11 +28,12 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/kasvith/kache/internal/config"
-	"github.com/kasvith/kache/pkg/util"
 	"io"
 	"strconv"
 	"strings"
+
+	"github.com/kasvith/kache/internal/config"
+	"github.com/kasvith/kache/pkg/util"
 )
 
 var (

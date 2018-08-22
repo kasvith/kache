@@ -25,9 +25,10 @@
 package hashmap
 
 import (
-	"github.com/kasvith/kache/pkg/testsuite"
 	"strconv"
 	"testing"
+
+	"github.com/kasvith/kache/pkg/testsuite"
 )
 
 func TestHashMap_Set(t *testing.T) {
