@@ -46,7 +46,7 @@ If you get the `+PONG` kache is working as expected.
 
 Default configuration file can be found in `config/kache-default.toml`
 
-kache can produce logs as you wish, in addition to default format it supports 
+kache can produce logs as you wish, in addition to default format it supports
  - json
  - logfmt
 
@@ -82,7 +82,7 @@ kache [flags]
 
 ## Prerequisites
  - Go 1.10.+
- - **make** (not required, easy if you have) 
+ - **make** (not required, easy if you have)
 
 ## Building kache
 - Fork the repo
@@ -103,7 +103,7 @@ kache [flags]
 - To build cli run `go build -o bin/kache-cli ./cmd/kache-cli`
 - Binaries can be found on the `bin/` directory
 
-Special note : According to your environment executable will be built, for windows users it will need to add `.exe` to the end of `-o` flag like `go build -o bin/kache ./cmd/kache`
+Special note : According to your environment executable will be built, for windows users it will need to add `.exe` to the end of `-o` flag like `go build -o bin/kache.exe ./cmd/kache`
 
 # Contributions
 **kache** is an **opensource** project. Contributions are welcome
