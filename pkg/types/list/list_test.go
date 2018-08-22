@@ -25,51 +25,42 @@
 package list
 
 import (
-	"errors"
 	"strconv"
 	"testing"
 
-	"github.com/kasvith/kache/pkg/testsuite"
+	testifyAssert "github.com/stretchr/testify/assert"
 )
 
 func TestPushSingleValue(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 
 	val := "some"
 
 	err := l.HPush([]string{val})
-
-	if err != nil {
-		t.Error(err)
-	}
+	assert.Nil(err)
 
 	head := l.Head()
-
-	if head == nil {
-		t.Error("Head is nil")
-	}
+	assert.NotNil(head)
 
 	s, ok := head.Value.(string)
-	if ok == false {
-		t.Error("Not a string type")
-	}
-
-	if s != val {
-		t.Error("Items are not same")
-	}
+	assert.True(ok)
+	assert.Equal(val, s)
 }
 
 func TestLen(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 
 	for i := 0; i < 10; i++ {
 		l.HPush([]string{strconv.Itoa(i)})
 	}
 
-	testsuite.AssertEqual(t, 10, l.Len())
+	assert.Equal(10, l.Len())
 }
 
 func TestFindAtIndexHead(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 
 	for i := 0; i < 10; i++ {
@@ -77,11 +68,11 @@ func TestFindAtIndexHead(t *testing.T) {
 	}
 
 	e1 := l.findAtIndex(0)
-
-	testsuite.AssertEqual(t, "9", e1.Value)
+	assert.Equal("9", e1.Value)
 }
 
 func TestFindAtIndexTail(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 
 	for i := 0; i < 10; i++ {
@@ -89,11 +80,11 @@ func TestFindAtIndexTail(t *testing.T) {
 	}
 
 	e2 := l.findAtIndex(l.Len() - 1)
-
-	testsuite.AssertEqual(t, "0", e2.Value)
+	assert.Equal("0", e2.Value)
 }
 
 func TestFindAtIndexNull(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 
 	for i := 0; i < 10; i++ {
@@ -101,10 +92,11 @@ func TestFindAtIndexNull(t *testing.T) {
 	}
 
 	e2 := l.findAtIndex(100)
-	testsuite.AssertNil(t, e2)
+	assert.Nil(e2)
 }
 
 func TestFindAtIndexMiddle(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 
 	for i := 0; i < 10; i++ {
@@ -112,11 +104,11 @@ func TestFindAtIndexMiddle(t *testing.T) {
 	}
 
 	e2 := l.findAtIndex(4)
-
-	testsuite.AssertEqual(t, "5", e2.Value)
+	assert.Equal("5", e2.Value)
 }
 
 func TestTList_RangeAllItems(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 	strs := make([]string, 10)
 
@@ -126,10 +118,11 @@ func TestTList_RangeAllItems(t *testing.T) {
 	}
 
 	res := l.Range(0, -1)
-	testsuite.AssertStringSliceEqual(t, strs, res)
+	assert.Equal(strs, res)
 }
 
 func TestTList_RangeMinusDistance(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 	strs := make([]string, 10)
 
@@ -139,10 +132,11 @@ func TestTList_RangeMinusDistance(t *testing.T) {
 	}
 
 	res := l.Range(5, 2)
-	testsuite.AssertStringSliceEqual(t, []string{}, res)
+	assert.Equal([]string{}, res)
 }
 
 func TestTList_RangeStopOutOfBound(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 	strs := make([]string, 10)
 
@@ -152,10 +146,11 @@ func TestTList_RangeStopOutOfBound(t *testing.T) {
 	}
 
 	res := l.Range(0, 100)
-	testsuite.AssertStringSliceEqual(t, strs, res)
+	assert.Equal(strs, res)
 }
 
 func TestTList_RangeStartOutOfBound(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 
 	for i := 0; i < 10; i++ {
@@ -163,10 +158,11 @@ func TestTList_RangeStartOutOfBound(t *testing.T) {
 	}
 
 	res := l.Range(100, -1)
-	testsuite.AssertStringSliceEqual(t, []string{}, res)
+	assert.Equal([]string{}, res)
 }
 
 func TestTList_RangeTwoFromTail(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 	strs := make([]string, 10)
 
@@ -176,10 +172,11 @@ func TestTList_RangeTwoFromTail(t *testing.T) {
 	}
 
 	res := l.Range(-2, -1)
-	testsuite.AssertStringSliceEqual(t, []string{"1", "0"}, res)
+	assert.Equal([]string{"1", "0"}, res)
 }
 
 func TestTList_RangeTwoFromMiddle(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 	strs := make([]string, 10)
 
@@ -189,10 +186,11 @@ func TestTList_RangeTwoFromMiddle(t *testing.T) {
 	}
 
 	res := l.Range(2, 5)
-	testsuite.AssertStringSliceEqual(t, []string{"7", "6", "5", "4"}, res)
+	assert.Equal([]string{"7", "6", "5", "4"}, res)
 }
 
 func TestTList_RangeOneFromHead(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 	strs := make([]string, 10)
 
@@ -202,10 +200,11 @@ func TestTList_RangeOneFromHead(t *testing.T) {
 	}
 
 	res := l.Range(0, 0)
-	testsuite.AssertStringSliceEqual(t, []string{"9"}, res)
+	assert.Equal([]string{"9"}, res)
 }
 
 func TestTList_RangeOneFromTail(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 	strs := make([]string, 10)
 
@@ -215,10 +214,11 @@ func TestTList_RangeOneFromTail(t *testing.T) {
 	}
 
 	res := l.Range(-1, -1)
-	testsuite.AssertStringSliceEqual(t, []string{"0"}, res)
+	assert.Equal([]string{"0"}, res)
 }
 
 func TestTList_HPop(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 	strs := make([]string, 10)
 
@@ -228,13 +228,14 @@ func TestTList_HPop(t *testing.T) {
 	}
 
 	elem := l.HPop()
-	testsuite.AssertEqual(t, "9", elem)
+	assert.Equal("9", elem)
 
 	elem = l.HPop()
-	testsuite.AssertEqual(t, "8", elem)
+	assert.Equal("8", elem)
 }
 
 func TestTList_TPop(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 
 	for i := 0; i < 10; i++ {
@@ -242,13 +243,14 @@ func TestTList_TPop(t *testing.T) {
 	}
 
 	elem := l.TPop()
-	testsuite.AssertEqual(t, "0", elem)
+	assert.Equal("0", elem)
 
 	elem = l.TPop()
-	testsuite.AssertEqual(t, "1", elem)
+	assert.Equal("1", elem)
 }
 
 func TestTList_TPush(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 	strs := make([]string, 10)
 
@@ -258,13 +260,14 @@ func TestTList_TPush(t *testing.T) {
 	}
 
 	elem := l.HPop()
-	testsuite.AssertEqual(t, "0", elem)
+	assert.Equal("0", elem)
 
 	elem = l.HPop()
-	testsuite.AssertEqual(t, "1", elem)
+	assert.Equal("1", elem)
 }
 
 func TestTList_TPushListHead(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 	strs := make([]string, 10)
 	vals := make([]string, 10)
@@ -277,14 +280,15 @@ func TestTList_TPushListHead(t *testing.T) {
 	l.HPush(vals)
 
 	res := l.Range(0, -1)
-	testsuite.AssertStringSliceEqual(t, strs, res)
+	assert.Equal(strs, res)
 
 	l.HPush([]string{"0", "1"})
 	res = l.Range(0, -1)
-	testsuite.AssertStringSliceEqual(t, []string{"1", "0", "9", "8", "7", "6", "5", "4", "3", "2", "1", "0"}, res)
+	assert.Equal([]string{"1", "0", "9", "8", "7", "6", "5", "4", "3", "2", "1", "0"}, res)
 }
 
 func TestTList_TPushListTail(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 	strs := make([]string, 10)
 	vals := make([]string, 10)
@@ -297,50 +301,55 @@ func TestTList_TPushListTail(t *testing.T) {
 	l.TPush(vals)
 
 	res := l.Range(0, -1)
-	testsuite.AssertStringSliceEqual(t, vals, res)
+	assert.Equal(vals, res)
 
 	l.TPush([]string{"0", "1"})
 	res = l.Range(0, -1)
-	testsuite.AssertStringSliceEqual(t, []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "1"}, res)
+	assert.Equal([]string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "1"}, res)
 }
 
 func TestTList_HPushNil(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
-	err := l.HPush([]string{})
 
-	testsuite.ExceptError(t, errors.New("no items to insert"), err)
+	err := l.HPush([]string{})
+	assert.EqualError(err, "no items to insert")
 }
 
 func TestTList_TPushNil(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
-	err := l.TPush([]string{})
 
-	testsuite.ExceptError(t, errors.New("no items to insert"), err)
+	err := l.TPush([]string{})
+	assert.EqualError(err, "no items to insert")
 }
 
 func TestTList_HPopNil(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
-	it := l.HPop()
 
-	testsuite.AssertEqual(t, "", it)
+	it := l.HPop()
+	assert.Equal("", it)
 }
 
 func TestTList_TPopNil(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
-	it := l.TPop()
 
-	testsuite.AssertEqual(t, "", it)
+	it := l.TPop()
+	assert.Equal("", it)
 }
 
 func TestTList_TrimNullList(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 
 	l.Trim(0, 10)
-
-	testsuite.AssertEqual(t, 0, l.Len())
+	assert.Equal(0, l.Len())
 }
 
 func TestTList_TrimFullList(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 
 	for i := 0; i < 10; i++ {
@@ -349,11 +358,12 @@ func TestTList_TrimFullList(t *testing.T) {
 
 	// list now trimmed to 2 elements
 	l.Trim(0, 1)
-	testsuite.AssertEqual(t, 2, l.Len())
-	testsuite.AssertStringSliceEqual(t, []string{"9", "8"}, l.Range(0, -1))
+	assert.Equal(2, l.Len())
+	assert.Equal([]string{"9", "8"}, l.Range(0, -1))
 }
 
 func TestTList_TrimAddMoreAndAssert(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 
 	for i := 0; i < 10; i++ {
@@ -362,8 +372,8 @@ func TestTList_TrimAddMoreAndAssert(t *testing.T) {
 
 	// list now trimmed to 2 elements
 	l.Trim(0, 1)
-	testsuite.AssertEqual(t, 2, l.Len())
-	testsuite.AssertStringSliceEqual(t, []string{"9", "8"}, l.Range(0, -1))
+	assert.Equal(2, l.Len())
+	assert.Equal([]string{"9", "8"}, l.Range(0, -1))
 
 	// push new elem
 	l.HPush([]string{"a"})
@@ -372,13 +382,14 @@ func TestTList_TrimAddMoreAndAssert(t *testing.T) {
 	l.Trim(0, 1)
 
 	// assert for 2 elements
-	testsuite.AssertEqual(t, 2, l.Len())
+	assert.Equal(2, l.Len())
 
 	// check list updated
-	testsuite.AssertStringSliceEqual(t, []string{"a", "9"}, l.Range(0, -1))
+	assert.Equal([]string{"a", "9"}, l.Range(0, -1))
 }
 
 func TestTList_TrimMinusStart(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 
 	for i := 0; i < 10; i++ {
@@ -387,11 +398,12 @@ func TestTList_TrimMinusStart(t *testing.T) {
 
 	// list now trimmed to 2 elements
 	l.Trim(-100, 1)
-	testsuite.AssertEqual(t, 2, l.Len())
-	testsuite.AssertStringSliceEqual(t, []string{"9", "8"}, l.Range(0, -1))
+	assert.Equal(2, l.Len())
+	assert.Equal([]string{"9", "8"}, l.Range(0, -1))
 }
 
 func TestTList_TrimExceededStopLimit(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 
 	for i := 0; i < 10; i++ {
@@ -400,11 +412,12 @@ func TestTList_TrimExceededStopLimit(t *testing.T) {
 
 	// list now trimmed to 2 elements
 	l.Trim(0, 10000)
-	testsuite.AssertEqual(t, 10, l.Len())
-	testsuite.AssertStringSliceEqual(t, []string{"9", "8", "7", "6", "5", "4", "3", "2", "1", "0"}, l.Range(0, -1))
+	assert.Equal(10, l.Len())
+	assert.Equal([]string{"9", "8", "7", "6", "5", "4", "3", "2", "1", "0"}, l.Range(0, -1))
 }
 
 func TestTList_TrimStopLesserThanStart(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 
 	for i := 0; i < 10; i++ {
@@ -413,11 +426,12 @@ func TestTList_TrimStopLesserThanStart(t *testing.T) {
 
 	// list now trimmed to 2 elements
 	l.Trim(4, 2)
-	testsuite.AssertEqual(t, 10, l.Len())
-	testsuite.AssertStringSliceEqual(t, []string{"9", "8", "7", "6", "5", "4", "3", "2", "1", "0"}, l.Range(0, -1))
+	assert.Equal(10, l.Len())
+	assert.Equal([]string{"9", "8", "7", "6", "5", "4", "3", "2", "1", "0"}, l.Range(0, -1))
 }
 
 func TestTList_TrimHead(t *testing.T) {
+	assert := testifyAssert.New(t)
 	l := New()
 
 	for i := 0; i < 10; i++ {
@@ -426,6 +440,6 @@ func TestTList_TrimHead(t *testing.T) {
 
 	// list now trimmed to 2 elements
 	l.Trim(2, -1)
-	testsuite.AssertEqual(t, 8, l.Len())
-	testsuite.AssertStringSliceEqual(t, []string{"7", "6", "5", "4", "3", "2", "1", "0"}, l.Range(0, -1))
+	assert.Equal(8, l.Len())
+	assert.Equal([]string{"7", "6", "5", "4", "3", "2", "1", "0"}, l.Range(0, -1))
 }
