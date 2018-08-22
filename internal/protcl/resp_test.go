@@ -27,39 +27,47 @@ package protcl
 import (
 	"testing"
 
-	"github.com/kasvith/kache/pkg/testsuite"
+	testifyAssert "github.com/stretchr/testify/assert"
 )
 
 func TestIntegerReply_Reply(t *testing.T) {
+	assert := testifyAssert.New(t)
+
 	rep := NewIntegerReply(1995)
-	testsuite.AssertEqual(t, ":1995\r\n", rep.Reply())
+	assert.Equal(":1995\r\n", rep.Reply())
 }
 
 func TestNewSimpleStringReply(t *testing.T) {
+	assert := testifyAssert.New(t)
+
 	rep := NewSimpleStringReply("foo")
-	testsuite.AssertEqual(t, "+foo\r\n", rep.Reply())
+	assert.Equal("+foo\r\n", rep.Reply())
 }
 
 func TestBulkStringReply_Reply(t *testing.T) {
 	// test for nil strings
+	assert := testifyAssert.New(t)
+
 	nilRep := NewBulkStringReply(true, "")
-	testsuite.AssertEqual(t, "$-1\r\n", nilRep.Reply())
+	assert.Equal("$-1\r\n", nilRep.Reply())
 
 	// test for normal strings
 	rep := NewBulkStringReply(false, "bar")
-	testsuite.AssertEqual(t, "$3\r\nbar\r\n", rep.Reply())
+	assert.Equal("$3\r\nbar\r\n", rep.Reply())
 }
 
 func TestArrayReply_Reply(t *testing.T) {
 	// nil array
+	assert := testifyAssert.New(t)
+
 	nilRep := NewArrayReply(true, []Reply{})
-	testsuite.AssertEqual(t, "*-1\r\n", nilRep.Reply())
+	assert.Equal("*-1\r\n", nilRep.Reply())
 
 	// normal array
 	replies := []Reply{NewBulkStringReply(false, "foo"), NewBulkStringReply(false, "foobar")}
 	arrRep := NewArrayReply(false, replies)
 	targetStr := "*2\r\n$3\r\nfoo\r\n$6\r\nfoobar\r\n"
-	testsuite.AssertEqual(t, targetStr, arrRep.Reply())
+	assert.Equal(targetStr, arrRep.Reply())
 
 	// array of arrays
 	arr1 := NewArrayReply(false, []Reply{NewBulkStringReply(false, "foo"), NewIntegerReply(1)})
@@ -67,5 +75,5 @@ func TestArrayReply_Reply(t *testing.T) {
 	arrOfArrReps := []Reply{arr1, arr2}
 	arrOfArrs := NewArrayReply(false, arrOfArrReps)
 	targetRep := "*2\r\n*2\r\n$3\r\nfoo\r\n:1\r\n*1\r\n+bar\r\n"
-	testsuite.AssertEqual(t, targetRep, arrOfArrs.Reply())
+	assert.Equal(targetRep, arrOfArrs.Reply())
 }
