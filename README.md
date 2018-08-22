@@ -112,4 +112,4 @@ Special note : According to your environment executable will be built, for windo
 - Open issues :boom:
 - Raise PRs for issues :raised_hand:
 - Help on documentation :page_facing_up:
-- [Slack](https://kache-db.slack.com/ "Slack")
+- [Slack](https://join.slack.com/t/kache-db/shared_invite/enQtNDE3MTk0ODc4NDE5LWEzNDVkZWQzNzViNjJkNjdjNjQ5YzE1OGMyZWIwMGMwYWI1ZjVlNWZmZWE0NmVlOTgzZWUyYzM0ZjZiZGJjZmQ "Slack")
