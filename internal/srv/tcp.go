@@ -48,7 +48,7 @@ func handleConnection(conn net.Conn) {
 		reader := protcl.NewReader(conn)
 
 		// TODO determine client type by first issued command to kache, this can improve performance
-		w := bufio.NewWriter(bufio.NewWriter(conn))
+		w := bufio.NewWriter(conn)
 		command, err := reader.ParseMessage()
 
 		if err != nil {
