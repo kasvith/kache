@@ -31,14 +31,20 @@ import (
 )
 
 func TestSplitSpacesWithQuotes(t *testing.T) {
-	// test for balanced quotes
 	assert := testifyAssert.New(t)
 
+	// test for balanced quotes
 	s := `  lorem ipsum       "foo bar "   `
 	res, err := SplitSpacesWithQuotes(s)
 	assert.Nil(err)
 	excpted := []string{"lorem", "ipsum", "foo bar "}
 	assert.Equal(excpted, res)
+
+	// test for unquoted balanced quotes
+	s = `  lorem ipsum   "this is m\"e"    "foo bar "   `
+	res, err = SplitSpacesWithQuotes(s)
+	assert.Nil(err)
+	assert.Equal([]string{"lorem", "ipsum", `this is m"e`, "foo bar "}, res)
 
 	// test for characters quotes
 	s = `  lorem ipsum       "foo bar &'' "   `
@@ -48,15 +54,14 @@ func TestSplitSpacesWithQuotes(t *testing.T) {
 	assert.Equal(excpted, res)
 
 	// test for unbalanced quotes
-	unb := ` foo "bar""`
-	res, err = SplitSpacesWithQuotes(unb)
+	s = ` foo "bar""`
+	res, err = SplitSpacesWithQuotes(s)
 	assert.Equal(ErrUnbalancedQuotes, err)
 	assert.Len(res, 0)
-
 }
 
 func BenchmarkSplitSpacesWithQuotes(b *testing.B) {
-	testString := ` foo     bar "foo bar bar"    foo     bar "foo bar bar" foo     bar "foo bar bar" foo     bar "foo bar bar"`
+	testString := ` foo     bar "foo bar bar"    foo     bar "foo bar bar" foo     bar "foo bar bar" foo     bar "foo bar bar" \"`
 	for i := 0; i < b.N; i++ {
 		SplitSpacesWithQuotes(testString)
 	}
