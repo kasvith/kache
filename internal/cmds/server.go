@@ -30,12 +30,7 @@ import (
 )
 
 func Ping(d *db.DB, args []string) *protcl.Message {
-	ll := len(args)
-	if ll > 1 {
-		return protcl.NewMessage(nil, &protcl.ErrWrongNumberOfArgs{Cmd: "ping"})
-	}
-
-	if ll == 0 {
+	if len(args) == 0 {
 		return protcl.NewMessage(protcl.NewSimpleStringReply("PONG"), nil)
 	}
 

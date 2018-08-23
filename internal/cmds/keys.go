@@ -30,9 +30,6 @@ import (
 )
 
 func Exists(d *db.DB, args []string) *protcl.Message {
-	if len(args) != 1 {
-		return protcl.NewMessage(nil, &protcl.ErrWrongNumberOfArgs{Cmd: "exists"})
-	}
 	found := d.Exists(args[0])
 	return protcl.NewMessage(protcl.NewIntegerReply(found), nil)
 }

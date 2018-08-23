@@ -35,21 +35,23 @@ type CommandFunc func(*db.DB, []string) *protcl.Message
 type Command struct {
 	ModifyKeySpace bool
 	Fn             CommandFunc
+	MinArgs        int // 0
+	MaxArgs        int // -1 ~ +inf, -1 mean infinite
 }
 
 var CommandTable = map[string]Command{
 	// server
-	"ping": {ModifyKeySpace: false, Fn: cmds.Ping},
+	"ping": {ModifyKeySpace: false, Fn: cmds.Ping, MinArgs: 0, MaxArgs: 1},
 
 	// key space
-	"exists": {ModifyKeySpace: false, Fn: cmds.Exists},
-	"del":    {ModifyKeySpace: true, Fn: cmds.Del},
+	"exists": {ModifyKeySpace: false, Fn: cmds.Exists, MinArgs: 1, MaxArgs: 1},
+	"del":    {ModifyKeySpace: true, Fn: cmds.Del, MinArgs: 1, MaxArgs: -1},
 
 	// strings
-	"get":  {ModifyKeySpace: false, Fn: cmds.Get},
-	"set":  {ModifyKeySpace: true, Fn: cmds.Set},
-	"incr": {ModifyKeySpace: true, Fn: cmds.Incr},
-	"decr": {ModifyKeySpace: true, Fn: cmds.Decr},
+	"get":  {ModifyKeySpace: false, Fn: cmds.Get, MinArgs: 1, MaxArgs: 1},
+	"set":  {ModifyKeySpace: true, Fn: cmds.Set, MinArgs: 2, MaxArgs: 2},
+	"incr": {ModifyKeySpace: true, Fn: cmds.Incr, MinArgs: 1, MaxArgs: 1},
+	"decr": {ModifyKeySpace: true, Fn: cmds.Decr, MinArgs: 1, MaxArgs: 1},
 }
 
 type DBCommand struct {
@@ -68,6 +70,10 @@ func (DBCommand) Execute(db *db.DB, cmd string, args []string) *protcl.Message {
 	command, err := getCommand(cmd)
 	if err != nil {
 		return protcl.NewMessage(nil, err)
+	}
+
+	if argsLen := len(args); (command.MinArgs > 0 && argsLen < command.MinArgs) || (command.MaxArgs != -1 && argsLen > command.MaxArgs) {
+		return protcl.NewMessage(nil, &protcl.ErrWrongNumberOfArgs{Cmd: cmd})
 	}
 
 	return command.Fn(db, args)
