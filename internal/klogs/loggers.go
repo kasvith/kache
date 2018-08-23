@@ -44,9 +44,9 @@ var Logger *logrus.Entry
 func InitLoggers(config config.AppConfig) {
 	var logrusLogger = logrus.New()
 
-	if config.Debug == true {
+	if config.Debug {
 		logrusLogger.SetLevel(logrus.DebugLevel)
-	} else if config.Verbose == true {
+	} else if config.Verbose {
 		logrusLogger.SetLevel(logrus.InfoLevel)
 	} else {
 		logrusLogger.SetLevel(logrus.WarnLevel)
@@ -73,7 +73,7 @@ func InitLoggers(config config.AppConfig) {
 	Logger = logrusLogger.WithFields(fields)
 
 	// if we dont want logging, just discard all to a null device
-	if config.Logging == false {
+	if !config.Logging {
 		logrusLogger.Out = ioutil.Discard
 	}
 

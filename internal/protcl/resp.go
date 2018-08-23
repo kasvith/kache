@@ -123,7 +123,7 @@ type BulkStringReply struct {
 }
 
 func (rep *BulkStringReply) Reply() string {
-	if rep.Nil == true {
+	if rep.Nil {
 		return fmt.Sprintf("$-1\r\n")
 	}
 
@@ -132,15 +132,15 @@ func (rep *BulkStringReply) Reply() string {
 
 type ArrayReply struct {
 	Elems []Reply
-	IsNil bool
+	Nil   bool
 }
 
 func NewArrayReply(isNil bool, elems []Reply) *ArrayReply {
-	return &ArrayReply{Elems: elems, IsNil: isNil}
+	return &ArrayReply{Elems: elems, Nil: isNil}
 }
 
 func (rep *ArrayReply) Reply() string {
-	if rep.IsNil {
+	if rep.Nil {
 		return "*-1\r\n"
 	}
 

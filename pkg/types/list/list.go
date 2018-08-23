@@ -46,7 +46,7 @@ func New() *TList {
 func buildValueList(front bool, val []string) *list.List {
 	l := list.New()
 
-	if front == true {
+	if front {
 		for _, v := range val {
 			l.PushFront(v)
 		}
