@@ -83,26 +83,34 @@ kache [flags]
 
 ## Prerequisites
  - Go 1.10.+
- - **make** (not required, easy if you have)
 
-## Building kache
-- Fork the repo
-- Go to your **GOPATH** if you don't know about it learn from [here](https://github.com/golang/go/wiki/SettingGOPATH "here")
-- Create a directory called github.com and go into it
-- Create a directory called **kasvith**, go into it
-- Clone the repo into that directory and cd to it
+### Installing `mage`
+`mage` is the build tool we use for build kache. To install `mage` 
+ - Run `go get -u -d github.com/magefile/mage`
+ - For a proper installation refer [official documentation](https://github.com/magefile/mage "official documentation")
+
+## Setting up workspace
+ - Fork the repo
+ - Go to your **GOPATH** if you don't know about it learn from [here](https://github.com/golang/go/wiki/SettingGOPATH "here")
+ - Create a directory github.com/kasvith
+ - Clone the repo into that directory and cd to it
 
 > Make sure you have an active internet connection as for the first time it will download some depedencies.
 
-### If you have make installed
- - Run `make all`
- - Binaries can be found in `bin/`
-
-### Without make
-- To download depedencies run `go get ./...` on your project root
-- To build server run `go build -o bin/kache ./cmd/kache`
-- To build cli run `go build -o bin/kache-cli ./cmd/kache-cli`
-- Binaries can be found on the `bin/` directory
+## Build the kache
+ - `mage vendor` will install all the dependencies of the project(will take some time)
+ - `mage kache` will produce the binary of the kache in `bin` directory
+ - `mage kachecli` will produce the binary of the kache-cli in `bin` directory
+ 
+### Other options
+ - `mage check` will run `gofmt`, `goimports`, `go vet` and all tests with 32 bit platform including
+ - `mage fmt` will run only `gofmt` on the code, will warn you when code has format errors
+ - `mage vet` will reports suspicious constructs
+ - `mage imports` will check import errors
+ - `mage test` will run a unit test with defaults
+ - `mage test386` will run a test in 32-bit mode
+ - `mage testrace` will run a test with `race` conditions enabled
+ - `mage -l` for list all commands
 
 Special note : According to your environment executable will be built, for windows users it will need to add `.exe` to the end of `-o` flag like `go build -o bin/kache.exe ./cmd/kache`
 

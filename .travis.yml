@@ -4,15 +4,15 @@ go:
   - "1.10.x"
 
 before_install:
-  - go get -u github.com/golang/dep/cmd/dep
-  - make dep
+  - go get github.com/magefile/mage
+  - mage vendor
 
 script:
-  - ./cmd/check_fmt.sh
-  - ./cmd/check_imports.sh
-  - make vet
-  - make test
-  - go test ./... -race -coverprofile=coverage.txt -covermode=atomic
+  - mage fmt
+  - mage vet
+  - mage imports
+  - mage test386
+  - mage testcover
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

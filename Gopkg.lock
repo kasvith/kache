@@ -53,6 +53,18 @@
   version = "v1.0"
 
 [[projects]]
+  digest = "1:f445828f7530db7a8608d69ffa858dacba0226df1b9dcc49b658d0a50b9245c6"
+  name = "github.com/magefile/mage"
+  packages = [
+    "mg",
+    "sh",
+    "types",
+  ]
+  pruneopts = "UT"
+  revision = "771ebed3d686dce3d36cab4fc9ee55c295ed8905"
+  version = "2.1"
+
+[[projects]]
   digest = "1:c568d7727aa262c32bdf8a3f7db83614f7af0ed661474b24588de635c20024c7"
   name = "github.com/magiconair/properties"
   packages = ["."]
@@ -208,6 +220,8 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/magefile/mage/mg",
+    "github.com/magefile/mage/sh",
     "github.com/sirupsen/logrus",
     "github.com/spf13/cobra",
     "github.com/spf13/cobra/doc",

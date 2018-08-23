@@ -30,11 +30,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const APPVER = "1.0.0"
-
 var (
-	BuildTime = ""
-	GitHash   = ""
+	AppVersion = "1.0.0"
+	BuildDate  = ""
+	CommitHash = ""
 )
 
 var VersionCmd = &cobra.Command{
@@ -42,6 +41,6 @@ var VersionCmd = &cobra.Command{
 	Short: "Display application version",
 	Long:  `Display application version on the screen`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Version: %s, BuildTime: %s, GitHash: %s\n", APPVER, BuildTime, GitHash)
+		fmt.Printf("Version: %s\nBuildDate: %s\nCommitHash: %s\n", AppVersion, BuildDate, CommitHash)
 	},
 }
