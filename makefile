@@ -3,7 +3,7 @@
 all: dep vet fmt test build-kache build-cli
 
 build-kache:
-	go build -o bin/kache ./cmd/kache
+	go build -o bin/kache -ldflags "-X github.com/kasvith/kache/internal/cobra-cmds/kache.BuildTime=`date '+%Y-%m-%d_%I:%M:%S%p'` -X github.com/kasvith/kache/internal/cobra-cmds/kache.GitHash=`git rev-parse HEAD`" ./cmd/kache
 
 build-cli:
 	go build -o bin/kache-cli ./cmd/kache-cli

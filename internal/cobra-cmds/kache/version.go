@@ -32,12 +32,16 @@ import (
 
 const APPVER = "1.0.0"
 
+var (
+	BuildTime = ""
+	GitHash   = ""
+)
+
 var VersionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Display application version",
 	Long:  `Display application version on the screen`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// TODO automated build version to be added
-		fmt.Println("Version", APPVER)
+		fmt.Printf("Version: %s, BuildTime: %s, GitHash: %s\n", APPVER, BuildTime, GitHash)
 	},
 }
