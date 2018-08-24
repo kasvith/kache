@@ -18,11 +18,11 @@ import (
 const (
 	outDir       = "bin"
 	basePackage  = "github.com/kasvith/kache"
-	noGitLdflags = "-X $PACKAGE/internal/cobra-cmds/kache.BuildDate=$BUILD_DATE"
+	noGitLdflags = "-X $PACKAGE/internal/cobra-cmds.BuildDate=$BUILD_DATE"
 )
 
-var ldflags = `-X $PACKAGE/internal/cobra-cmds/kache.CommitHash=$COMMIT_HASH 
-				-X $PACKAGE/internal/cobra-cmds/kache.BuildDate=$BUILD_DATE`
+var ldflags = `-X $PACKAGE/internal/cobra-cmds.CommitHash=$COMMIT_HASH 
+				-X $PACKAGE/internal/cobra-cmds.BuildDate=$BUILD_DATE`
 
 // allow user to override go executable by running as GOEXE=xxx make ... on unix-like systems
 var goexe = "go"

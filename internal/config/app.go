@@ -24,19 +24,22 @@
 
 package config
 
+// DefaultMaxMultiBulkLength default max multi bulk length
+const DefaultMaxMultiBulkLength = 512 * 1024 * 1024
+
 // AppConfig is application configuration struct
 type AppConfig struct {
-	Port              int
-	Host              string
-	Verbose           bool
-	MaxClients        int
-	MaxTimeout        int
-	Logging           bool
-	Logfile           string
-	Debug             bool
-	MaxMultiBlkLength int // in bytes
-	LogType           string
+	Port               int
+	Host               string
+	Verbose            bool
+	MaxClients         int
+	MaxTimeout         int
+	Logging            bool
+	Logfile            string
+	Debug              bool
+	MaxMultiBulkLength int // in bytes
+	LogType            string
 }
 
 // AppConf is the globle application config
-var AppConf AppConfig
+var AppConf = AppConfig{MaxMultiBulkLength: DefaultMaxMultiBulkLength}

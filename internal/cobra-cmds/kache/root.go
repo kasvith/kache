@@ -127,7 +127,7 @@ func runApp(cmd *cobra.Command, args []string) {
 		klogs.PrintErrorAndExit(err, 2)
 	}
 
-	appConfig.MaxMultiBlkLength = 512 * 1024 * 1024
+	appConfig.MaxMultiBulkLength = config.DefaultMaxMultiBulkLength
 	config.AppConf = appConfig
 	klogs.InitLoggers(appConfig)
 	srv.Start(appConfig)

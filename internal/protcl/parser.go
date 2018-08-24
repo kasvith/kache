@@ -111,31 +111,10 @@ func parse(r *bufio.Reader) (*RespCommand, error) {
 		// this is an array of redis strings
 		// arr len is in the buffer
 
-		if err := hasCRLF(buf); err != nil {
-			// not a EOF, safe to return
-			return nil, err
-		}
-
-		mblkLen, err := strconv.Atoi(string(buf[1 : len(buf)-2]))
-
+		strs, err := ParseMultiBulkReply(r, buf)
 		if err != nil {
-			return nil, ErrValueOutOfRange
-		}
-
-		// we now have multibulk length, now need to loop that amount
-		// TODO check for maximum number of array elements to process to handle memory issues
-
-		strs := make([]string, mblkLen)
-		for i := 0; i < mblkLen; i++ {
-			str, err := parseBlkString(r)
-			if err != nil {
-				return nil, err
-			}
-
-			strs[i] = str
-		}
-
-		if mblkLen == 0 {
+			return nil, err
+		} else if len(strs) == 0 {
 			return nil, ErrInvalidCommand
 		}
 
@@ -163,22 +142,43 @@ func parse(r *bufio.Reader) (*RespCommand, error) {
 	}
 }
 
-func parseBlkString(r *bufio.Reader) (string, error) {
-	// read a byte
-	buf, err := r.ReadBytes('\n')
-	if err != nil {
-		if err == io.EOF {
-			return "", err
-		}
-
-		return "", ErrParse
+// ParseMultiBulkReply parse multi bulk reply message
+func ParseMultiBulkReply(r *bufio.Reader, buf []byte) ([]string, error) {
+	if err := EndWithCRLF(buf); err != nil {
+		// not a EOF, safe to return
+		return nil, err
 	}
 
+	mblkLen, err := strconv.Atoi(string(buf[1 : len(buf)-2]))
+	if err != nil {
+		return nil, ErrValueOutOfRange
+	} else if mblkLen == 0 {
+		return nil, nil
+	}
+
+	// we now have multibulk length, now need to loop that amount
+	// TODO check for maximum number of array elements to process to handle memory issues
+
+	strs := make([]string, mblkLen)
+	for i := 0; i < mblkLen; i++ {
+		str, err := parseBulkString(r)
+		if err != nil {
+			return nil, err
+		}
+
+		strs[i] = str
+	}
+
+	return strs, nil
+}
+
+// ParseBulkString parse bulk string message
+func ParseBulkString(r *bufio.Reader, buf []byte) (string, error) {
 	if len(buf) > 0 && buf[0] != RepBulkString {
 		return "", &ErrInvalidToken{Token: buf[0]}
 	}
 
-	if err = hasCRLF(buf); err != nil {
+	if err := EndWithCRLF(buf); err != nil {
 		return "", err
 	}
 
@@ -187,7 +187,7 @@ func parseBlkString(r *bufio.Reader) (string, error) {
 		return "", err
 	}
 
-	if llen > config.AppConf.MaxMultiBlkLength {
+	if llen > config.AppConf.MaxMultiBulkLength {
 		return "", ErrBufferExceeded
 	}
 
@@ -203,7 +203,7 @@ func parseBlkString(r *bufio.Reader) (string, error) {
 	}
 
 	// error is not EOF
-	err = hasCRLF(buf)
+	err = EndWithCRLF(buf)
 	if err != nil {
 		return "", err
 	}
@@ -217,8 +217,22 @@ func parseBlkString(r *bufio.Reader) (string, error) {
 	return string(str), nil
 }
 
-// does not return EOF as error
-func hasCRLF(buf []byte) error {
+func parseBulkString(r *bufio.Reader) (string, error) {
+	// read a byte
+	buf, err := r.ReadBytes('\n')
+	if err != nil {
+		if err == io.EOF {
+			return "", err
+		}
+
+		return "", ErrParse
+	}
+
+	return ParseBulkString(r, buf)
+}
+
+// EndWithCRLF does not return EOF as error
+func EndWithCRLF(buf []byte) error {
 	if len(buf) >= 2 && buf[len(buf)-1] == '\n' && buf[len(buf)-2] == '\r' {
 		return nil
 	}

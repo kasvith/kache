@@ -22,42 +22,57 @@
  * SOFTWARE.
  */
 
-package srv
+package cli
 
 import (
-	"net"
+	"fmt"
 	"os"
-	"strconv"
+	"strings"
 
-	"github.com/kasvith/kache/internal/config"
-	"github.com/kasvith/kache/internal/klogs"
+	"github.com/c-bata/go-prompt"
 )
 
-// Start the tcp server
-func Start(config config.AppConfig) {
-	addr := net.JoinHostPort(config.Host, strconv.Itoa(config.Port))
-	listener, err := net.Listen("tcp", addr)
+// RunCli start kache-cli command
+func RunCli(host string, port int) {
+	p := prompt.New(
+		Executor,
+		Completer,
+		prompt.OptionPrefix(fmt.Sprintf("%s:%d> ", host, port)),
+		prompt.OptionTitle("kache-c"),
+	)
+	p.Run()
+}
 
+// Executor used in CLI
+func Executor(s string) {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return
+	} else if s == "quit" || s == "exit" {
+		fmt.Println("Bye!")
+		os.Exit(0)
+		return
+	}
+
+	send := make([]byte, len(s)+2)
+	copy(send[:len(s)], s)
+	copy(send[len(s):], []byte{'\r', '\n'})
+
+	if _, err := c.conn.Write(send); err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	resp, err := c.parseResp()
 	if err != nil {
-		klogs.Logger.Fatalf("error binding to port %d is already in use", config.Port)
-		os.Exit(3)
+		fmt.Println(err)
+		return
 	}
 
-	klogs.Logger.Infof("application is ready to accept connections on port %d", config.Port)
+	fmt.Println(resp)
+}
 
-	for {
-		conn, err := listener.Accept()
-
-		if err != nil {
-			klogs.Logger.Error("Error on connection with", conn.RemoteAddr().String(), ":", err.Error())
-			conn.Close()
-			continue // we skip malformed user
-		}
-
-		client := &Client{Connection: conn}
-		ConnectedClients.Add(client)
-		ConnectedClients.LogClientCount()
-
-		go client.Handle()
-	}
+// Completer used in CLI
+func Completer(document prompt.Document) []prompt.Suggest {
+	return nil
 }
