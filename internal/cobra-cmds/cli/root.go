@@ -26,16 +26,44 @@ package cli
 
 import (
 	"fmt"
+	"os"
 
-	"github.com/c-bata/go-prompt"
+	"github.com/spf13/cobra"
+
+	"github.com/kasvith/kache/internal/cli"
+	"github.com/kasvith/kache/internal/cobra-cmds"
 )
 
-// Executor used in CLI
-func Executor(s string) {
-	fmt.Printf("you input %s\n", s)
+var host string
+var port int
+
+// RootCmd of the CLI
+var RootCmd = &cobra.Command{
+	Use:   "kache-cli",
+	Short: "kache-cli is a client to access kache server",
+	Run:   runCli,
 }
 
-// Completer used in CLI
-func Completer(document prompt.Document) []prompt.Suggest {
-	return nil
+func init() {
+	RootCmd.Flags().StringVarP(&host, "host", "", "127.0.0.1", "host of kache server")
+	RootCmd.Flags().IntVarP(&port, "port", "p", 7088, "port of kache server")
+}
+
+// Execute CLI
+func Execute() {
+	RootCmd.AddCommand(cobracmds.VersionCmd)
+
+	if err := cli.Dial(fmt.Sprintf("%s:%d", host, port)); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	if err := RootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+func runCli(cmd *cobra.Command, args []string) {
+	cli.RunCli(host, port)
 }

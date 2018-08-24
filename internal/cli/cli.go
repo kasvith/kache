@@ -22,24 +22,57 @@
  * SOFTWARE.
  */
 
-package config
+package cli
 
-// DefaultMaxMultiBulkLength default max multi bulk length
-const DefaultMaxMultiBulkLength = 512 * 1024 * 1024
+import (
+	"fmt"
+	"os"
+	"strings"
 
-// AppConfig is application configuration struct
-type AppConfig struct {
-	Port               int
-	Host               string
-	Verbose            bool
-	MaxClients         int
-	MaxTimeout         int
-	Logging            bool
-	Logfile            string
-	Debug              bool
-	MaxMultiBulkLength int // in bytes
-	LogType            string
+	"github.com/c-bata/go-prompt"
+)
+
+// RunCli start kache-cli command
+func RunCli(host string, port int) {
+	p := prompt.New(
+		Executor,
+		Completer,
+		prompt.OptionPrefix(fmt.Sprintf("%s:%d> ", host, port)),
+		prompt.OptionTitle("kache-c"),
+	)
+	p.Run()
 }
 
-// AppConf is the globle application config
-var AppConf = AppConfig{MaxMultiBulkLength: DefaultMaxMultiBulkLength}
+// Executor used in CLI
+func Executor(s string) {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return
+	} else if s == "quit" || s == "exit" {
+		fmt.Println("Bye!")
+		os.Exit(0)
+		return
+	}
+
+	send := make([]byte, len(s)+2)
+	copy(send[:len(s)], s)
+	copy(send[len(s):], []byte{'\r', '\n'})
+
+	if _, err := c.conn.Write(send); err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	resp, err := c.parseResp()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Println(resp)
+}
+
+// Completer used in CLI
+func Completer(document prompt.Document) []prompt.Suggest {
+	return nil
+}

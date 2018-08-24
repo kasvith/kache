@@ -25,46 +25,66 @@
 package cli
 
 import (
+	"bufio"
 	"fmt"
-	"os"
+	"io"
+	"net"
+	"strings"
+	"time"
 
-	"github.com/c-bata/go-prompt"
-	"github.com/spf13/cobra"
-
-	"github.com/kasvith/kache/internal/cobra-cmds"
+	"github.com/kasvith/kache/internal/protcl"
 )
 
-var host string
-var port int
+var c *cli
 
-// RootCmd of the CLI
-var RootCmd = &cobra.Command{
-	Use:   "kache-cli",
-	Short: "kache-cli is a client to access kache server",
-	Run:   runCli,
+type cli struct {
+	conn   net.Conn
+	reader *bufio.Reader
 }
 
-func init() {
-	RootCmd.Flags().StringVarP(&host, "host", "", "127.0.0.1", "host of kache server")
-	RootCmd.Flags().IntVarP(&port, "port", "p", 7088, "port of kache server")
-}
-
-// Execute CLI
-func Execute() {
-	RootCmd.AddCommand(cobracmds.VersionCmd)
-
-	if err := RootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+func (r *cli) parseResp() (string, error) {
+	buf, err := r.reader.ReadBytes('\n')
+	if err != nil {
+		if err == io.EOF {
+			return "", nil
+		}
+		return "", err
 	}
+
+	if err := protcl.EndWithCRLF(buf); err != nil {
+		return "", err
+	}
+
+	switch buf[0] {
+	case '*':
+		strs, err := protcl.ParseMultiBulkReply(r.reader, buf)
+		if err != nil {
+			return "", err
+		}
+		return strings.Join(strs, " "), nil
+	case '$':
+		return protcl.ParseBulkString(r.reader, buf)
+	case '+':
+		return fmt.Sprintf("%q", buf[1:len(buf)-2]), nil
+	case ':':
+		return fmt.Sprintf("(integer) %s", buf[1:len(buf)-2]), nil
+	case '-':
+		return fmt.Sprintf("(error) %s", buf[1:len(buf)-2]), nil
+	}
+
+	return "", fmt.Errorf("unsupport resp type: %s", []byte{buf[0]})
 }
 
-func runCli(cmd *cobra.Command, args []string) {
-	p := prompt.New(
-		Executor,
-		Completer,
-		prompt.OptionPrefix(fmt.Sprintf("%s:%d> ", host, port)),
-		prompt.OptionTitle("kache cli"),
-	)
-	p.Run()
+// Dial conn kache server
+func Dial(addr string) error {
+	conn, err := net.DialTimeout("tcp", addr, time.Second)
+	if err != nil {
+		return err
+	}
+
+	c = new(cli)
+	c.conn = conn
+	c.reader = bufio.NewReader(conn)
+
+	return nil
 }
