@@ -47,7 +47,7 @@ func ToString(i interface{}) string {
 func SplitSpacesWithQuotes(s string) ([]string, error) {
 	var ret []string
 	var buf = new(strings.Builder) // not in quote string buffer
-	var scaned string
+	var scanned string
 	var err error
 
 	for pos := 0; pos < len(s); pos++ {
@@ -60,11 +60,11 @@ func SplitSpacesWithQuotes(s string) ([]string, error) {
 				buf.Reset()
 			}
 		case '"':
-			pos, scaned, err = scanForByte(s, pos, '"')
+			pos, scanned, err = scanForByte(s, pos, '"')
 			if err != nil {
 				return nil, err
 			}
-			ret = append(ret, scaned)
+			ret = append(ret, scanned)
 		default:
 			buf.WriteByte(char)
 		}
