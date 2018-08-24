@@ -25,52 +25,62 @@
 package srv
 
 import (
-	"net"
 	"sync"
 
 	"github.com/kasvith/kache/internal/klogs"
 )
 
 // ConnectedClients represents connected clients
-var ConnectedClients Clients
+var ConnectedClients = Clients{clients: make(map[string]*Client)}
 
 // Clients is the struct for keep track of clients
 type Clients struct {
-	numClients int
-	mux        sync.Mutex
+	clients map[string]*Client
+	mux     sync.RWMutex
 }
 
-func (c *Clients) increase() {
-	c.mux.Lock()
-	defer c.mux.Unlock()
+// Add a client to clients
+func (clients *Clients) Add(client *Client) {
+	clients.mux.Lock()
+	clients.clients[client.RemoteAddr().String()] = client
+	clients.mux.Unlock()
 
-	c.numClients++
+	// log about new client
+	klogs.Logger.Debug("Connected:", client.RemoteAddr().String())
 }
 
-func (c *Clients) decrease() {
-	c.mux.Lock()
-	defer c.mux.Unlock()
+// Remove a client from clients
+func (clients *Clients) Remove(remoteAddr string) {
+	clients.mux.Lock()
+	delete(clients.clients, remoteAddr)
+	clients.mux.Unlock()
 
-	c.numClients--
+	// log about new client
+	klogs.Logger.Debug("Disconnected:", remoteAddr)
 }
 
-func logOpenedClients() {
-	if ConnectedClients.numClients > 0 {
-		klogs.Logger.Info(ConnectedClients.numClients, " connections are now open")
-		return
+// Count of the connected clients
+func (clients *Clients) Count() (num int) {
+	clients.mux.RLock()
+	num = len(clients.clients)
+	clients.mux.RUnlock()
+	return
+}
+
+// LogClientCount to the logger
+func (clients *Clients) LogClientCount() {
+	count := clients.Count()
+	if count > 0 {
+		klogs.Logger.Infof("%d connections are open", count)
 	}
-
-	klogs.Logger.Info("no connections are now open")
 }
 
-func (c *Clients) logOnDisconnect(conn net.Conn) {
-	klogs.Logger.Info("disconnected client from ", conn.RemoteAddr())
-	c.decrease()
-	logOpenedClients()
-}
-
-func (c *Clients) logOnConnect(conn net.Conn) {
-	klogs.Logger.Info("connected client from ", conn.RemoteAddr())
-	c.increase()
-	logOpenedClients()
+// Close all clients
+func (clients *Clients) Close() error {
+	clients.mux.Lock()
+	for _, c := range clients.clients {
+		c.Connection.Close()
+	}
+	clients.mux.Unlock()
+	return nil
 }

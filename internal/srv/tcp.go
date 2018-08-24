@@ -25,62 +25,13 @@
 package srv
 
 import (
-	"bufio"
-	"io"
 	"net"
 	"os"
 	"strconv"
 
-	"github.com/kasvith/kache/internal/arch"
 	"github.com/kasvith/kache/internal/config"
-	"github.com/kasvith/kache/internal/db"
 	"github.com/kasvith/kache/internal/klogs"
-	"github.com/kasvith/kache/internal/protcl"
 )
-
-// TODO: Need refactoring this to allow multiple DBs for use
-
-// DB is the database used
-var DB = db.NewDB()
-
-var dbCommand = &arch.DBCommand{}
-
-func handleConnection(conn net.Conn) {
-	// TODO determine client type by first issued command to kache, this can improve performance
-
-	reader := protcl.NewReader(conn)
-	writer := bufio.NewWriter(conn)
-	defer conn.Close()
-
-	for {
-		command, err := reader.ParseMessage()
-
-		if err != nil {
-			// if eof stop now
-			if err == io.EOF {
-				break
-			}
-
-			// anything else should be sent to client with prefix PrefixErr
-			klogs.Logger.Debug(conn.RemoteAddr(), ": ", err.Error())
-			writer.WriteString(protcl.RespError(err))
-			writer.Flush()
-			continue
-		}
-
-		message := dbCommand.Execute(DB, command.Name, command.Args)
-
-		if message.Err == nil {
-			writer.WriteString(message.RespReply())
-		} else {
-			writer.WriteString(protcl.RespError(message.Err))
-		}
-
-		writer.Flush()
-	}
-
-	ConnectedClients.logOnDisconnect(conn)
-}
 
 // Start the tcp server
 func Start(config config.AppConfig) {
@@ -103,9 +54,10 @@ func Start(config config.AppConfig) {
 			continue // we skip malformed user
 		}
 
-		// client connected
-		ConnectedClients.logOnConnect(conn)
+		client := &Client{Connection: conn}
+		ConnectedClients.Add(client)
+		ConnectedClients.LogClientCount()
 
-		go handleConnection(conn)
+		go client.Handle()
 	}
 }
