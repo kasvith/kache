@@ -26,43 +26,27 @@ package cli
 
 import (
 	"fmt"
-	"os"
 
-	"github.com/c-bata/go-prompt"
 	"github.com/spf13/cobra"
 )
 
-var host string
-var port int
+var (
+	// AppVersion is application version info
+	AppVersion = "1.0.0"
 
-// RootCmd of the CLI
-var RootCmd = &cobra.Command{
-	Use:   "kache-cli",
-	Short: "kache-cli is a client to access kache server",
-	Run:   runCli,
-}
+	// BuildDate is the date that executable was built
+	BuildDate = ""
 
-func init() {
-	RootCmd.Flags().StringVarP(&host, "host", "", "127.0.0.1", "host of kache server")
-	RootCmd.Flags().IntVarP(&port, "port", "p", 7088, "port of kache server")
-}
+	// CommitHash is the hash for the commit
+	CommitHash = ""
+)
 
-// Execute CLI
-func Execute() {
-	RootCmd.AddCommand(VersionCmd)
-
-	if err := RootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-}
-
-func runCli(cmd *cobra.Command, args []string) {
-	p := prompt.New(
-		Executor,
-		Completer,
-		prompt.OptionPrefix(fmt.Sprintf("%s:%d> ", host, port)),
-		prompt.OptionTitle("kache cli"),
-	)
-	p.Run()
+// VersionCmd command will display version info and exits
+var VersionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Display application version",
+	Long:  `Display application version on the screen`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("Version: %s\nBuild Date: %s\nCommit Hash: %s\n", AppVersion, BuildDate, CommitHash)
+	},
 }

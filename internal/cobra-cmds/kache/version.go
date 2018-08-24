@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package cobracmds
+package kache
 
 import (
 	"fmt"
@@ -47,6 +47,6 @@ var VersionCmd = &cobra.Command{
 	Short: "Display application version",
 	Long:  `Display application version on the screen`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Version: %s\nBuildDate: %s\nCommitHash: %s\n", AppVersion, BuildDate, CommitHash)
+		fmt.Printf("Version: %s\nBuild Date: %s\nCommit Hash: %s\n", AppVersion, BuildDate, CommitHash)
 	},
 }
