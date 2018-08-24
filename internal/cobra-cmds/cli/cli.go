@@ -22,23 +22,47 @@
  * SOFTWARE.
  */
 
-package main
+package cli
 
 import (
-	"log"
+	"fmt"
+	"os"
 
-	"github.com/spf13/cobra/doc"
+	"github.com/c-bata/go-prompt"
+	"github.com/spf13/cobra"
 
 	"github.com/kasvith/kache/internal/cobra-cmds"
-	"github.com/kasvith/kache/internal/cobra-cmds/kache"
 )
 
-func main() {
-	// import all commands
-	kache.RootCmd.AddCommand(cobracmds.VersionCmd)
-	err := doc.GenMarkdownTree(kache.RootCmd, "./")
+var host string
+var port int
 
-	if err != nil {
-		log.Fatal(err)
+var RootCmd = &cobra.Command{
+	Use:   "kache-cli",
+	Short: "kache-cli is a client to access kache server",
+	Run:   runCli,
+}
+
+func init() {
+	RootCmd.Flags().StringVarP(&host, "host", "", "127.0.0.1", "host of kache server")
+	RootCmd.Flags().IntVarP(&port, "port", "p", 7088, "port of kache server")
+}
+
+func Execute() {
+	RootCmd.AddCommand(cobracmds.VersionCmd)
+
+	if err := RootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
+}
+
+func runCli(cmd *cobra.Command, args []string) {
+	p := prompt.New(
+		Executor,
+		Completer,
+		prompt.OptionPrefix(fmt.Sprintf("%s:%d> ", host, port)),
+		prompt.OptionTitle("kache cli"),
+	)
+	p.Run()
 }

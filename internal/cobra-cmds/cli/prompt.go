@@ -22,25 +22,18 @@
  * SOFTWARE.
  */
 
-package kache
+package cli
 
 import (
 	"fmt"
 
-	"github.com/spf13/cobra"
+	"github.com/c-bata/go-prompt"
 )
 
-var (
-	AppVersion = "1.0.0"
-	BuildDate  = ""
-	CommitHash = ""
-)
+func Executor(s string) {
+	fmt.Printf("you input %s\n", s)
+}
 
-var VersionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Display application version",
-	Long:  `Display application version on the screen`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Version: %s\nBuildDate: %s\nCommitHash: %s\n", AppVersion, BuildDate, CommitHash)
-	},
+func Completer(document prompt.Document) []prompt.Suggest {
+	return nil
 }

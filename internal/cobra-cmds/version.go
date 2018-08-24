@@ -22,23 +22,25 @@
  * SOFTWARE.
  */
 
-package main
+package cobracmds
 
 import (
-	"log"
+	"fmt"
 
-	"github.com/spf13/cobra/doc"
-
-	"github.com/kasvith/kache/internal/cobra-cmds"
-	"github.com/kasvith/kache/internal/cobra-cmds/kache"
+	"github.com/spf13/cobra"
 )
 
-func main() {
-	// import all commands
-	kache.RootCmd.AddCommand(cobracmds.VersionCmd)
-	err := doc.GenMarkdownTree(kache.RootCmd, "./")
+var (
+	AppVersion = "1.0.0"
+	BuildDate  = ""
+	CommitHash = ""
+)
 
-	if err != nil {
-		log.Fatal(err)
-	}
+var VersionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Display application version",
+	Long:  `Display application version on the screen`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("Version: %s\nBuildDate: %s\nCommitHash: %s\n", AppVersion, BuildDate, CommitHash)
+	},
 }

@@ -24,8 +24,10 @@
 
 package main
 
-import "fmt"
+import (
+	"github.com/kasvith/kache/internal/cobra-cmds/cli"
+)
 
 func main() {
-	fmt.Println("more good stuffs to come, hang on")
+	cli.Execute()
 }
