@@ -73,11 +73,11 @@ func (list *TList) HPush(val []string) error {
 	if len(val) == 1 {
 		list.list.PushFront(val[0])
 		return nil
-	} else {
-		newList := buildValueList(true, val)
-		list.list.PushFrontList(newList)
-		return nil
 	}
+
+	newList := buildValueList(true, val)
+	list.list.PushFrontList(newList)
+	return nil
 }
 
 // TPush Inserts an item to the tail of the list
@@ -92,11 +92,11 @@ func (list *TList) TPush(val []string) error {
 	if len(val) == 1 {
 		list.list.PushBack(val[0])
 		return nil
-	} else {
-		newList := buildValueList(false, val)
-		list.list.PushBackList(newList)
-		return nil
 	}
+
+	newList := buildValueList(false, val)
+	list.list.PushBackList(newList)
+	return nil
 }
 
 // Head Gets head of the list
@@ -200,6 +200,7 @@ func (list *TList) Range(start, stop int) []string {
 	return res[:]
 }
 
+// Trim will trim the list before start and after stop
 func (list *TList) Trim(start, stop int) {
 	list.mux.Lock()
 

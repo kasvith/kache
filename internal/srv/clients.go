@@ -31,8 +31,10 @@ import (
 	"github.com/kasvith/kache/internal/klogs"
 )
 
+// ConnectedClients represents connected clients
 var ConnectedClients Clients
 
+// Clients is the struct for keep track of clients
 type Clients struct {
 	numClients int
 	mux        sync.Mutex

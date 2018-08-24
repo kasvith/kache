@@ -40,6 +40,7 @@ import (
 var verbose bool
 var cfgFile string
 
+// RootCmd is the root command for cobra
 var RootCmd = &cobra.Command{
 	Use:   "kache",
 	Short: "kache is a simple distributed in memory database",
@@ -109,6 +110,7 @@ func initConfig() {
 	}
 }
 
+// Execute will start kache
 func Execute() {
 	// Commands
 	RootCmd.AddCommand(cobracmds.VersionCmd)

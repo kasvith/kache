@@ -29,11 +29,13 @@ import (
 	"github.com/kasvith/kache/internal/protcl"
 )
 
+// Exists will check for key existency in given db
 func Exists(d *db.DB, args []string) *protcl.Message {
 	found := d.Exists(args[0])
 	return protcl.NewMessage(protcl.NewIntegerReply(found), nil)
 }
 
+// Del will delete set of keys and return number of deleted keys
 func Del(d *db.DB, args []string) *protcl.Message {
 	deleted := d.Del(args)
 	return protcl.NewMessage(protcl.NewIntegerReply(deleted), nil)

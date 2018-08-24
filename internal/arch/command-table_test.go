@@ -9,6 +9,7 @@ import (
 	"github.com/kasvith/kache/internal/protcl"
 )
 
+// TestCommandArgsCountValidator will validate the command args count field
 func TestCommandArgsCountValidator(t *testing.T) {
 	assert := testifyAssert.New(t)
 	cmd := &DBCommand{}

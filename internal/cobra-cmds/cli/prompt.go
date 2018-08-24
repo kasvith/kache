@@ -30,10 +30,12 @@ import (
 	"github.com/c-bata/go-prompt"
 )
 
+// Executor used in CLI
 func Executor(s string) {
 	fmt.Printf("you input %s\n", s)
 }
 
+// Completer used in CLI
 func Completer(document prompt.Document) []prompt.Suggest {
 	return nil
 }

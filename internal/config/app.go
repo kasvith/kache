@@ -24,6 +24,7 @@
 
 package config
 
+// AppConfig is application configuration struct
 type AppConfig struct {
 	Port              int
 	Host              string
@@ -37,4 +38,5 @@ type AppConfig struct {
 	LogType           string
 }
 
+// AppConf is the globle application config
 var AppConf AppConfig

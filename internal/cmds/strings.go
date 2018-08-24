@@ -32,6 +32,7 @@ import (
 	"github.com/kasvith/kache/pkg/util"
 )
 
+// Get will find the value of a given string key and return it
 func Get(d *db.DB, args []string) *protcl.Message {
 	val, err := d.Get(args[0])
 	if err != nil {
@@ -45,6 +46,7 @@ func Get(d *db.DB, args []string) *protcl.Message {
 	return protcl.NewMessage(protcl.NewBulkStringReply(false, util.ToString(val.Value)), nil)
 }
 
+// Set will create a new string key value pair
 func Set(d *db.DB, args []string) *protcl.Message {
 	key := args[0]
 	val := args[1]
@@ -54,10 +56,16 @@ func Set(d *db.DB, args []string) *protcl.Message {
 	return protcl.NewMessage(protcl.NewSimpleStringReply("OK"), nil)
 }
 
+// Incr will increment a given string key by 1
+// If key not found it will be set to 0 and will do operation
+// If key type is invalid it will return an error
 func Incr(d *db.DB, args []string) *protcl.Message {
 	return accumulateBy(d, args[0], 1, true)
 }
 
+// Decr will decrement a given string key by 1
+// If key not found it will be set to 0 and will do operation
+// If key type is invalid it will return an error
 func Decr(d *db.DB, args []string) *protcl.Message {
 	return accumulateBy(d, args[0], -1, true)
 }

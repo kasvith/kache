@@ -29,6 +29,7 @@ import (
 	"github.com/kasvith/kache/internal/protcl"
 )
 
+// Ping will return PONG when no argument found or will echo the given argument
 func Ping(d *db.DB, args []string) *protcl.Message {
 	if len(args) == 0 {
 		return protcl.NewMessage(protcl.NewSimpleStringReply("PONG"), nil)

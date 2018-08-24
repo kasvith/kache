@@ -38,7 +38,11 @@ import (
 	"github.com/kasvith/kache/internal/protcl"
 )
 
+// TODO: Need refactoring this to allow multiple DBs for use
+
+// DB is the database used
 var DB = db.NewDB()
+
 var dbCommand = &arch.DBCommand{}
 
 func handleConnection(conn net.Conn) {
@@ -57,7 +61,7 @@ func handleConnection(conn net.Conn) {
 				break
 			}
 
-			// anything else should be sent to client with prefix ERR
+			// anything else should be sent to client with prefix PrefixErr
 			klogs.Logger.Debug(conn.RemoteAddr(), ": ", err.Error())
 			writer.WriteString(protcl.RespError(err))
 			writer.Flush()
@@ -78,6 +82,7 @@ func handleConnection(conn net.Conn) {
 	ConnectedClients.logOnDisconnect(conn)
 }
 
+// Start the tcp server
 func Start(config config.AppConfig) {
 	addr := net.JoinHostPort(config.Host, strconv.Itoa(config.Port))
 	listener, err := net.Listen("tcp", addr)

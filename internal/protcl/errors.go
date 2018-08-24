@@ -26,41 +26,46 @@ package protcl
 
 import "fmt"
 
+// ErrCastFailedToInt for cast fails to ints
 type ErrCastFailedToInt struct {
 	Val interface{}
 }
 
 func (e *ErrCastFailedToInt) Error() string {
-	return fmt.Sprintf("%s: error casting %v to int", ERR, e.Val)
+	return fmt.Sprintf("%s: error casting %v to int", PrefixErr, e.Val)
 }
 
+// ErrWrongType is for wrong type errors
 type ErrWrongType struct {
 }
 
 func (ErrWrongType) Error() string {
-	return fmt.Sprintf("%s: invalid operation against key holding invalid type of value", WRONGTYP)
+	return fmt.Sprintf("%s: invalid operation against key holding invalid type of value", PrefixWrongType)
 }
 
+// ErrGeneric for generic errors
 type ErrGeneric struct {
 	Err error
 }
 
 func (e *ErrGeneric) Error() string {
-	return fmt.Sprintf("%s: %s", ERR, e.Err)
+	return fmt.Sprintf("%s: %s", PrefixErr, e.Err)
 }
 
+// ErrWrongNumberOfArgs for wrong argument count errors
 type ErrWrongNumberOfArgs struct {
 	Cmd string
 }
 
 func (e *ErrWrongNumberOfArgs) Error() string {
-	return fmt.Sprintf("%s: %s has wrong number of arguments", WRONGTYP, e.Cmd)
+	return fmt.Sprintf("%s: %s has wrong number of arguments", PrefixWrongType, e.Cmd)
 }
 
+// ErrUnknownCommand for unknown commands
 type ErrUnknownCommand struct {
 	Cmd string
 }
 
 func (e *ErrUnknownCommand) Error() string {
-	return fmt.Sprintf("%s: unknown command %s", ERR, e.Cmd)
+	return fmt.Sprintf("%s: unknown command %s", PrefixErr, e.Cmd)
 }

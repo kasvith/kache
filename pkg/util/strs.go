@@ -30,6 +30,7 @@ import (
 )
 
 var (
+	// ErrUnbalancedQuotes raised when quotes are not balanced in a string
 	ErrUnbalancedQuotes = errors.New("unbalanced quotes")
 )
 

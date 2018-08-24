@@ -4,11 +4,14 @@ go:
   - "1.10.x"
 
 before_install:
+  - go version
+  - go env
   - go get github.com/magefile/mage
   - mage vendor
 
 script:
   - mage fmt
+  - mage lint
   - mage vet
   - mage imports
   - mage test386

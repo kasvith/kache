@@ -39,8 +39,10 @@ import (
 	"github.com/kasvith/kache/internal/sys"
 )
 
+// Logger is the application level logger
 var Logger *logrus.Entry
 
+// InitLoggers will initialize loggers
 func InitLoggers(config config.AppConfig) {
 	var logrusLogger = logrus.New()
 
@@ -124,6 +126,8 @@ func (kacheFormatter) Format(e *logrus.Entry) ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
+// PrintErrorAndExit is printing error and exit with given code
+// It will panic when DEBUG environment set
 func PrintErrorAndExit(err error, exit int) {
 	if os.Getenv("ENV") == "DEBUG" {
 		panic(err)

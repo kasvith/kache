@@ -14,6 +14,7 @@ before_test:
   - go get github.com/magefile/mage
   - mage vendor
   - mage fmt
+  - mage lint
   - mage vet
   - mage imports
 

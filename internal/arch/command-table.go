@@ -30,8 +30,10 @@ import (
 	"github.com/kasvith/kache/internal/protcl"
 )
 
+// CommandFunc holds a function signature which can be used as a command.
 type CommandFunc func(*db.DB, []string) *protcl.Message
 
+// Command holds a command structure which is used to execute a kache command
 type Command struct {
 	ModifyKeySpace bool
 	Fn             CommandFunc
@@ -39,6 +41,7 @@ type Command struct {
 	MaxArgs        int // -1 ~ +inf, -1 mean infinite
 }
 
+// CommandTable holds all commands that are supported by kache
 var CommandTable = map[string]Command{
 	// server
 	"ping": {ModifyKeySpace: false, Fn: cmds.Ping, MinArgs: 0, MaxArgs: 1},
@@ -54,9 +57,11 @@ var CommandTable = map[string]Command{
 	"decr": {ModifyKeySpace: true, Fn: cmds.Decr, MinArgs: 1, MaxArgs: 1},
 }
 
+// DBCommand is a command that executes on a given db
 type DBCommand struct {
 }
 
+// getCommand will fetch the command from command table
 func getCommand(cmd string) (*Command, error) {
 	if v, ok := CommandTable[cmd]; ok {
 		return &v, nil
@@ -65,7 +70,7 @@ func getCommand(cmd string) (*Command, error) {
 	return nil, &protcl.ErrUnknownCommand{Cmd: cmd}
 }
 
-// Execute executes a single command on the given database
+// Execute a single command on the given database with args
 func (DBCommand) Execute(db *db.DB, cmd string, args []string) *protcl.Message {
 	command, err := getCommand(cmd)
 	if err != nil {

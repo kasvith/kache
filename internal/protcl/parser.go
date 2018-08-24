@@ -37,13 +37,23 @@ import (
 )
 
 var (
-	ErrParse             = errors.New("parse error")
-	ErrValueOutOfRange   = errors.New("value out of range")
-	ErrInvalidCommand    = errors.New("invalid command")
-	ErrBufferExceeded    = errors.New("buffer exceeded")
+	// ErrParse for parse errors
+	ErrParse = errors.New("parse error")
+
+	// ErrValueOutOfRange for out of range errors
+	ErrValueOutOfRange = errors.New("value out of range")
+
+	//ErrInvalidCommand for invalid commands
+	ErrInvalidCommand = errors.New("invalid command")
+
+	// ErrBufferExceeded for buffer exceeds
+	ErrBufferExceeded = errors.New("buffer exceeded")
+
+	// ErrUnexpectedLineEnd for unexpected line ends(no CRLF)
 	ErrUnexpectedLineEnd = errors.New("unexpected line end")
 )
 
+// ErrInvalidToken for invalid tokens
 type ErrInvalidToken struct {
 	Token byte
 }
@@ -52,6 +62,7 @@ func (e *ErrInvalidToken) Error() string {
 	return fmt.Sprintf("excepted $, found %c", e.Token)
 }
 
+// ErrInvalidBlkStringLength raised when bulk string length mismatch
 type ErrInvalidBlkStringLength struct {
 	Excepted, Given int
 }
@@ -60,14 +71,17 @@ func (e *ErrInvalidBlkStringLength) Error() string {
 	return fmt.Sprintf("invalid bulk string length, excepted %d processed %d", e.Excepted, e.Given)
 }
 
+// Reader for parser
 type Reader struct {
 	br *bufio.Reader
 }
 
+// NewReader creates a reader for parser
 func NewReader(r io.Reader) *Reader {
 	return &Reader{br: bufio.NewReader(r)}
 }
 
+// ParseMessage will parse a message from reader
 func (r *Reader) ParseMessage() (*RespCommand, error) {
 	return parse(r.br)
 }
@@ -93,7 +107,7 @@ func parse(r *bufio.Reader) (*RespCommand, error) {
 
 	// Clients require to send commands with CRLF
 	switch buf[0] {
-	case REP_ARR:
+	case RepArray:
 		// this is an array of redis strings
 		// arr len is in the buffer
 
@@ -160,7 +174,7 @@ func parseBlkString(r *bufio.Reader) (string, error) {
 		return "", ErrParse
 	}
 
-	if len(buf) > 0 && buf[0] != REP_BULKSTRING {
+	if len(buf) > 0 && buf[0] != RepBulkString {
 		return "", &ErrInvalidToken{Token: buf[0]}
 	}
 

@@ -31,15 +31,19 @@ import (
 	"unicode/utf8"
 )
 
+// HashMap is a thread safe hashmap with RWMutex
 type HashMap struct {
 	m   map[string]string
 	mux *sync.RWMutex
 }
 
+// New *HashMap is created
 func New() *HashMap {
 	return &HashMap{m: make(map[string]string), mux: &sync.RWMutex{}}
 }
 
+// Set key value tuple
+// It will return 0 when key was already in the map, 1 when new key inserted
 func (m *HashMap) Set(key, value string) int {
 	m.mux.Lock()
 	defer m.mux.Unlock()
@@ -53,6 +57,7 @@ func (m *HashMap) Set(key, value string) int {
 	return 1
 }
 
+// Setx only sets when key is not in map
 func (m *HashMap) Setx(key, value string) int {
 	m.mux.Lock()
 	defer m.mux.Unlock()
@@ -65,6 +70,7 @@ func (m *HashMap) Setx(key, value string) int {
 	return 1
 }
 
+// SetBulk sets key,value tuples
 func (m *HashMap) SetBulk(fields []string) (string, error) {
 	m.mux.Lock()
 	defer m.mux.Unlock()
@@ -80,6 +86,7 @@ func (m *HashMap) SetBulk(fields []string) (string, error) {
 	return "OK", nil
 }
 
+// Get a value from a key
 func (m *HashMap) Get(key string) string {
 	m.mux.RLock()
 	defer m.mux.RUnlock()
@@ -87,6 +94,7 @@ func (m *HashMap) Get(key string) string {
 	return m.m[key]
 }
 
+// GetBulk returns an array of values for given keys, with nil values
 func (m *HashMap) GetBulk(keys []string) []string {
 	m.mux.RLock()
 	defer m.mux.RUnlock()
@@ -100,6 +108,7 @@ func (m *HashMap) GetBulk(keys []string) []string {
 	return results
 }
 
+// Keys will return all keys in map
 func (m *HashMap) Keys() []string {
 	m.mux.RLock()
 	defer m.mux.RUnlock()
@@ -114,6 +123,7 @@ func (m *HashMap) Keys() []string {
 	return keys
 }
 
+// Vals get all values of map
 func (m *HashMap) Vals() []string {
 	m.mux.RLock()
 	defer m.mux.RUnlock()
@@ -128,6 +138,7 @@ func (m *HashMap) Vals() []string {
 	return vals
 }
 
+// Fields returns all key,value tuples as string array
 func (m *HashMap) Fields() []string {
 	m.mux.RLock()
 	defer m.mux.RUnlock()
@@ -144,6 +155,7 @@ func (m *HashMap) Fields() []string {
 	return paris
 }
 
+// Delete set of keys
 func (m *HashMap) Delete(keys []string) int {
 	m.mux.Lock()
 	defer m.mux.Unlock()
@@ -159,6 +171,7 @@ func (m *HashMap) Delete(keys []string) int {
 	return deleted
 }
 
+// Exists checks for key existancy
 func (m *HashMap) Exists(key string) int {
 	m.mux.RLock()
 	defer m.mux.RUnlock()
@@ -172,6 +185,7 @@ func (m *HashMap) Exists(key string) int {
 	return 0
 }
 
+// IncrementBy int amount for a key holding an int
 func (m *HashMap) IncrementBy(key string, amount int) (int, error) {
 	m.mux.Lock()
 	defer m.mux.Unlock()
@@ -196,6 +210,7 @@ func (m *HashMap) IncrementBy(key string, amount int) (int, error) {
 	return newVal, nil
 }
 
+// IncrementByFloat amount for a given key
 func (m *HashMap) IncrementByFloat(key string, amount float64) (float64, error) {
 	m.mux.Lock()
 	defer m.mux.Unlock()
@@ -220,6 +235,7 @@ func (m *HashMap) IncrementByFloat(key string, amount float64) (float64, error) 
 	return newVal, nil
 }
 
+// Len is length of the HashMap
 func (m *HashMap) Len() int {
 	m.mux.RLock()
 	defer m.mux.RUnlock()
@@ -227,6 +243,7 @@ func (m *HashMap) Len() int {
 	return len(m.m)
 }
 
+// FLen is field length which returns the length of given key in bytes
 func (m *HashMap) FLen(key string) int {
 	m.mux.RLock()
 	defer m.mux.RUnlock()

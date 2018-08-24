@@ -31,11 +31,17 @@ import (
 )
 
 var (
+	// AppVersion is application version info
 	AppVersion = "1.0.0"
-	BuildDate  = ""
+
+	// BuildDate is the date that executable was built
+	BuildDate = ""
+
+	// CommitHash is the hash for the commit
 	CommitHash = ""
 )
 
+// VersionCmd command will display version info and exits
 var VersionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Display application version",

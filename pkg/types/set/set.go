@@ -28,15 +28,18 @@ import (
 	"sync"
 )
 
+// Set is a string set data structure implemented with a hashmap
 type Set struct {
 	m   map[string]int
 	mux *sync.RWMutex
 }
 
+// New creates a new Set
 func New() *Set {
 	return &Set{m: make(map[string]int), mux: &sync.RWMutex{}}
 }
 
+// NewFromSlice creates a new set from a string slice
 func NewFromSlice(data []string) *Set {
 	m := make(map[string]int)
 	for _, value := range data {
@@ -46,6 +49,7 @@ func NewFromSlice(data []string) *Set {
 	return &Set{m: m, mux: &sync.RWMutex{}}
 }
 
+// getMap gets a copy of underlying map from Set
 func (set *Set) getMap() map[string]int {
 	set.mux.RLock()
 	defer set.mux.RUnlock()
@@ -59,6 +63,7 @@ func (set *Set) getMap() map[string]int {
 	return m
 }
 
+// Add keys to the set
 func (set *Set) Add(keys []string) int {
 	set.mux.Lock()
 	defer set.mux.Unlock()
@@ -75,7 +80,7 @@ func (set *Set) Add(keys []string) int {
 	return added
 }
 
-// Card this will return number of elements in the set
+// Card is the number of elements in the set
 func (set *Set) Card() int {
 	set.mux.RLock()
 	defer set.mux.RUnlock()
@@ -83,6 +88,7 @@ func (set *Set) Card() int {
 	return len(set.m)
 }
 
+// elems extracts keys from a map
 func elems(m map[string]int) []string {
 	res := make([]string, len(m))
 	i := 0
@@ -94,6 +100,7 @@ func elems(m map[string]int) []string {
 	return res
 }
 
+// Elems get all elements in the set
 func (set *Set) Elems() []string {
 	set.mux.RLock()
 	defer set.mux.RUnlock()
@@ -101,6 +108,7 @@ func (set *Set) Elems() []string {
 	return elems(set.m)
 }
 
+// duplicateMap is a utility funtion to duplicate a map
 func duplicateMap(m map[string]int) map[string]int {
 	dup := make(map[string]int)
 	for key, value := range m {
@@ -110,6 +118,7 @@ func duplicateMap(m map[string]int) map[string]int {
 	return dup
 }
 
+// Diff calculates set difference
 func (set *Set) Diff(sets []Set) []string {
 	set.mux.RLock()
 	dup := duplicateMap(set.m)
@@ -124,6 +133,7 @@ func (set *Set) Diff(sets []Set) []string {
 	return elems(dup)
 }
 
+// DiffS calculate set diff and returns a Set
 func (set *Set) DiffS(sets []Set) *Set {
 	set.mux.RLock()
 	defer set.mux.RUnlock()
@@ -139,6 +149,7 @@ func (set *Set) DiffS(sets []Set) *Set {
 	return &Set{m: dup, mux: &sync.RWMutex{}}
 }
 
+// Exists find a key is in set
 func (set *Set) Exists(key string) int {
 	set.mux.RLock()
 	defer set.mux.RUnlock()
@@ -150,6 +161,7 @@ func (set *Set) Exists(key string) int {
 	return 0
 }
 
+// Intersection calculates the intersection of sets
 func Intersection(sets []Set) []string {
 	minSetIdx := 0
 	for i := 0; i < len(sets); i++ {
@@ -184,10 +196,12 @@ func Intersection(sets []Set) []string {
 	return results
 }
 
+// IntersectionS calculates intersection and returns a Set
 func IntersectionS(sets []Set) *Set {
 	return NewFromSlice(Intersection(sets))
 }
 
+// Move a key from one set to another
 func Move(key string, src, dest *Set) int {
 	src.mux.Lock()
 	defer src.mux.Unlock()
@@ -203,6 +217,7 @@ func Move(key string, src, dest *Set) int {
 	return 0
 }
 
+// Delete an element from a set
 func (set *Set) Delete(keys []string) int {
 	set.mux.Lock()
 	defer set.mux.Unlock()
@@ -219,6 +234,7 @@ func (set *Set) Delete(keys []string) int {
 	return deleted
 }
 
+// Union of stes
 func Union(sets []Set) []string {
 	maxSetIdx := 0
 	for i := 0; i < len(sets); i++ {
@@ -239,6 +255,7 @@ func Union(sets []Set) []string {
 	return elems(m)
 }
 
+// UnionS is Union which returns a Set
 func UnionS(sets []Set) *Set {
 	maxSetIdx := 0
 	for i := 0; i < len(sets); i++ {

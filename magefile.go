@@ -61,9 +61,15 @@ func getGoImports() error {
 	return sh.RunV(goexe, "get", "-u", "golang.org/x/tools/cmd/goimports")
 }
 
+func getGoLint() error {
+	return sh.RunV(goexe, "get", "-u", "golang.org/x/lint/golint")
+}
+
 // Install Go Dep and sync kache dependencies
 func Vendor() error {
 	mg.Deps(getDep)
+	mg.Deps(getGoImports)
+	mg.Deps(getGoLint)
 	return sh.RunV("dep", "ensure")
 }
 
@@ -125,8 +131,6 @@ func TestRace() error {
 
 // get all packages of kache
 func kachePackages() ([]string, error) {
-	mg.Deps(getDep)
-
 	var pkgPrefixLen = len(basePackage)
 	s, err := sh.Output(goexe, "list", "./...")
 	if err != nil {
@@ -187,7 +191,6 @@ func Fmt() error {
 
 // Run goimports
 func Imports() error {
-	mg.Deps(getGoImports)
 	pkgs, err := kachePackages()
 	if err != nil {
 		return err
@@ -234,7 +237,7 @@ func Lint() error {
 	for _, pkg := range pkgs {
 		// We don't actually want to fail this target if we find golint errors,
 		// so we don't pass -set_exit_status, but we still print out any failures.
-		if _, err := sh.Exec(nil, os.Stderr, nil, "golint", pkg); err != nil {
+		if _, err := sh.Exec(nil, os.Stderr, nil, "golint", "-set_exit_status", pkg); err != nil {
 			fmt.Printf("ERROR: running go lint on %q: %v\n", pkg, err)
 			failed = true
 		}
@@ -247,13 +250,11 @@ func Lint() error {
 
 //  Run go vet linter
 func Vet() error {
-	mg.Deps(getDep)
 	return sh.RunV(goexe, "vet", "./...")
 }
 
 // Generate test coverage report
 func TestCover() error {
-	mg.Deps(getDep)
 	return sh.RunV(goexe, "test", "-race", "-coverprofile=coverage.txt", "-covermode=atomic", "./...")
 }
 

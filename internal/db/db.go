@@ -29,11 +29,13 @@ import (
 	"sync"
 )
 
+// DB holds a thread safe struct for store data
 type DB struct {
 	file map[string]*DataNode
 	mux  sync.Mutex
 }
 
+// KeyNotFoundError has the key which was not able to found in a DB
 type KeyNotFoundError struct {
 	key string
 }
@@ -42,10 +44,12 @@ func (e *KeyNotFoundError) Error() string {
 	return fmt.Sprintf("%s not found", e.key)
 }
 
+// NewDB returns a new *DB
 func NewDB() *DB {
 	return &DB{file: make(map[string]*DataNode)}
 }
 
+// Get the value of a key
 func (db *DB) Get(key string) (*DataNode, error) {
 	db.mux.Lock()
 	defer db.mux.Unlock()
@@ -56,12 +60,14 @@ func (db *DB) Get(key string) (*DataNode, error) {
 	return nil, &KeyNotFoundError{key: key}
 }
 
+// Set the value of a key
 func (db *DB) Set(key string, val *DataNode) {
 	db.mux.Lock()
 	db.file[key] = val
 	db.mux.Unlock()
 }
 
+// GetIfNotSet will try to get the key if not will set it to a given value
 func (db *DB) GetIfNotSet(key string, val *DataNode) (value *DataNode, found bool) {
 	db.mux.Lock()
 	defer db.mux.Unlock()
@@ -74,6 +80,7 @@ func (db *DB) GetIfNotSet(key string, val *DataNode) (value *DataNode, found boo
 	return val, false
 }
 
+// Del will delete keys
 func (db *DB) Del(keys []string) int {
 	db.mux.Lock()
 	del := 0
@@ -88,6 +95,7 @@ func (db *DB) Del(keys []string) int {
 	return del
 }
 
+// Exists finds the existancy of a key
 func (db *DB) Exists(key string) int {
 	db.mux.Lock()
 	defer db.mux.Unlock()

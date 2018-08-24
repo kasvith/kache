@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 )
 
+// AutoCreateSubDirs will auto create sub directories in a given path
 func AutoCreateSubDirs(path string) error {
 	filePath := filepath.FromSlash(path)
 	filePath = filepath.Clean(filePath)

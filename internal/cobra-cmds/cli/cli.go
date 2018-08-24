@@ -37,6 +37,7 @@ import (
 var host string
 var port int
 
+// RootCmd of the CLI
 var RootCmd = &cobra.Command{
 	Use:   "kache-cli",
 	Short: "kache-cli is a client to access kache server",
@@ -48,6 +49,7 @@ func init() {
 	RootCmd.Flags().IntVarP(&port, "port", "p", 7088, "port of kache server")
 }
 
+// Execute CLI
 func Execute() {
 	RootCmd.AddCommand(cobracmds.VersionCmd)
 
