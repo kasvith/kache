@@ -53,18 +53,18 @@ func addOSExecType(str string) string {
 
 // get dep
 func getDep() error {
-	return sh.Run(goexe, "get", "-u", "github.com/golang/dep/cmd/dep")
+	return sh.RunV(goexe, "get", "-u", "github.com/golang/dep/cmd/dep")
 }
 
 // get go imports
 func getGoImports() error {
-	return sh.Run(goexe, "get", "-u", "golang.org/x/tools/cmd/goimports")
+	return sh.RunV(goexe, "get", "-u", "golang.org/x/tools/cmd/goimports")
 }
 
 // Install Go Dep and sync kache dependencies
 func Vendor() error {
 	mg.Deps(getDep)
-	return sh.Run("dep", "ensure")
+	return sh.RunV("dep", "ensure")
 }
 
 // Build kache
@@ -115,12 +115,12 @@ func Test386() error {
 
 // Run tests
 func Test() error {
-	return sh.Run(goexe, "test", "-v", "./...")
+	return sh.RunV(goexe, "test", "-v", "./...")
 }
 
 // Run tests with race detector
 func TestRace() error {
-	return sh.Run(goexe, "test", "-race", "./...")
+	return sh.RunV(goexe, "test", "-race", "./...")
 }
 
 // get all packages of kache
@@ -248,21 +248,18 @@ func Lint() error {
 //  Run go vet linter
 func Vet() error {
 	mg.Deps(getDep)
-	if err := sh.Run(goexe, "vet", "./..."); err != nil {
-		return fmt.Errorf("error running govendor: %v", err)
-	}
-	return nil
+	return sh.RunV(goexe, "vet", "./...")
 }
 
 // Generate test coverage report
 func TestCover() error {
 	mg.Deps(getDep)
-	return sh.Run(goexe, "test", "-race", "-coverprofile=coverage.txt", "-covermode=atomic", "./...")
+	return sh.RunV(goexe, "test", "-race", "-coverprofile=coverage.txt", "-covermode=atomic", "./...")
 }
 
 // Verify that vendored packages match git HEAD
 func CheckVendor() error {
-	if err := sh.Run("git", "diff-index", "--quiet", "HEAD", "vendor/"); err != nil {
+	if err := sh.RunV("git", "diff-index", "--quiet", "HEAD", "vendor/"); err != nil {
 		// yes, ignore errors from this, not much we can do.
 		sh.Exec(nil, os.Stdout, os.Stderr, "git", "diff", "vendor/")
 		return errors.New("check-vendor target failed: vendored packages out of sync")

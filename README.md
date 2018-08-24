@@ -86,7 +86,7 @@ kache [flags]
 
 ### Installing `mage`
 `mage` is the build tool we use for build kache. To install `mage` 
- - Run `go get -u -d github.com/magefile/mage`
+ - Run `go get -u github.com/magefile/mage`
  - For a proper installation refer [official documentation](https://github.com/magefile/mage "official documentation")
 
 ## Setting up workspace
