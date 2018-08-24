@@ -31,7 +31,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/kasvith/kache/internal/cli"
-	"github.com/kasvith/kache/internal/cobra-cmds"
 )
 
 var host string
