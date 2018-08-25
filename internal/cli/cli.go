@@ -34,11 +34,16 @@ import (
 
 // RunCli start kache-cli command
 func RunCli(host string, port int) {
+	if err := Dial(fmt.Sprintf("%s:%d", host, port)); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
 	p := prompt.New(
 		Executor,
 		Completer,
 		prompt.OptionPrefix(fmt.Sprintf("%s:%d> ", host, port)),
-		prompt.OptionTitle("kache-c"),
+		prompt.OptionTitle("kache-cli"),
 	)
 	p.Run()
 }

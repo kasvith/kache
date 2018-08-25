@@ -53,11 +53,6 @@ func init() {
 func Execute() {
 	RootCmd.AddCommand(cobracmds.VersionCmd)
 
-	if err := cli.Dial(fmt.Sprintf("%s:%d", host, port)); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
 	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
