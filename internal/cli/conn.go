@@ -42,6 +42,15 @@ type cli struct {
 	reader *bufio.Reader
 }
 
+func (r *cli) write(s string) error {
+	send := make([]byte, len(s)+2)
+	copy(send[:len(s)], s)
+	copy(send[len(s):], []byte{'\r', '\n'})
+
+	_, err := c.conn.Write(send)
+	return err
+}
+
 func (r *cli) parseResp() (string, error) {
 	buf, err := r.reader.ReadBytes('\n')
 	if err != nil {

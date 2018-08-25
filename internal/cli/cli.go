@@ -59,11 +59,7 @@ func Executor(s string) {
 		return
 	}
 
-	send := make([]byte, len(s)+2)
-	copy(send[:len(s)], s)
-	copy(send[len(s):], []byte{'\r', '\n'})
-
-	if _, err := c.conn.Write(send); err != nil {
+	if err := c.write(s); err != nil {
 		fmt.Println(err)
 		return
 	}
