@@ -26,7 +26,6 @@ package protcl
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"io"
 	"strconv"
@@ -36,22 +35,58 @@ import (
 	"github.com/kasvith/kache/pkg/util"
 )
 
-var (
-	// ErrParse for parse errors
-	ErrParse = errors.New("parse error")
+// ErrValueOutOfRange for out of range errors
+type ErrValueOutOfRange struct {
+}
 
-	// ErrValueOutOfRange for out of range errors
-	ErrValueOutOfRange = errors.New("value out of range")
+// Recoverable whether error is recoverable or not
+func (ErrValueOutOfRange) Error() string {
+	return "value out of range"
+}
 
-	//ErrInvalidCommand for invalid commands
-	ErrInvalidCommand = errors.New("invalid command")
+// Recoverable whether error is recoverable or not
+func (ErrValueOutOfRange) Recoverable() bool {
+	return true
+}
 
-	// ErrBufferExceeded for buffer exceeds
-	ErrBufferExceeded = errors.New("buffer exceeded")
+//ErrInvalidCommand for invalid commands
+type ErrInvalidCommand struct {
+}
 
-	// ErrUnexpectedLineEnd for unexpected line ends(no CRLF)
-	ErrUnexpectedLineEnd = errors.New("unexpected line end")
-)
+func (ErrInvalidCommand) Error() string {
+	return "invalid command"
+}
+
+// Recoverable whether error is recoverable or not
+func (ErrInvalidCommand) Recoverable() bool {
+	return true
+}
+
+// ErrBufferExceeded for buffer exceeds
+type ErrBufferExceeded struct {
+}
+
+func (ErrBufferExceeded) Error() string {
+	return "buffer exceeded"
+}
+
+// Recoverable whether error is recoverable or not
+func (ErrBufferExceeded) Recoverable() bool {
+	return true
+}
+
+// ErrUnexpectedLineEnd for unexpected line ends(no CRLF)
+type ErrUnexpectedLineEnd struct {
+}
+
+func (ErrUnexpectedLineEnd) Error() string {
+	return "unexpected line end"
+}
+
+// Recoverable whether error is recoverable or not
+func (ErrUnexpectedLineEnd) Recoverable() bool {
+	return true
+}
 
 // ErrInvalidToken for invalid tokens
 type ErrInvalidToken struct {
@@ -62,6 +97,11 @@ func (e *ErrInvalidToken) Error() string {
 	return fmt.Sprintf("excepted $, found %c", e.Token)
 }
 
+// Recoverable whether error is recoverable or not
+func (ErrInvalidToken) Recoverable() bool {
+	return true
+}
+
 // ErrInvalidBlkStringLength raised when bulk string length mismatch
 type ErrInvalidBlkStringLength struct {
 	Excepted, Given int
@@ -69,6 +109,11 @@ type ErrInvalidBlkStringLength struct {
 
 func (e *ErrInvalidBlkStringLength) Error() string {
 	return fmt.Sprintf("invalid bulk string length, excepted %d processed %d", e.Excepted, e.Given)
+}
+
+// Recoverable whether error is recoverable or not
+func (ErrInvalidBlkStringLength) Recoverable() bool {
+	return true
 }
 
 // Reader for parser
@@ -98,11 +143,7 @@ func parse(r *bufio.Reader) (*RespCommand, error) {
 	buf, err := r.ReadBytes('\n')
 
 	if err != nil {
-		if err == io.EOF {
-			return nil, err
-		}
-
-		return nil, ErrParse
+		return nil, err
 	}
 
 	// Clients require to send commands with CRLF
@@ -115,7 +156,7 @@ func parse(r *bufio.Reader) (*RespCommand, error) {
 		if err != nil {
 			return nil, err
 		} else if len(strs) == 0 {
-			return nil, ErrInvalidCommand
+			return nil, &ErrInvalidCommand{}
 		}
 
 		return &RespCommand{Name: strings.ToLower(strs[0]), Args: strs[1:]}, nil
@@ -135,7 +176,7 @@ func parse(r *bufio.Reader) (*RespCommand, error) {
 		}
 
 		if len(args) == 0 {
-			return nil, ErrInvalidCommand
+			return nil, &ErrInvalidCommand{}
 		}
 
 		return &RespCommand{Name: strings.ToLower(args[0]), Args: args[1:]}, nil
@@ -151,7 +192,7 @@ func ParseMultiBulkReply(r *bufio.Reader, buf []byte) ([]string, error) {
 
 	mblkLen, err := strconv.Atoi(string(buf[1 : len(buf)-2]))
 	if err != nil {
-		return nil, ErrValueOutOfRange
+		return nil, &ErrValueOutOfRange{}
 	} else if mblkLen == 0 {
 		return nil, nil
 	}
@@ -188,18 +229,14 @@ func ParseBulkString(r *bufio.Reader, buf []byte) (string, error) {
 	}
 
 	if llen > config.AppConf.MaxMultiBulkLength {
-		return "", ErrBufferExceeded
+		return "", &ErrBufferExceeded{}
 	}
 
 	// we need to read exactly llen bytes from the stream
 	buf, err = r.ReadBytes('\n')
 
 	if err != nil {
-		if err == io.EOF {
-			return "", err
-		}
-
-		return "", ErrParse
+		return "", err
 	}
 
 	// error is not EOF
@@ -221,21 +258,17 @@ func parseBulkString(r *bufio.Reader) (string, error) {
 	// read a byte
 	buf, err := r.ReadBytes('\n')
 	if err != nil {
-		if err == io.EOF {
-			return "", err
-		}
-
-		return "", ErrParse
+		return "", err
 	}
 
 	return ParseBulkString(r, buf)
 }
 
-// EndWithCRLF does not return EOF as error
+// EndWithCRLF returns an error when buffer end is not CRLF
 func EndWithCRLF(buf []byte) error {
 	if len(buf) >= 2 && buf[len(buf)-1] == '\n' && buf[len(buf)-2] == '\r' {
 		return nil
 	}
 
-	return ErrUnexpectedLineEnd
+	return &ErrUnexpectedLineEnd{}
 }

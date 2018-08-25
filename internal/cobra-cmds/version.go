@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package kache
+package cobracmds
 
 import (
 	"fmt"

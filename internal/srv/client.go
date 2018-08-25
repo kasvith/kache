@@ -26,8 +26,9 @@ package srv
 
 import (
 	"bufio"
-	"io"
 	"net"
+
+	"io"
 
 	"github.com/kasvith/kache/internal/arch"
 	"github.com/kasvith/kache/internal/db"
@@ -68,16 +69,27 @@ func (client *Client) Handle() {
 
 		// handle any parse errors
 		if err != nil {
-			// if eof stop now
-			if err == io.EOF {
-				break
+			recoverable, isRecoverableErr := err.(protcl.RecoverableError)
+
+			if isRecoverableErr {
+				if recoverable.Recoverable() {
+					// log the error, inform client continue loop
+					// anything else should be sent to client with prefix PrefixErr
+					klogs.Logger.Debug(client.RemoteAddr(), ": ", err.Error())
+					writer.WriteString(protcl.RespError(err))
+					writer.Flush()
+					continue
+				}
 			}
 
-			// anything else should be sent to client with prefix PrefixErr
-			klogs.Logger.Debug(client.RemoteAddr(), ": ", err.Error())
-			writer.WriteString(protcl.RespError(err))
-			writer.Flush()
-			continue
+			// If not recoverable or does not implement the interface, then its a critical error
+			// break from the loop to close connection, well we ignore EOF in normal mode
+			if err == io.EOF {
+				klogs.Logger.Debug(client.RemoteAddr(), ": ", err.Error())
+			} else {
+				klogs.Logger.Error(client.RemoteAddr(), ": ", err.Error())
+			}
+			break
 		}
 
 		// executes the command

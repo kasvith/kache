@@ -26,6 +26,13 @@ package protcl
 
 import "fmt"
 
+// RecoverableError indicates an error is recoverable, if it's not it leads for critical actions like disconnecting a
+// client
+type RecoverableError interface {
+	// Recoverable whether error is recoverable or not
+	Recoverable() bool
+}
+
 // ErrCastFailedToInt for cast fails to ints
 type ErrCastFailedToInt struct {
 	Val interface{}
@@ -35,12 +42,22 @@ func (e *ErrCastFailedToInt) Error() string {
 	return fmt.Sprintf("%s: error casting %v to int", PrefixErr, e.Val)
 }
 
+// Recoverable whether error is recoverable or not
+func (ErrCastFailedToInt) Recoverable() bool {
+	return true
+}
+
 // ErrWrongType is for wrong type errors
 type ErrWrongType struct {
 }
 
 func (ErrWrongType) Error() string {
 	return fmt.Sprintf("%s: invalid operation against key holding invalid type of value", PrefixWrongType)
+}
+
+// Recoverable whether error is recoverable or not
+func (ErrWrongType) Recoverable() bool {
+	return true
 }
 
 // ErrGeneric for generic errors
@@ -52,6 +69,11 @@ func (e *ErrGeneric) Error() string {
 	return fmt.Sprintf("%s: %s", PrefixErr, e.Err)
 }
 
+// Recoverable whether error is recoverable or not
+func (ErrGeneric) Recoverable() bool {
+	return true
+}
+
 // ErrWrongNumberOfArgs for wrong argument count errors
 type ErrWrongNumberOfArgs struct {
 	Cmd string
@@ -61,6 +83,11 @@ func (e *ErrWrongNumberOfArgs) Error() string {
 	return fmt.Sprintf("%s: %s has wrong number of arguments", PrefixWrongType, e.Cmd)
 }
 
+// Recoverable whether error is recoverable or not
+func (ErrWrongNumberOfArgs) Recoverable() bool {
+	return true
+}
+
 // ErrUnknownCommand for unknown commands
 type ErrUnknownCommand struct {
 	Cmd string
@@ -68,4 +95,9 @@ type ErrUnknownCommand struct {
 
 func (e *ErrUnknownCommand) Error() string {
 	return fmt.Sprintf("%s: unknown command %s", PrefixErr, e.Cmd)
+}
+
+// Recoverable whether error is recoverable or not
+func (ErrUnknownCommand) Recoverable() bool {
+	return true
 }
