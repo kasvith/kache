@@ -10,6 +10,8 @@ about: Create a report to help us improve
 
 **Expected behavior**
 
+**Actual Behavior**
+
 **OS and Other informations**
 
 **Additional details**
