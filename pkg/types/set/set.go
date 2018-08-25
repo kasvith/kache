@@ -108,7 +108,7 @@ func (set *Set) Elems() []string {
 	return elems(set.m)
 }
 
-// duplicateMap is a utility funtion to duplicate a map
+// duplicateMap is a utility function to duplicate a map
 func duplicateMap(m map[string]int) map[string]int {
 	dup := make(map[string]int)
 	for key, value := range m {
