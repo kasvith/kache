@@ -28,7 +28,6 @@ import (
 	"errors"
 	"strconv"
 	"sync"
-	"unicode/utf8"
 )
 
 // HashMap is a thread safe hashmap with RWMutex
@@ -46,36 +45,38 @@ func New() *HashMap {
 // It will return 0 when key was already in the map, 1 when new key inserted
 func (m *HashMap) Set(key, value string) int {
 	m.mux.Lock()
-	defer m.mux.Unlock()
 
 	if value, found := m.m[key]; found {
 		m.m[key] = value
+		m.mux.Unlock()
 		return 0
 	}
 
 	m.m[key] = value
+	m.mux.Unlock()
 	return 1
 }
 
 // Setx only sets when key is not in map
 func (m *HashMap) Setx(key, value string) int {
 	m.mux.Lock()
-	defer m.mux.Unlock()
 
 	if _, found := m.m[key]; found {
+		m.mux.Unlock()
 		return 0
 	}
 
 	m.m[key] = value
+	m.mux.Unlock()
 	return 1
 }
 
 // SetBulk sets key,value tuples
 func (m *HashMap) SetBulk(fields []string) (string, error) {
 	m.mux.Lock()
-	defer m.mux.Unlock()
 
 	if len(fields)%2 != 0 || len(fields) == 0 {
+		m.mux.Unlock()
 		return "", errors.New("invalid number of arguments")
 	}
 
@@ -83,35 +84,34 @@ func (m *HashMap) SetBulk(fields []string) (string, error) {
 		m.m[fields[i]] = fields[i+1]
 	}
 
+	m.mux.Unlock()
 	return "OK", nil
 }
 
 // Get a value from a key
 func (m *HashMap) Get(key string) string {
 	m.mux.RLock()
-	defer m.mux.RUnlock()
-
-	return m.m[key]
+	val := m.m[key]
+	m.mux.RUnlock()
+	return val
 }
 
 // GetBulk returns an array of values for given keys, with nil values
 func (m *HashMap) GetBulk(keys []string) []string {
 	m.mux.RLock()
-	defer m.mux.RUnlock()
-
 	results := make([]string, len(keys))
 
 	for i := 0; i < len(keys); i++ {
 		results[i] = m.m[keys[i]]
 	}
 
+	m.mux.RUnlock()
 	return results
 }
 
 // Keys will return all keys in map
 func (m *HashMap) Keys() []string {
 	m.mux.RLock()
-	defer m.mux.RUnlock()
 
 	keys := make([]string, len(m.m))
 	i := 0
@@ -120,13 +120,13 @@ func (m *HashMap) Keys() []string {
 		i++
 	}
 
+	m.mux.RUnlock()
 	return keys
 }
 
 // Vals get all values of map
 func (m *HashMap) Vals() []string {
 	m.mux.RLock()
-	defer m.mux.RUnlock()
 
 	vals := make([]string, len(m.m))
 	i := 0
@@ -135,13 +135,13 @@ func (m *HashMap) Vals() []string {
 		i++
 	}
 
+	m.mux.RUnlock()
 	return vals
 }
 
 // Fields returns all key,value tuples as string array
 func (m *HashMap) Fields() []string {
 	m.mux.RLock()
-	defer m.mux.RUnlock()
 
 	paris := make([]string, len(m.m)*2)
 	i := 0
@@ -152,13 +152,14 @@ func (m *HashMap) Fields() []string {
 		paris[i] = val
 		i++
 	}
+
+	m.mux.RUnlock()
 	return paris
 }
 
 // Delete set of keys
 func (m *HashMap) Delete(keys []string) int {
 	m.mux.Lock()
-	defer m.mux.Unlock()
 
 	deleted := 0
 	for _, key := range keys {
@@ -168,32 +169,33 @@ func (m *HashMap) Delete(keys []string) int {
 		}
 	}
 
+	m.mux.Unlock()
 	return deleted
 }
 
 // Exists checks for key existancy
 func (m *HashMap) Exists(key string) int {
 	m.mux.RLock()
-	defer m.mux.RUnlock()
-
 	_, found := m.m[key]
 
 	if found {
+		m.mux.RUnlock()
 		return 1
 	}
 
+	m.mux.RUnlock()
 	return 0
 }
 
 // IncrementBy int amount for a key holding an int
 func (m *HashMap) IncrementBy(key string, amount int) (int, error) {
 	m.mux.Lock()
-	defer m.mux.Unlock()
 
 	target, found := m.m[key]
 
 	if !found {
 		m.m[key] = strconv.Itoa(amount)
+		m.mux.Unlock()
 		return amount, nil
 	}
 
@@ -201,24 +203,26 @@ func (m *HashMap) IncrementBy(key string, amount int) (int, error) {
 	targetVal, err := strconv.Atoi(target)
 
 	if err != nil {
+		m.mux.Unlock()
 		return 0, errors.New("invalid type, excepted integer")
 	}
 
 	newVal := targetVal + amount
 	m.m[key] = strconv.Itoa(newVal)
 
+	m.mux.Unlock()
 	return newVal, nil
 }
 
 // IncrementByFloat amount for a given key
 func (m *HashMap) IncrementByFloat(key string, amount float64) (float64, error) {
 	m.mux.Lock()
-	defer m.mux.Unlock()
 
 	target, found := m.m[key]
 
 	if !found {
 		m.m[key] = strconv.FormatFloat(amount, 'f', 6, 64)
+		m.mux.Unlock()
 		return amount, nil
 	}
 
@@ -226,27 +230,28 @@ func (m *HashMap) IncrementByFloat(key string, amount float64) (float64, error) 
 	targetVal, err := strconv.ParseFloat(target, 64)
 
 	if err != nil {
+		m.mux.Unlock()
 		return 0, errors.New("invalid type, excepted float")
 	}
 
 	newVal := targetVal + amount
 	m.m[key] = strconv.FormatFloat(newVal, 'f', 6, 64)
-
+	m.mux.Unlock()
 	return newVal, nil
 }
 
 // Len is length of the HashMap
 func (m *HashMap) Len() int {
 	m.mux.RLock()
-	defer m.mux.RUnlock()
-
-	return len(m.m)
+	length := len(m.m)
+	m.mux.RUnlock()
+	return length
 }
 
 // FLen is field length which returns the length of given key in bytes
 func (m *HashMap) FLen(key string) int {
 	m.mux.RLock()
-	defer m.mux.RUnlock()
-
-	return utf8.RuneCountInString(m.m[key])
+	length := len(m.m[key])
+	m.mux.RUnlock()
+	return length
 }

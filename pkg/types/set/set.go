@@ -52,7 +52,6 @@ func NewFromSlice(data []string) *Set {
 // getMap gets a copy of underlying map from Set
 func (set *Set) getMap() map[string]int {
 	set.mux.RLock()
-	defer set.mux.RUnlock()
 
 	m := make(map[string]int)
 
@@ -60,13 +59,13 @@ func (set *Set) getMap() map[string]int {
 		m[key] = 1
 	}
 
+	set.mux.RUnlock()
 	return m
 }
 
 // Add keys to the set
 func (set *Set) Add(keys []string) int {
 	set.mux.Lock()
-	defer set.mux.Unlock()
 
 	added := 0
 
@@ -77,15 +76,16 @@ func (set *Set) Add(keys []string) int {
 		}
 	}
 
+	set.mux.Unlock()
 	return added
 }
 
 // Card is the number of elements in the set
 func (set *Set) Card() int {
 	set.mux.RLock()
-	defer set.mux.RUnlock()
-
-	return len(set.m)
+	length := len(set.m)
+	set.mux.RUnlock()
+	return length
 }
 
 // elems extracts keys from a map
@@ -103,9 +103,9 @@ func elems(m map[string]int) []string {
 // Elems get all elements in the set
 func (set *Set) Elems() []string {
 	set.mux.RLock()
-	defer set.mux.RUnlock()
-
-	return elems(set.m)
+	elements := elems(set.m)
+	set.mux.RUnlock()
+	return elements
 }
 
 // duplicateMap is a utility function to duplicate a map
@@ -136,10 +136,8 @@ func (set *Set) Diff(sets []Set) []string {
 // DiffS calculate set diff and returns a Set
 func (set *Set) DiffS(sets []Set) *Set {
 	set.mux.RLock()
-	defer set.mux.RUnlock()
-
 	dup := duplicateMap(set.m)
-
+	set.mux.RUnlock()
 	for i := 0; i < len(sets); i++ {
 		for _, key := range sets[i].Elems() {
 			delete(dup, key)
@@ -152,12 +150,13 @@ func (set *Set) DiffS(sets []Set) *Set {
 // Exists find a key is in set
 func (set *Set) Exists(key string) int {
 	set.mux.RLock()
-	defer set.mux.RUnlock()
 
 	if _, found := set.m[key]; found {
+		set.mux.RUnlock()
 		return 1
 	}
 
+	set.mux.RUnlock()
 	return 0
 }
 
@@ -204,26 +203,25 @@ func IntersectionS(sets []Set) *Set {
 // Move a key from one set to another
 func Move(key string, src, dest *Set) int {
 	src.mux.Lock()
-	defer src.mux.Unlock()
 
 	if _, found := src.m[key]; found {
 		delete(src.m, key)
 		dest.mux.Lock()
 		dest.m[key] = 1
 		dest.mux.Unlock()
+		src.mux.Unlock()
 		return 1
 	}
 
+	src.mux.Unlock()
 	return 0
 }
 
 // Delete an element from a set
 func (set *Set) Delete(keys []string) int {
 	set.mux.Lock()
-	defer set.mux.Unlock()
 
 	deleted := 0
-
 	for _, key := range keys {
 		if _, ok := set.m[key]; ok {
 			delete(set.m, key)
@@ -231,6 +229,7 @@ func (set *Set) Delete(keys []string) int {
 		}
 	}
 
+	set.mux.Unlock()
 	return deleted
 }
 

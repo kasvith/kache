@@ -68,15 +68,16 @@ func (list *TList) HPush(val []string) error {
 	}
 
 	list.mux.Lock()
-	defer list.mux.Unlock()
 
 	if len(val) == 1 {
 		list.list.PushFront(val[0])
+		list.mux.Unlock()
 		return nil
 	}
 
 	newList := buildValueList(true, val)
 	list.list.PushFrontList(newList)
+	list.mux.Unlock()
 	return nil
 }
 
@@ -87,15 +88,16 @@ func (list *TList) TPush(val []string) error {
 	}
 
 	list.mux.Lock()
-	defer list.mux.Unlock()
 
 	if len(val) == 1 {
 		list.list.PushBack(val[0])
+		list.mux.Unlock()
 		return nil
 	}
 
 	newList := buildValueList(false, val)
 	list.list.PushBackList(newList)
+	list.mux.Unlock()
 	return nil
 }
 
@@ -117,25 +119,29 @@ func (list *TList) Len() int {
 // HPop pops out the element from head
 func (list *TList) HPop() string {
 	list.mux.Lock()
-	defer list.mux.Unlock()
 
 	if list.Head() == nil {
+		list.mux.Unlock()
 		return ""
 	}
 
-	return util.ToString(list.list.Remove(list.Head()))
+	str := util.ToString(list.list.Remove(list.Head()))
+	list.mux.Unlock()
+	return str
 }
 
 // TPop pops out the element from tail
 func (list *TList) TPop() string {
 	list.mux.Lock()
-	defer list.mux.Unlock()
 
 	if list.Tail() == nil {
+		list.mux.Unlock()
 		return ""
 	}
 
-	return util.ToString(list.list.Remove(list.Tail()))
+	str := util.ToString(list.list.Remove(list.Tail()))
+	list.mux.Unlock()
+	return str
 }
 
 func (list *TList) convertPos(pos int) int {
@@ -172,12 +178,12 @@ func (list *TList) findAtIndex(pos int) *list.Element {
 // Range will output set of keys based on index query
 func (list *TList) Range(start, stop int) []string {
 	list.mux.RLock()
-	defer list.mux.RUnlock()
 
 	start = list.convertPos(start)
 	stop = list.convertPos(stop)
 
 	if start > list.Len()-1 || start < 0 {
+		list.mux.RUnlock()
 		return []string{}
 	}
 
@@ -188,6 +194,7 @@ func (list *TList) Range(start, stop int) []string {
 	dist := stop - start
 
 	if dist < 0 {
+		list.mux.RUnlock()
 		return []string{}
 	}
 
@@ -197,6 +204,7 @@ func (list *TList) Range(start, stop int) []string {
 		res[j] = util.ToString(e.Value)
 	}
 
+	list.mux.RUnlock()
 	return res[:]
 }
 
