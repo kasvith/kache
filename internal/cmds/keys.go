@@ -40,3 +40,9 @@ func Del(d *db.DB, args []string) *protcl.Message {
 	deleted := d.Del(args)
 	return protcl.NewMessage(protcl.NewIntegerReply(deleted), nil)
 }
+
+// Keys will return all keys of the db as a list
+func Keys(d *db.DB, args []string) *protcl.Message {
+	keys := d.Keys()
+	return protcl.NewMessage(protcl.NewArrayReply(false, keys), nil)
+}

@@ -27,12 +27,14 @@ package db
 import (
 	"fmt"
 	"sync"
+
+	"github.com/kasvith/kache/internal/protcl"
 )
 
 // DB holds a thread safe struct for store data
 type DB struct {
 	file map[string]*DataNode
-	mux  sync.Mutex
+	mux  sync.RWMutex
 }
 
 // KeyNotFoundError has the key which was not able to found in a DB
@@ -51,12 +53,14 @@ func NewDB() *DB {
 
 // Get the value of a key
 func (db *DB) Get(key string) (*DataNode, error) {
-	db.mux.Lock()
-	defer db.mux.Unlock()
+	db.mux.RLock()
+
 	if v, ok := db.file[key]; ok {
+		db.mux.RUnlock()
 		return v, nil
 	}
 
+	db.mux.RUnlock()
 	return nil, &KeyNotFoundError{key: key}
 }
 
@@ -70,13 +74,14 @@ func (db *DB) Set(key string, val *DataNode) {
 // GetIfNotSet will try to get the key if not will set it to a given value
 func (db *DB) GetIfNotSet(key string, val *DataNode) (value *DataNode, found bool) {
 	db.mux.Lock()
-	defer db.mux.Unlock()
 
 	if v, found := db.file[key]; found {
+		db.mux.Unlock()
 		return v, true
 	}
 	db.file[key] = val
 
+	db.mux.Unlock()
 	return val, false
 }
 
@@ -97,11 +102,27 @@ func (db *DB) Del(keys []string) int {
 
 // Exists finds the existancy of a key
 func (db *DB) Exists(key string) int {
-	db.mux.Lock()
-	defer db.mux.Unlock()
+	db.mux.RLock()
 	if _, ok := db.file[key]; ok {
+		db.mux.RUnlock()
 		return 1
 	}
 
+	db.mux.RUnlock()
 	return 0
+}
+
+// Keys returns all keys of the db
+func (db *DB) Keys() []protcl.Reply {
+	db.mux.RLock()
+
+	keys := make([]protcl.Reply, len(db.file))
+	i := 0
+	for key := range db.file {
+		keys[i] = protcl.NewBulkStringReply(false, key)
+		i++
+	}
+
+	db.mux.RUnlock()
+	return keys
 }

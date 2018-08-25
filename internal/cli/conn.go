@@ -61,7 +61,11 @@ func (r *cli) parseResp() (string, error) {
 		if err != nil {
 			return "", err
 		}
-		return strings.Join(strs, " "), nil
+		builder := strings.Builder{}
+		for key, value := range strs {
+			builder.WriteString(fmt.Sprintf("%d) %s\n", key+1, value))
+		}
+		return builder.String(), nil
 	case '$':
 		return protcl.ParseBulkString(r.reader, buf)
 	case '+':
