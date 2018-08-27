@@ -59,7 +59,7 @@ func Executor(s string) {
 		return
 	}
 
-	if err := c.write(s); err != nil {
+	if err := c.Write(s); err != nil {
 		fmt.Println(err)
 		return
 	}

@@ -40,14 +40,28 @@ var c *cli
 type cli struct {
 	conn   net.Conn
 	reader *bufio.Reader
+	addr   string
 }
 
-func (r *cli) write(s string) error {
+// Write send string to server
+func (r *cli) Write(s string) error {
+	return r.write(s, true)
+}
+
+func (r *cli) write(s string, reconnect bool) error {
 	send := make([]byte, len(s)+2)
 	copy(send[:len(s)], s)
 	copy(send[len(s):], []byte{'\r', '\n'})
 
-	_, err := c.conn.Write(send)
+	n, err := c.conn.Write(send)
+	if n == 0 && err != nil && reconnect {
+		fmt.Println("reconnecting...")
+
+		if err := Dial(r.addr); err != nil {
+			return err
+		}
+		return r.write(s, false)
+	}
 	return err
 }
 
@@ -98,6 +112,7 @@ func Dial(addr string) error {
 	c = new(cli)
 	c.conn = conn
 	c.reader = bufio.NewReader(conn)
+	c.addr = addr
 
 	return nil
 }

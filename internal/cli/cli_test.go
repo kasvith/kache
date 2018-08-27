@@ -37,7 +37,7 @@ func initTestServerClient(t *testing.T) {
 func runTestSendRecv(t *testing.T, send, recv string) {
 	assert := testifyAssert.New(t)
 
-	assert.Nil(c.write(send))
+	assert.Nil(c.Write(send))
 	resp, err := c.parseResp()
 	assert.Nil(err)
 	assert.Equal(recv, resp)
@@ -72,7 +72,7 @@ func TestCli(t *testing.T) {
 	// key space
 	{
 		// keys
-		assert.Nil(c.write("keys"))
+		assert.Nil(c.Write("keys"))
 		resp, err := c.parseResp()
 		assert.Nil(err)
 		assert.Contains([]string{"1) b\n2) a\n", "1) a\n2) b\n"}, resp)
