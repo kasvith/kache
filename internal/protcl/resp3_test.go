@@ -72,4 +72,14 @@ func TestResp3Parser(t *testing.T) {
 	testResp3Parser(t, "#f\n", `(boolean) false`)
 	testResp3Error(t, "#x\n", `unexpect string: t/f`)
 	testResp3Error(t, "#\n", `unexpected line end`)
+
+	// array
+	testResp3Error(t, "*3\n:1\n:2\n", "EOF")
+	testResp3Parser(t, "*3\n:1\n:2\n:3\n", "(array)\n\t(integer) 1\n\t(integer) 2\n\t(integer) 3")
+	testResp3Parser(t, "*2\n*3\n:1\n$5\nhello\n:2\n#f\n", "(array)\n\t(array)\n\t\t(integer) 1\n\t\t\"hello\"\n\t\t(integer) 2\n\t(boolean) false")
+
+	// set
+	testResp3Error(t, "~3\n:1\n:2\n", "EOF")
+	testResp3Parser(t, "~3\n:1\n:2\n:3\n", "(set)\n\t(integer) 1\n\t(integer) 2\n\t(integer) 3")
+	testResp3Parser(t, "~2\n*3\n:1\n$5\nhello\n:2\n#f\n", "(set)\n\t(array)\n\t\t(integer) 1\n\t\t\"hello\"\n\t\t(integer) 2\n\t(boolean) false")
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 	"strconv"
+	"strings"
 )
 
 // resp3 protocol type
@@ -35,30 +36,48 @@ type Resp3 struct {
 	Boolean bool
 	Double  float64
 	BigInt  *big.Int
+	Elems   []*Resp3
 }
 
 func (r *Resp3) String() string {
+	return r.string("")
+}
+
+func (r *Resp3) string(pre string) string {
 	switch r.Type {
 	case RepSimpleString, Resp3BlobString:
-		return fmt.Sprintf("%q", r.Str)
+		return fmt.Sprintf("%s%q", pre, r.Str)
 	case Resp3SimpleError, Resp3BolbError:
-		return "(error) " + r.Str
+		return pre + "(error) " + r.Str
 	case Resp3Number:
-		return "(integer) " + strconv.Itoa(r.Integer)
+		return pre + "(integer) " + strconv.Itoa(r.Integer)
 	case Resp3Double:
-		return "(double) " + strconv.FormatFloat(r.Double, 'f', -1, 64)
+		return pre + "(double) " + strconv.FormatFloat(r.Double, 'f', -1, 64)
 	case Resp3BigNumber:
-		return "(big number) " + r.BigInt.String()
+		return pre + "(big number) " + r.BigInt.String()
 	case Resp3Null:
-		return "(null)"
+		return pre + "(null)"
 	case Resp3Boolean:
 		if r.Boolean {
-			return "(boolean) true"
+			return pre + "(boolean) true"
 		}
-		return "(boolean) false"
+		return pre + "(boolean) false"
+	case Resp3Array, Resp3Set:
+		str := new(strings.Builder)
+		str.WriteString(pre)
+		if r.Type == Resp3Array {
+			str.WriteString("(array)")
+		} else {
+			str.WriteString("(set)")
+		}
+		for _, elem := range r.Elems {
+			str.WriteString("\n")
+			str.WriteString(elem.string(pre + "\t"))
+		}
+		return str.String()
 	}
 
-	return "(error) unknown protocol type: " + string(r.Type)
+	return pre + "(error) unknown protocol type: " + string(r.Type)
 }
 
 // Resp3Parser is for parser resp3 protocol
@@ -141,6 +160,20 @@ func (r *Resp3Parser) Parse() (*Resp3, error) {
 			return &Resp3{Type: b, Boolean: false}, nil
 		}
 		return nil, &ErrUnexpectString{Str: "t/f"}
+	case Resp3Array, Resp3Set:
+		length, err := r.intBeforeLF()
+		if err != nil {
+			return nil, err
+		}
+		resp := &Resp3{Type: b}
+		for i := 0; i < length; i++ {
+			elem, err := r.Parse()
+			if err != nil {
+				return nil, err
+			}
+			resp.Elems = append(resp.Elems, elem)
+		}
+		return resp, nil
 	}
 
 	return nil, &ErrProtocolType{Type: b}
