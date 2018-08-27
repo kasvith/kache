@@ -101,3 +101,31 @@ func (e *ErrUnknownCommand) Error() string {
 func (ErrUnknownCommand) Recoverable() bool {
 	return true
 }
+
+// ErrProtocolType is for protocol type error
+type ErrProtocolType struct {
+	Type byte
+}
+
+// Recoverable whether error is recoverable or not
+func (e *ErrProtocolType) Recoverable() bool {
+	return true
+}
+
+func (e *ErrProtocolType) Error() string {
+	return fmt.Sprintf("unknown protocol type: %s", string(e.Type))
+}
+
+// ErrUnexpectString is for unexpect string error
+type ErrUnexpectString struct {
+	Str string
+}
+
+// Recoverable whether error is recoverable or not
+func (e *ErrUnexpectString) Recoverable() bool {
+	return true
+}
+
+func (e *ErrUnexpectString) Error() string {
+	return fmt.Sprintf("unexpect string: %s", e.Str)
+}
