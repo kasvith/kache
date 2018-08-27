@@ -27,9 +27,7 @@ package cli
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"net"
-	"strings"
 	"time"
 
 	"github.com/kasvith/kache/internal/protcl"
@@ -38,9 +36,9 @@ import (
 var c *cli
 
 type cli struct {
-	conn   net.Conn
-	reader *bufio.Reader
-	addr   string
+	conn        net.Conn
+	resp3Parser *protcl.Resp3Parser
+	addr        string
 }
 
 // Write send string to server
@@ -49,11 +47,7 @@ func (r *cli) Write(s string) error {
 }
 
 func (r *cli) write(s string, reconnect bool) error {
-	send := make([]byte, len(s)+2)
-	copy(send[:len(s)], s)
-	copy(send[len(s):], []byte{'\r', '\n'})
-
-	n, err := c.conn.Write(send)
+	n, err := c.conn.Write([]byte(s))
 	if n == 0 && err != nil && reconnect {
 		fmt.Println("reconnecting...")
 
@@ -65,43 +59,6 @@ func (r *cli) write(s string, reconnect bool) error {
 	return err
 }
 
-func (r *cli) parseResp() (string, error) {
-	buf, err := r.reader.ReadBytes('\n')
-	if err != nil {
-		if err == io.EOF {
-			return "", nil
-		}
-		return "", err
-	}
-
-	if err := protcl.EndWithCRLF(buf); err != nil {
-		return "", err
-	}
-
-	switch buf[0] {
-	case '*':
-		strs, err := protcl.ParseMultiBulkReply(r.reader, buf)
-		if err != nil {
-			return "", err
-		}
-		builder := strings.Builder{}
-		for key, value := range strs {
-			builder.WriteString(fmt.Sprintf("%d) %s\n", key+1, value))
-		}
-		return builder.String(), nil
-	case '$':
-		return protcl.ParseBulkString(r.reader, buf)
-	case '+':
-		return fmt.Sprintf("%q", buf[1:len(buf)-2]), nil
-	case ':':
-		return fmt.Sprintf("(integer) %s", buf[1:len(buf)-2]), nil
-	case '-':
-		return fmt.Sprintf("(error) %s", buf[1:len(buf)-2]), nil
-	}
-
-	return "", fmt.Errorf("unsupport resp type: %s", []byte{buf[0]})
-}
-
 // Dial conn kache server
 func Dial(addr string) error {
 	conn, err := net.DialTimeout("tcp", addr, time.Second)
@@ -111,7 +68,7 @@ func Dial(addr string) error {
 
 	c = new(cli)
 	c.conn = conn
-	c.reader = bufio.NewReader(conn)
+	c.resp3Parser = protcl.NewResp3Parser(bufio.NewReader(conn))
 	c.addr = addr
 
 	return nil

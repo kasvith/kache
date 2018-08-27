@@ -61,11 +61,11 @@ func (client *Client) RemoteAddr() net.Addr {
 func (client *Client) Handle() {
 	// TODO determine client type by first issued command to kache, this can improve performance
 
-	reader := protcl.NewReader(client.Connection)
+	resp3Parser := protcl.NewResp3Parser(bufio.NewReader(client.Connection))
 	writer := bufio.NewWriter(client.Connection)
 
 	for {
-		command, err := reader.ParseMessage()
+		command, err := resp3Parser.Commands()
 
 		// handle any parse errors
 		if err != nil {
@@ -95,12 +95,7 @@ func (client *Client) Handle() {
 		// executes the command
 		message := commander.Execute(DB, command.Name, command.Args)
 
-		// return the results
-		if message.Err == nil {
-			writer.WriteString(message.RespReply())
-		} else {
-			writer.WriteString(protcl.RespError(message.Err))
-		}
+		writer.WriteString(message.ProtocolString())
 
 		writer.Flush()
 	}

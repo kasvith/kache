@@ -30,10 +30,10 @@ import (
 )
 
 // Ping will return PONG when no argument found or will echo the given argument
-func Ping(d *db.DB, args []string) *protcl.Message {
+func Ping(d *db.DB, args []string) *protcl.Resp3 {
 	if len(args) == 0 {
-		return protcl.NewMessage(protcl.NewSimpleStringReply("PONG"), nil)
+		return &protcl.Resp3{Type: protcl.RepSimpleString, Str: "PONG"}
 	}
 
-	return protcl.NewMessage(protcl.NewBulkStringReply(false, args[0]), nil)
+	return &protcl.Resp3{Type: protcl.Resp3BlobString, Str: args[0]}
 }

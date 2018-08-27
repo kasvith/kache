@@ -113,13 +113,13 @@ func (db *DB) Exists(key string) int {
 }
 
 // Keys returns all keys of the db
-func (db *DB) Keys() []protcl.Reply {
+func (db *DB) Keys() []*protcl.Resp3 {
 	db.mux.RLock()
 
-	keys := make([]protcl.Reply, len(db.file))
+	keys := make([]*protcl.Resp3, len(db.file))
 	i := 0
 	for key := range db.file {
-		keys[i] = protcl.NewBulkStringReply(false, key)
+		keys[i] = &protcl.Resp3{Type: protcl.Resp3BlobString, Str: key}
 		i++
 	}
 

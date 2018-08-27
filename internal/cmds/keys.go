@@ -30,19 +30,19 @@ import (
 )
 
 // Exists will check for key existency in given db
-func Exists(d *db.DB, args []string) *protcl.Message {
+func Exists(d *db.DB, args []string) *protcl.Resp3 {
 	found := d.Exists(args[0])
-	return protcl.NewMessage(protcl.NewIntegerReply(found), nil)
+	return &protcl.Resp3{Type: protcl.Resp3Number, Integer: found}
 }
 
 // Del will delete set of keys and return number of deleted keys
-func Del(d *db.DB, args []string) *protcl.Message {
+func Del(d *db.DB, args []string) *protcl.Resp3 {
 	deleted := d.Del(args)
-	return protcl.NewMessage(protcl.NewIntegerReply(deleted), nil)
+	return &protcl.Resp3{Type: protcl.Resp3Number, Integer: deleted}
 }
 
 // Keys will return all keys of the db as a list
-func Keys(d *db.DB, args []string) *protcl.Message {
+func Keys(d *db.DB, args []string) *protcl.Resp3 {
 	keys := d.Keys()
-	return protcl.NewMessage(protcl.NewArrayReply(false, keys), nil)
+	return &protcl.Resp3{Type: protcl.Resp3Array, Elems: keys}
 }

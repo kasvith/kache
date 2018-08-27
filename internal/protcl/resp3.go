@@ -1,7 +1,6 @@
 package protcl
 
 import (
-	"bufio"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -39,6 +38,22 @@ type Resp3 struct {
 	Elems   []*Resp3
 }
 
+// NewSliceResp3 convert string slice to resp3 protocol raw string
+func NewSliceResp3(slices []string) string {
+	buf := new(strings.Builder)
+	buf.WriteByte('*')
+	buf.WriteString(strconv.Itoa(len(slices)))
+	buf.WriteByte('\n')
+	for _, v := range slices {
+		buf.WriteByte('$')
+		buf.WriteString(strconv.Itoa(len(v)))
+		buf.WriteByte('\n')
+		buf.WriteString(v)
+		buf.WriteByte('\n')
+	}
+	return buf.String()
+}
+
 // RenderString convert resp3 to show-message on client
 func (r *Resp3) RenderString() string {
 	return r.renderString("")
@@ -50,6 +65,52 @@ func (r *Resp3) ProtocolString() string {
 	buf.WriteByte(r.Type)
 	r.protocolString(buf)
 	return buf.String()
+}
+
+func (r *Resp3) commands() ([]string, error) {
+	switch r.Type {
+	case RepSimpleString, Resp3BlobString, Resp3Number, Resp3Double, Resp3BigNumber, Resp3Boolean:
+		c, err := r.command()
+		if err != nil {
+			return nil, err
+		}
+		return []string{c}, nil
+	case Resp3Array:
+		var slices = make([]string, len(r.Elems))
+		i := 0
+		for _, v := range r.Elems {
+			if v.Type != RepSimpleString && v.Type != Resp3BlobString && v.Type != Resp3Number && v.Type != Resp3Double && v.Type != Resp3BigNumber && v.Type != Resp3Boolean {
+				return nil, &ErrInvalidCommand{}
+			}
+			c, err := v.command()
+			if err != nil {
+				return nil, err
+			}
+			slices[i] = c
+			i++
+		}
+		return slices, nil
+	}
+	return nil, &ErrInvalidCommand{}
+}
+
+func (r *Resp3) command() (string, error) {
+	switch r.Type {
+	case Resp3SimpleString, Resp3BlobString:
+		return r.Str, nil
+	case Resp3Number:
+		return strconv.Itoa(r.Integer), nil
+	case Resp3Double:
+		return strconv.FormatFloat(r.Double, 'f', -1, 64), nil
+	case Resp3BigNumber:
+		return r.BigInt.String(), nil
+	case Resp3Boolean:
+		if r.Boolean {
+			return "true", nil
+		}
+		return "false", nil
+	}
+	return "", &ErrInvalidCommand{}
 }
 
 func (r *Resp3) protocolString(buf *strings.Builder) {
@@ -122,162 +183,4 @@ func (r *Resp3) renderString(pre string) string {
 	}
 
 	return pre + "(error) unknown protocol type: " + string(r.Type)
-}
-
-// Resp3Parser is for parser resp3 protocol
-type Resp3Parser struct {
-	reader *bufio.Reader
-}
-
-// NewResp3Parser return a Resp3Parser
-func NewResp3Parser(r *bufio.Reader) *Resp3Parser {
-	return &Resp3Parser{reader: r}
-}
-
-// Parse return Resp3
-func (r *Resp3Parser) Parse() (*Resp3, error) {
-	b, err := r.reader.ReadByte()
-	if err != nil {
-		return nil, err
-	}
-
-	switch b {
-	case Resp3SimpleString, Resp3SimpleError:
-		str, err := r.stringBeforeLF()
-		if err != nil {
-			return nil, err
-		}
-		return &Resp3{Type: b, Str: str}, nil
-	case Resp3BlobString, Resp3BolbError:
-		length, err := r.intBeforeLF()
-		if err != nil {
-			return nil, err
-		}
-
-		bs, err := r.readLengthBytesWithLF(length)
-		if err != nil {
-			return nil, err
-		}
-
-		return &Resp3{Type: b, Str: string(bs)}, nil
-	case Resp3Number:
-		integer, err := r.intBeforeLF()
-		if err != nil {
-			return nil, err
-		}
-		return &Resp3{Type: b, Integer: integer}, nil
-	case Resp3Double:
-		str, err := r.stringBeforeLF()
-		if err != nil {
-			return nil, err
-		}
-		f, err := strconv.ParseFloat(str, 64)
-		if err != nil {
-			return nil, &ErrConvertType{Type: "double", Value: str, Err: err}
-		}
-		return &Resp3{Type: b, Double: f}, nil
-	case Resp3BigNumber:
-		str, err := r.stringBeforeLF()
-		if err != nil {
-			return nil, err
-		}
-		bigInt, ok := big.NewInt(0).SetString(str, 10)
-		if !ok {
-			return nil, &ErrConvertType{Type: "Big Number", Value: str}
-		}
-		return &Resp3{Type: b, BigInt: bigInt}, nil
-	case Resp3Null:
-		if _, err := r.readLengthBytesWithLF(0); err != nil {
-			return nil, err
-		}
-		return &Resp3{Type: b}, nil
-	case Resp3Boolean:
-		buf, err := r.readLengthBytesWithLF(1)
-		if err != nil {
-			return nil, err
-		}
-
-		switch buf[0] {
-		case 't':
-			return &Resp3{Type: b, Boolean: true}, nil
-		case 'f':
-			return &Resp3{Type: b, Boolean: false}, nil
-		}
-		return nil, &ErrUnexpectString{Str: "t/f"}
-	case Resp3Array, Resp3Set:
-		length, err := r.intBeforeLF()
-		if err != nil {
-			return nil, err
-		}
-		resp := &Resp3{Type: b}
-		for i := 0; i < length; i++ {
-			elem, err := r.Parse()
-			if err != nil {
-				return nil, err
-			}
-			resp.Elems = append(resp.Elems, elem)
-		}
-		return resp, nil
-	}
-
-	return nil, &ErrProtocolType{Type: b}
-}
-
-func (r *Resp3Parser) stringBeforeLF() (string, error) {
-	buf, err := r.reader.ReadBytes(LF)
-	if err != nil {
-		return "", err
-	}
-	bs, err := trimLastLF(buf)
-	if err != nil {
-		return "", err
-	}
-	return string(bs), nil
-}
-
-func (r *Resp3Parser) intBeforeLF() (int, error) {
-	buf, err := r.reader.ReadBytes(LF)
-	if err != nil {
-		return 0, err
-	}
-	bs, err := trimLastLF(buf)
-	if err != nil {
-		return 0, err
-	}
-	s := string(bs)
-	i, err := strconv.Atoi(s)
-	if err != nil {
-		return 0, &ErrCastFailedToInt{Val: s}
-	}
-	return i, nil
-}
-
-func (r *Resp3Parser) readLengthBytesWithLF(length int) ([]byte, error) {
-	if length == 0 {
-		if b, err := r.reader.ReadByte(); err != nil {
-			return nil, err
-		} else if b != LF {
-			return nil, &ErrUnexpectString{Str: "<LF>"}
-		}
-		return nil, nil
-	}
-
-	buf := make([]byte, length+1)
-	n, err := r.reader.Read(buf)
-	if err != nil {
-		return nil, err
-	} else if n < length+1 {
-		return nil, &ErrUnexpectedLineEnd{}
-	}
-
-	return trimLastLF(buf)
-}
-
-func trimLastLF(buf []byte) ([]byte, error) {
-	bufLen := len(buf)
-	if len(buf) == 0 || buf[bufLen-1] != LF {
-		return nil, &ErrUnexpectedLineEnd{}
-	}
-
-	return buf[:bufLen-1], nil
 }

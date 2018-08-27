@@ -31,7 +31,7 @@ import (
 )
 
 // CommandFunc holds a function signature which can be used as a command.
-type CommandFunc func(*db.DB, []string) *protcl.Message
+type CommandFunc func(*db.DB, []string) *protcl.Resp3
 
 // Command holds a command structure which is used to execute a kache command
 type Command struct {
@@ -72,14 +72,14 @@ func getCommand(cmd string) (*Command, error) {
 }
 
 // Execute a single command on the given database with args
-func (DBCommand) Execute(db *db.DB, cmd string, args []string) *protcl.Message {
+func (DBCommand) Execute(db *db.DB, cmd string, args []string) *protcl.Resp3 {
 	command, err := getCommand(cmd)
 	if err != nil {
-		return protcl.NewMessage(nil, err)
+		return &protcl.Resp3{Type: protcl.Resp3SimpleError, Str: err.Error()}
 	}
 
 	if argsLen := len(args); (command.MinArgs > 0 && argsLen < command.MinArgs) || (command.MaxArgs != -1 && argsLen > command.MaxArgs) {
-		return protcl.NewMessage(nil, &protcl.ErrWrongNumberOfArgs{Cmd: cmd})
+		return &protcl.Resp3{Type: protcl.Resp3SimpleError, Str: (&protcl.ErrWrongNumberOfArgs{Cmd: cmd}).Error()}
 	}
 
 	return command.Fn(db, args)

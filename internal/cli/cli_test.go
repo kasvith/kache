@@ -2,6 +2,7 @@ package cli
 
 import (
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 
 	"github.com/kasvith/kache/internal/config"
 	"github.com/kasvith/kache/internal/klogs"
+	"github.com/kasvith/kache/internal/protcl"
 	"github.com/kasvith/kache/internal/srv"
 )
 
@@ -37,10 +39,11 @@ func initTestServerClient(t *testing.T) {
 func runTestSendRecv(t *testing.T, send, recv string) {
 	assert := testifyAssert.New(t)
 
-	assert.Nil(c.Write(send))
-	resp, err := c.parseResp()
+	assert.Nil(c.Write(protcl.NewSliceResp3(strings.Split(send, " "))))
+	resp, err := c.resp3Parser.Parse()
 	assert.Nil(err)
-	assert.Equal(recv, resp)
+	assert.NotNil(resp)
+	assert.Equal(recv, resp.RenderString())
 }
 
 func TestCli(t *testing.T) {
@@ -53,14 +56,14 @@ func TestCli(t *testing.T) {
 	// strings
 	{
 		// get not found
-		runTestSendRecv(t, "get a", "(error) ERR: a not found")
+		runTestSendRecv(t, "get a", "(error) a not found")
 
 		// set
 		runTestSendRecv(t, "set a 1", `"OK"`)
 		runTestSendRecv(t, "set b 2", `"OK"`)
 
 		// get exist
-		runTestSendRecv(t, "get a", "1")
+		runTestSendRecv(t, "get a", `"1"`)
 
 		// incr decr
 		runTestSendRecv(t, "incr b", "(integer) 3")
@@ -72,10 +75,11 @@ func TestCli(t *testing.T) {
 	// key space
 	{
 		// keys
-		assert.Nil(c.Write("keys"))
-		resp, err := c.parseResp()
+		assert.Nil(c.Write("+keys\n"))
+		resp, err := c.resp3Parser.Parse()
 		assert.Nil(err)
-		assert.Contains([]string{"1) b\n2) a\n", "1) a\n2) b\n"}, resp)
+		assert.NotNil(resp)
+		assert.Contains([]string{"(array)\n\t\"a\"\n\t\"b\"", "(array)\n\t\"b\"\n\t\"a\""}, resp.RenderString())
 
 		// exists
 		runTestSendRecv(t, "exists a", "(integer) 1")

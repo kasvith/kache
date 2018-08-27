@@ -33,59 +33,59 @@ import (
 )
 
 // Get will find the value of a given string key and return it
-func Get(d *db.DB, args []string) *protcl.Message {
+func Get(d *db.DB, args []string) *protcl.Resp3 {
 	val, err := d.Get(args[0])
 	if err != nil {
-		return protcl.NewMessage(nil, &protcl.ErrGeneric{Err: err})
+		return &protcl.Resp3{Type: protcl.Resp3BolbError, Str: err.Error()}
 	}
 
 	if val.Type != db.TypeString {
-		return protcl.NewMessage(nil, &protcl.ErrWrongType{})
+		return &protcl.Resp3{Type: protcl.Resp3BolbError, Str: (&protcl.ErrWrongType{}).Error()}
 	}
 
-	return protcl.NewMessage(protcl.NewBulkStringReply(false, util.ToString(val.Value)), nil)
+	return &protcl.Resp3{Type: protcl.RepBulkString, Str: util.ToString(val.Value)}
 }
 
 // Set will create a new string key value pair
-func Set(d *db.DB, args []string) *protcl.Message {
+func Set(d *db.DB, args []string) *protcl.Resp3 {
 	key := args[0]
 	val := args[1]
 
 	d.Set(key, db.NewDataNode(db.TypeString, -1, val))
 
-	return protcl.NewMessage(protcl.NewSimpleStringReply("OK"), nil)
+	return &protcl.Resp3{Type: protcl.RepSimpleString, Str: "OK"}
 }
 
 // Incr will increment a given string key by 1
 // If key not found it will be set to 0 and will do operation
 // If key type is invalid it will return an error
-func Incr(d *db.DB, args []string) *protcl.Message {
+func Incr(d *db.DB, args []string) *protcl.Resp3 {
 	return accumulateBy(d, args[0], 1, true)
 }
 
 // Decr will decrement a given string key by 1
 // If key not found it will be set to 0 and will do operation
 // If key type is invalid it will return an error
-func Decr(d *db.DB, args []string) *protcl.Message {
+func Decr(d *db.DB, args []string) *protcl.Resp3 {
 	return accumulateBy(d, args[0], -1, true)
 }
 
 // accumulateBy will accumulate the value of key by given amount
-func accumulateBy(d *db.DB, key string, v int, incr bool) *protcl.Message {
+func accumulateBy(d *db.DB, key string, v int, incr bool) *protcl.Resp3 {
 	val, found := d.GetIfNotSet(key, db.NewDataNode(db.TypeString, -1, strconv.Itoa(v)))
 
 	if !found {
-		return protcl.NewMessage(protcl.NewIntegerReply(v), nil)
+		return &protcl.Resp3{Type: protcl.Resp3Number, Integer: v}
 	}
 
 	if val.Type != db.TypeString {
-		return protcl.NewMessage(nil, protcl.ErrWrongType{})
+		return &protcl.Resp3{Type: protcl.Resp3BolbError, Str: (&protcl.ErrWrongType{}).Error()}
 	}
 
 	i, err := strconv.Atoi(util.ToString(val.Value))
 
 	if err != nil {
-		return protcl.NewMessage(nil, &protcl.ErrCastFailedToInt{Val: val.Value})
+		return &protcl.Resp3{Type: protcl.Resp3BolbError, Str: (&protcl.ErrCastFailedToInt{Val: val.Value}).Error()}
 	}
 
 	var n int
@@ -97,5 +97,5 @@ func accumulateBy(d *db.DB, key string, v int, incr bool) *protcl.Message {
 
 	d.Set(key, db.NewDataNode(db.TypeString, -1, strconv.Itoa(n)))
 
-	return protcl.NewMessage(protcl.NewIntegerReply(n), nil)
+	return &protcl.Resp3{Type: protcl.Resp3Number, Integer: n}
 }

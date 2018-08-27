@@ -30,6 +30,8 @@ import (
 	"strings"
 
 	"github.com/c-bata/go-prompt"
+
+	"github.com/kasvith/kache/internal/protcl"
 )
 
 // RunCli start kache-cli command
@@ -59,18 +61,20 @@ func Executor(s string) {
 		return
 	}
 
-	if err := c.Write(s); err != nil {
+	if err := c.Write(protcl.NewSliceResp3(strings.Split(s, " "))); err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	resp, err := c.parseResp()
+	resp, err := c.resp3Parser.Parse()
 	if err != nil {
 		fmt.Println(err)
 		return
+	} else if resp != nil {
+		fmt.Println(resp.RenderString())
+		return
 	}
-
-	fmt.Println(resp)
+	fmt.Println("(empty)")
 }
 
 // Completer used in CLI
