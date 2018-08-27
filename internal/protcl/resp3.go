@@ -39,11 +39,55 @@ type Resp3 struct {
 	Elems   []*Resp3
 }
 
-func (r *Resp3) String() string {
-	return r.string("")
+// RenderString convert resp3 to show-message on client
+func (r *Resp3) RenderString() string {
+	return r.renderString("")
 }
 
-func (r *Resp3) string(pre string) string {
+// ProtocolString convert resp3 to protocol raw string
+func (r *Resp3) ProtocolString() string {
+	buf := new(strings.Builder)
+	buf.WriteByte(r.Type)
+	r.protocolString(buf)
+	return buf.String()
+}
+
+func (r *Resp3) protocolString(buf *strings.Builder) {
+	switch r.Type {
+	case RepSimpleString, Resp3SimpleError:
+		buf.WriteString(r.Str)
+	case Resp3BlobString, Resp3BolbError:
+		buf.WriteString(strconv.Itoa(len(r.Str)))
+		buf.WriteByte('\n')
+		buf.WriteString(r.Str)
+	case Resp3Number:
+		buf.WriteString(strconv.Itoa(r.Integer))
+	case Resp3Double:
+		buf.WriteString(strconv.FormatFloat(r.Double, 'f', -1, 64))
+	case Resp3BigNumber:
+		buf.WriteString(r.BigInt.String())
+	case Resp3Null:
+	case Resp3Boolean:
+		if r.Boolean {
+			buf.WriteByte('t')
+		} else {
+			buf.WriteByte('f')
+		}
+	case Resp3Array, Resp3Set:
+		buf.WriteString(strconv.Itoa(len(r.Elems)))
+		buf.WriteByte('\n')
+
+		for _, v := range r.Elems {
+			buf.WriteByte(v.Type)
+			v.protocolString(buf)
+		}
+		return
+	}
+
+	buf.WriteByte('\n')
+}
+
+func (r *Resp3) renderString(pre string) string {
 	switch r.Type {
 	case RepSimpleString, Resp3BlobString:
 		return fmt.Sprintf("%s%q", pre, r.Str)
@@ -72,7 +116,7 @@ func (r *Resp3) string(pre string) string {
 		}
 		for _, elem := range r.Elems {
 			str.WriteString("\n")
-			str.WriteString(elem.string(pre + "\t"))
+			str.WriteString(elem.renderString(pre + "\t"))
 		}
 		return str.String()
 	}
