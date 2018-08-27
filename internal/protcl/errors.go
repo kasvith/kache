@@ -129,3 +129,22 @@ func (e *ErrUnexpectString) Recoverable() bool {
 func (e *ErrUnexpectString) Error() string {
 	return fmt.Sprintf("unexpect string: %s", e.Str)
 }
+
+// ErrConvertType is for convert value to another type fail
+type ErrConvertType struct {
+	Type  string
+	Err   error
+	Value interface{}
+}
+
+// Recoverable whether error is recoverable or not
+func (e *ErrConvertType) Recoverable() bool {
+	return true
+}
+
+func (e *ErrConvertType) Error() string {
+	if e.Err == nil {
+		return fmt.Sprintf("convert %v to %s fail", e.Value, e.Type)
+	}
+	return fmt.Sprintf("convert %v to %s fail, because of %s", e.Value, e.Type, e.Err)
+}

@@ -3,6 +3,7 @@ package protcl
 import (
 	"bufio"
 	"fmt"
+	"math/big"
 	"strconv"
 )
 
@@ -32,6 +33,8 @@ type Resp3 struct {
 	Str     string
 	Integer int
 	Boolean bool
+	Double  float64
+	BigInt  *big.Int
 }
 
 func (r *Resp3) String() string {
@@ -42,6 +45,10 @@ func (r *Resp3) String() string {
 		return "(error) " + r.Str
 	case Resp3Number:
 		return "(integer) " + strconv.Itoa(r.Integer)
+	case Resp3Double:
+		return "(double) " + strconv.FormatFloat(r.Double, 'f', -1, 64)
+	case Resp3BigNumber:
+		return "(big number) " + r.BigInt.String()
 	case Resp3Null:
 		return "(null)"
 	case Resp3Boolean:
@@ -96,6 +103,26 @@ func (r *Resp3Parser) Parse() (*Resp3, error) {
 			return nil, err
 		}
 		return &Resp3{Type: b, Integer: integer}, nil
+	case Resp3Double:
+		str, err := r.stringBeforeLF()
+		if err != nil {
+			return nil, err
+		}
+		f, err := strconv.ParseFloat(str, 64)
+		if err != nil {
+			return nil, &ErrConvertType{Type: "double", Value: str, Err: err}
+		}
+		return &Resp3{Type: b, Double: f}, nil
+	case Resp3BigNumber:
+		str, err := r.stringBeforeLF()
+		if err != nil {
+			return nil, err
+		}
+		bigInt, ok := big.NewInt(0).SetString(str, 10)
+		if !ok {
+			return nil, &ErrConvertType{Type: "Big Number", Value: str}
+		}
+		return &Resp3{Type: b, BigInt: bigInt}, nil
 	case Resp3Null:
 		if _, err := r.readLengthBytesWithLF(0); err != nil {
 			return nil, err

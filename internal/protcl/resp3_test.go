@@ -51,6 +51,19 @@ func TestResp3Parser(t *testing.T) {
 	testResp3Parser(t, ":0\n", `(integer) 0`)
 	testResp3Parser(t, ":100\n", `(integer) 100`)
 
+	// double
+	testResp3Parser(t, ",-1\n", `(double) -1`)
+	testResp3Parser(t, ",0\n", `(double) 0`)
+	testResp3Parser(t, ",10\n", `(double) 10`)
+	testResp3Parser(t, ",.1\n", `(double) 0.1`)
+	testResp3Parser(t, ",1.23\n", `(double) 1.23`)
+	testResp3Parser(t, ",1.\n", `(double) 1`)
+	testResp3Error(t, ",invalid\n", `convert invalid to double fail, because of strconv.ParseFloat: parsing "invalid": invalid syntax`)
+
+	// big number
+	testResp3Parser(t, "(3492890328409238509324850943850943825024385\n", `(big number) 3492890328409238509324850943850943825024385`)
+	testResp3Error(t, "(invalid string\n", `convert invalid string to Big Number fail`)
+
 	// null
 	testResp3Parser(t, "_\n", "(null)")
 
