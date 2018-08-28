@@ -148,3 +148,84 @@ func (e *ErrConvertType) Error() string {
 	}
 	return fmt.Sprintf("convert %v to %s fail, because of %s", e.Value, e.Type, e.Err)
 }
+
+// ErrValueOutOfRange for out of range errors
+type ErrValueOutOfRange struct {
+}
+
+// Recoverable whether error is recoverable or not
+func (ErrValueOutOfRange) Error() string {
+	return "value out of range"
+}
+
+// Recoverable whether error is recoverable or not
+func (ErrValueOutOfRange) Recoverable() bool {
+	return true
+}
+
+//ErrInvalidCommand for invalid commands
+type ErrInvalidCommand struct {
+}
+
+func (ErrInvalidCommand) Error() string {
+	return "invalid command"
+}
+
+// Recoverable whether error is recoverable or not
+func (ErrInvalidCommand) Recoverable() bool {
+	return true
+}
+
+// ErrBufferExceeded for buffer exceeds
+type ErrBufferExceeded struct {
+}
+
+func (ErrBufferExceeded) Error() string {
+	return "buffer exceeded"
+}
+
+// Recoverable whether error is recoverable or not
+func (ErrBufferExceeded) Recoverable() bool {
+	return true
+}
+
+// ErrUnexpectedLineEnd for unexpected line ends(no CRLF)
+type ErrUnexpectedLineEnd struct {
+}
+
+func (ErrUnexpectedLineEnd) Error() string {
+	return "unexpected line end"
+}
+
+// Recoverable whether error is recoverable or not
+func (ErrUnexpectedLineEnd) Recoverable() bool {
+	return true
+}
+
+// ErrInvalidToken for invalid tokens
+type ErrInvalidToken struct {
+	Token byte
+}
+
+func (e *ErrInvalidToken) Error() string {
+	return fmt.Sprintf("excepted $, found %c", e.Token)
+}
+
+// Recoverable whether error is recoverable or not
+func (ErrInvalidToken) Recoverable() bool {
+	return true
+}
+
+// ErrInvalidBlkStringLength raised when bulk string length mismatch
+type ErrInvalidBlkStringLength struct {
+	Excepted, Given int
+}
+
+func (e *ErrInvalidBlkStringLength) Error() string {
+	return fmt.Sprintf("invalid bulk string length, excepted %d processed %d", e.Excepted, e.Given)
+}
+
+// Recoverable whether error is recoverable or not
+func (ErrInvalidBlkStringLength) Recoverable() bool {
+	return true
+}

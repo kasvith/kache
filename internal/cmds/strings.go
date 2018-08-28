@@ -43,7 +43,7 @@ func Get(d *db.DB, args []string) *protcl.Resp3 {
 		return &protcl.Resp3{Type: protcl.Resp3BolbError, Str: (&protcl.ErrWrongType{}).Error()}
 	}
 
-	return &protcl.Resp3{Type: protcl.RepBulkString, Str: util.ToString(val.Value)}
+	return &protcl.Resp3{Type: protcl.Resp3BlobString, Str: util.ToString(val.Value)}
 }
 
 // Set will create a new string key value pair
@@ -53,7 +53,7 @@ func Set(d *db.DB, args []string) *protcl.Resp3 {
 
 	d.Set(key, db.NewDataNode(db.TypeString, -1, val))
 
-	return &protcl.Resp3{Type: protcl.RepSimpleString, Str: "OK"}
+	return &protcl.Resp3{Type: protcl.Resp3SimpleString, Str: "OK"}
 }
 
 // Incr will increment a given string key by 1

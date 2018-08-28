@@ -69,7 +69,7 @@ func (r *Resp3) ProtocolString() string {
 
 func (r *Resp3) commands() ([]string, error) {
 	switch r.Type {
-	case RepSimpleString, Resp3BlobString, Resp3Number, Resp3Double, Resp3BigNumber, Resp3Boolean:
+	case Resp3SimpleString, Resp3BlobString, Resp3Number, Resp3Double, Resp3BigNumber, Resp3Boolean:
 		c, err := r.command()
 		if err != nil {
 			return nil, err
@@ -79,7 +79,7 @@ func (r *Resp3) commands() ([]string, error) {
 		var slices = make([]string, len(r.Elems))
 		i := 0
 		for _, v := range r.Elems {
-			if v.Type != RepSimpleString && v.Type != Resp3BlobString && v.Type != Resp3Number && v.Type != Resp3Double && v.Type != Resp3BigNumber && v.Type != Resp3Boolean {
+			if v.Type != Resp3SimpleString && v.Type != Resp3BlobString && v.Type != Resp3Number && v.Type != Resp3Double && v.Type != Resp3BigNumber && v.Type != Resp3Boolean {
 				return nil, &ErrInvalidCommand{}
 			}
 			c, err := v.command()
@@ -115,7 +115,7 @@ func (r *Resp3) command() (string, error) {
 
 func (r *Resp3) protocolString(buf *strings.Builder) {
 	switch r.Type {
-	case RepSimpleString, Resp3SimpleError:
+	case Resp3SimpleString, Resp3SimpleError:
 		buf.WriteString(r.Str)
 	case Resp3BlobString, Resp3BolbError:
 		buf.WriteString(strconv.Itoa(len(r.Str)))
@@ -150,7 +150,7 @@ func (r *Resp3) protocolString(buf *strings.Builder) {
 
 func (r *Resp3) renderString(pre string) string {
 	switch r.Type {
-	case RepSimpleString, Resp3BlobString:
+	case Resp3SimpleString, Resp3BlobString:
 		return fmt.Sprintf("%s%q", pre, r.Str)
 	case Resp3SimpleError, Resp3BolbError:
 		return pre + "(error) " + r.Str

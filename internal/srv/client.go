@@ -76,7 +76,7 @@ func (client *Client) Handle() {
 					// log the error, inform client continue loop
 					// anything else should be sent to client with prefix PrefixErr
 					klogs.Logger.Debug(client.RemoteAddr(), ": ", err.Error())
-					writer.WriteString(protcl.RespError(err))
+					writer.WriteString((&protcl.Resp3{Type: protcl.Resp3BolbError, Str: err.Error()}).ProtocolString())
 					writer.Flush()
 					continue
 				}

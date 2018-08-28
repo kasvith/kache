@@ -32,7 +32,7 @@ import (
 // Ping will return PONG when no argument found or will echo the given argument
 func Ping(d *db.DB, args []string) *protcl.Resp3 {
 	if len(args) == 0 {
-		return &protcl.Resp3{Type: protcl.RepSimpleString, Str: "PONG"}
+		return &protcl.Resp3{Type: protcl.Resp3SimpleString, Str: "PONG"}
 	}
 
 	return &protcl.Resp3{Type: protcl.Resp3BlobString, Str: args[0]}
