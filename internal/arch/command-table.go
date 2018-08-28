@@ -50,6 +50,7 @@ var CommandTable = map[string]Command{
 	"exists": {ModifyKeySpace: false, Fn: cmds.Exists, MinArgs: 1, MaxArgs: 1},
 	"del":    {ModifyKeySpace: true, Fn: cmds.Del, MinArgs: 1, MaxArgs: -1},
 	"keys":   {ModifyKeySpace: false, Fn: cmds.Keys, MinArgs: 0, MaxArgs: 0},
+	"expire": {ModifyKeySpace: false, Fn: cmds.Expire, MinArgs: 2, MaxArgs: 2},
 
 	// strings
 	"get":  {ModifyKeySpace: false, Fn: cmds.Get, MinArgs: 1, MaxArgs: 1},

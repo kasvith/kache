@@ -36,7 +36,7 @@ import (
 func Get(d *db.DB, args []string) *protcl.Resp3 {
 	val, err := d.Get(args[0])
 	if err != nil {
-		return &protcl.Resp3{Type: protcl.Resp3BolbError, Err: err}
+		return &protcl.Resp3{Type: protcl.Resp3Null}
 	}
 
 	if val.Type != db.TypeString {

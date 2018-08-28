@@ -56,7 +56,7 @@ func TestCli(t *testing.T) {
 	// strings
 	{
 		// get not found
-		runTestSendRecv(t, "get a", "(error) a not found")
+		runTestSendRecv(t, "get a", "(null)")
 
 		// set
 		runTestSendRecv(t, "set a 1", `"OK"`)

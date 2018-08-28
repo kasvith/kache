@@ -25,8 +25,13 @@
 package cmds
 
 import (
+	"errors"
+	"strconv"
+	"time"
+
 	"github.com/kasvith/kache/internal/db"
 	"github.com/kasvith/kache/internal/protcl"
+	"github.com/kasvith/kache/internal/sys"
 )
 
 // Exists will check for key existency in given db
@@ -45,4 +50,24 @@ func Del(d *db.DB, args []string) *protcl.Resp3 {
 func Keys(d *db.DB, args []string) *protcl.Resp3 {
 	keys := d.Keys()
 	return &protcl.Resp3{Type: protcl.Resp3Array, Elems: keys}
+}
+
+// Expire a key
+func Expire(d *db.DB, args []string) *protcl.Resp3 {
+	if v, ok := d.GetNode(args[0]); ok {
+		val, err := strconv.Atoi(args[1])
+		if err != nil {
+			return &protcl.Resp3{Type: protcl.Resp3SimpleError, Err: &protcl.ErrCastFailedToInt{Val: args[1]}}
+		}
+
+		if val < 0 {
+			return &protcl.Resp3{Type: protcl.Resp3SimpleError, Err: errors.New("invalid seconds")}
+		}
+
+		ttl := sys.GetTTL(int64(val), time.Second)
+		v.SetExpiration(ttl)
+		return &protcl.Resp3{Type: protcl.Resp3Number, Integer: 1}
+	}
+
+	return &protcl.Resp3{Type: protcl.Resp3Number, Integer: 0}
 }
