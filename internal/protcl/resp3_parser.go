@@ -2,6 +2,7 @@ package protcl
 
 import (
 	"bufio"
+	"errors"
 	"math/big"
 	"strconv"
 	"strings"
@@ -36,11 +37,7 @@ func (r *Resp3Parser) Commands() (*RespCommand, error) {
 
 // Parse return Resp3
 func (r *Resp3Parser) Parse() (*Resp3, error) {
-	resp, err := r.parse()
-	if err != nil {
-		return nil, err
-	}
-	return resp, nil
+	return r.parse()
 }
 
 func (r *Resp3Parser) parse() (*Resp3, error) {
@@ -55,7 +52,10 @@ func (r *Resp3Parser) parse() (*Resp3, error) {
 		if err != nil {
 			return nil, err
 		}
-		return &Resp3{Type: b, Str: str}, nil
+		if b == Resp3SimpleString {
+			return &Resp3{Type: b, Str: str}, nil
+		}
+		return &Resp3{Type: b, Err: errors.New(str)}, nil
 	case Resp3BlobString, Resp3BolbError:
 		length, err := r.intBeforeLF()
 		if err != nil {
@@ -67,7 +67,10 @@ func (r *Resp3Parser) parse() (*Resp3, error) {
 			return nil, err
 		}
 
-		return &Resp3{Type: b, Str: string(bs)}, nil
+		if b == Resp3BlobString {
+			return &Resp3{Type: b, Str: string(bs)}, nil
+		}
+		return &Resp3{Type: b, Err: errors.New(string(bs))}, nil
 	case Resp3Number:
 		integer, err := r.intBeforeLF()
 		if err != nil {

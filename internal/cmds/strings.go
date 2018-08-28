@@ -36,11 +36,11 @@ import (
 func Get(d *db.DB, args []string) *protcl.Resp3 {
 	val, err := d.Get(args[0])
 	if err != nil {
-		return &protcl.Resp3{Type: protcl.Resp3BolbError, Str: err.Error()}
+		return &protcl.Resp3{Type: protcl.Resp3BolbError, Err: err}
 	}
 
 	if val.Type != db.TypeString {
-		return &protcl.Resp3{Type: protcl.Resp3BolbError, Str: (&protcl.ErrWrongType{}).Error()}
+		return &protcl.Resp3{Type: protcl.Resp3BolbError, Err: &protcl.ErrWrongType{}}
 	}
 
 	return &protcl.Resp3{Type: protcl.Resp3BlobString, Str: util.ToString(val.Value)}
@@ -79,13 +79,13 @@ func accumulateBy(d *db.DB, key string, v int, incr bool) *protcl.Resp3 {
 	}
 
 	if val.Type != db.TypeString {
-		return &protcl.Resp3{Type: protcl.Resp3BolbError, Str: (&protcl.ErrWrongType{}).Error()}
+		return &protcl.Resp3{Type: protcl.Resp3BolbError, Err: &protcl.ErrWrongType{}}
 	}
 
 	i, err := strconv.Atoi(util.ToString(val.Value))
 
 	if err != nil {
-		return &protcl.Resp3{Type: protcl.Resp3BolbError, Str: (&protcl.ErrCastFailedToInt{Val: val.Value}).Error()}
+		return &protcl.Resp3{Type: protcl.Resp3BolbError, Err: &protcl.ErrCastFailedToInt{Val: val.Value}}
 	}
 
 	var n int

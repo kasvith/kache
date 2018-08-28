@@ -14,10 +14,12 @@ func testRespError(t *testing.T, err error, resp3 *protcl.Resp3) {
 	if err == nil {
 		assert.NotEqual(protcl.Resp3SimpleError, resp3.Type)
 		assert.NotEqual(protcl.Resp3BolbError, resp3.Type)
+		assert.Nil(resp3.Err)
 		return
 	}
 
-	assert.Equal(err.Error(), resp3.Str)
+	assert.NotNil(resp3.Err)
+	assert.Equal(err.Error(), resp3.Err.Error())
 }
 
 // TestCommandArgsCountValidator will validate the command args count field

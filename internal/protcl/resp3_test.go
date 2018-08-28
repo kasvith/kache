@@ -2,6 +2,7 @@ package protcl
 
 import (
 	"bufio"
+	"errors"
 	"math/big"
 	"strings"
 	"testing"
@@ -55,16 +56,16 @@ func TestResp3Parser(t *testing.T) {
 
 		// simple error
 		{protocol: "-renderString", err: "EOF"},
-		{resp3: &Resp3{Type: Resp3SimpleError, Str: ""}, protocol: "-\n", render: `(error) `},
-		{resp3: &Resp3{Type: Resp3SimpleError, Str: "hello"}, protocol: "-hello\n", render: `(error) hello`},
-		{resp3: &Resp3{Type: Resp3SimpleError, Str: "hello world"}, protocol: "-hello world\n", render: `(error) hello world`},
+		{resp3: &Resp3{Type: Resp3SimpleError, Err: errors.New("")}, protocol: "-\n", render: `(error) `},
+		{resp3: &Resp3{Type: Resp3SimpleError, Err: errors.New("hello")}, protocol: "-hello\n", render: `(error) hello`},
+		{resp3: &Resp3{Type: Resp3SimpleError, Err: errors.New("hello world")}, protocol: "-hello world\n", render: `(error) hello world`},
 
 		// blob error
 		{protocol: "!1\n\n", err: "unexpected line end"},
 		{protocol: "!1\naa\n", err: "unexpected line end"},
-		{resp3: &Resp3{Type: Resp3BolbError, Str: ""}, protocol: "!0\n\n", render: `(error) `},
-		{resp3: &Resp3{Type: Resp3BolbError, Str: "hello"}, protocol: "!5\nhello\n", render: `(error) hello`},
-		{resp3: &Resp3{Type: Resp3BolbError, Str: "hello\nworld"}, protocol: "!11\nhello\nworld\n", render: "(error) hello\nworld"},
+		{resp3: &Resp3{Type: Resp3BolbError, Err: errors.New("")}, protocol: "!0\n\n", render: `(error) `},
+		{resp3: &Resp3{Type: Resp3BolbError, Err: errors.New("hello")}, protocol: "!5\nhello\n", render: `(error) hello`},
+		{resp3: &Resp3{Type: Resp3BolbError, Err: errors.New("hello\nworld")}, protocol: "!11\nhello\nworld\n", render: "(error) hello\nworld"},
 
 		// number
 		{protocol: ":invalid", err: "EOF"},

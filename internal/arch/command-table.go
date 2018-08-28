@@ -75,11 +75,11 @@ func getCommand(cmd string) (*Command, error) {
 func (DBCommand) Execute(db *db.DB, cmd string, args []string) *protcl.Resp3 {
 	command, err := getCommand(cmd)
 	if err != nil {
-		return &protcl.Resp3{Type: protcl.Resp3SimpleError, Str: err.Error()}
+		return &protcl.Resp3{Type: protcl.Resp3SimpleError, Err: err}
 	}
 
 	if argsLen := len(args); (command.MinArgs > 0 && argsLen < command.MinArgs) || (command.MaxArgs != -1 && argsLen > command.MaxArgs) {
-		return &protcl.Resp3{Type: protcl.Resp3SimpleError, Str: (&protcl.ErrWrongNumberOfArgs{Cmd: cmd}).Error()}
+		return &protcl.Resp3{Type: protcl.Resp3SimpleError, Err: &protcl.ErrWrongNumberOfArgs{Cmd: cmd}}
 	}
 
 	return command.Fn(db, args)

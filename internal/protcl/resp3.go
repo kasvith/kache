@@ -31,6 +31,7 @@ const LF = '\n'
 type Resp3 struct {
 	Type    byte
 	Str     string
+	Err     error
 	Integer int
 	Boolean bool
 	Double  float64
@@ -115,12 +116,25 @@ func (r *Resp3) command() (string, error) {
 
 func (r *Resp3) protocolString(buf *strings.Builder) {
 	switch r.Type {
-	case Resp3SimpleString, Resp3SimpleError:
+	case Resp3SimpleString:
 		buf.WriteString(r.Str)
-	case Resp3BlobString, Resp3BolbError:
+	case Resp3BlobString:
 		buf.WriteString(strconv.Itoa(len(r.Str)))
 		buf.WriteByte('\n')
 		buf.WriteString(r.Str)
+	case Resp3SimpleError:
+		if r.Err != nil {
+			buf.WriteString(r.Err.Error())
+		}
+	case Resp3BolbError:
+		if r.Err == nil {
+			buf.WriteString("0\n")
+			return
+		}
+		e := r.Err.Error()
+		buf.WriteString(strconv.Itoa(len(e)))
+		buf.WriteByte('\n')
+		buf.WriteString(e)
 	case Resp3Number:
 		buf.WriteString(strconv.Itoa(r.Integer))
 	case Resp3Double:
@@ -153,7 +167,7 @@ func (r *Resp3) renderString(pre string) string {
 	case Resp3SimpleString, Resp3BlobString:
 		return fmt.Sprintf("%s%q", pre, r.Str)
 	case Resp3SimpleError, Resp3BolbError:
-		return pre + "(error) " + r.Str
+		return pre + "(error) " + r.Err.Error()
 	case Resp3Number:
 		return pre + "(integer) " + strconv.Itoa(r.Integer)
 	case Resp3Double:
