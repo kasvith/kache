@@ -21,4 +21,3 @@ before_test:
 
 test_script:
 - mage test386
-- mage testrace
