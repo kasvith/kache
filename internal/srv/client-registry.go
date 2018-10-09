@@ -31,56 +31,56 @@ import (
 )
 
 // ConnectedClients represents connected clients
-var ConnectedClients = Clients{clients: make(map[string]*Client)}
+var ConnectedClients = ClientRegistry{clients: make(map[string]*Client)}
 
-// Clients is the struct for keep track of clients
-type Clients struct {
+// ClientRegistry maintains the registy of connected clients
+type ClientRegistry struct {
 	clients map[string]*Client
 	mux     sync.RWMutex
 }
 
 // Add a client to clients
-func (clients *Clients) Add(client *Client) {
-	clients.mux.Lock()
-	clients.clients[client.RemoteAddr().String()] = client
-	clients.mux.Unlock()
+func (cr *ClientRegistry) Add(client *Client) {
+	cr.mux.Lock()
+	cr.clients[client.RemoteAddr().String()] = client
+	cr.mux.Unlock()
 
 	// log about new client
 	klogs.Logger.Debug("Connected:", client.RemoteAddr().String())
 }
 
 // Remove a client from clients
-func (clients *Clients) Remove(remoteAddr string) {
-	clients.mux.Lock()
-	delete(clients.clients, remoteAddr)
-	clients.mux.Unlock()
+func (cr *ClientRegistry) Remove(remoteAddr string) {
+	cr.mux.Lock()
+	delete(cr.clients, remoteAddr)
+	cr.mux.Unlock()
 
 	// log about new client
 	klogs.Logger.Debug("Disconnected:", remoteAddr)
 }
 
 // Count of the connected clients
-func (clients *Clients) Count() (num int) {
-	clients.mux.RLock()
-	num = len(clients.clients)
-	clients.mux.RUnlock()
+func (cr *ClientRegistry) Count() (num int) {
+	cr.mux.RLock()
+	num = len(cr.clients)
+	cr.mux.RUnlock()
 	return
 }
 
 // LogClientCount to the logger
-func (clients *Clients) LogClientCount() {
-	count := clients.Count()
+func (cr *ClientRegistry) LogClientCount() {
+	count := cr.Count()
 	if count > 0 {
 		klogs.Logger.Infof("%d connections are open", count)
 	}
 }
 
 // Close all clients
-func (clients *Clients) Close() error {
-	clients.mux.Lock()
-	for _, c := range clients.clients {
+func (cr *ClientRegistry) Close() error {
+	cr.mux.Lock()
+	for _, c := range cr.clients {
 		c.Connection.Close()
 	}
-	clients.mux.Unlock()
+	cr.mux.Unlock()
 	return nil
 }
