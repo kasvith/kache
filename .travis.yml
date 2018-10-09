@@ -1,12 +1,15 @@
 language: go
 
 go:
-  - "1.10.x"
+  - "1.11.x"
+
+env:
+  - GO111MODULE=on
 
 before_install:
   - go version
   - go env
-  - go get github.com/magefile/mage
+  - env GO111MODULE=off go get github.com/magefile/mage
   - mage vendor
 
 script:

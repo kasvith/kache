@@ -51,11 +51,6 @@ func addOSExecType(str string) string {
 	return str
 }
 
-// get dep
-func getDep() error {
-	return sh.RunV(goexe, "get", "-u", "github.com/golang/dep/cmd/dep")
-}
-
 // get go imports
 func getGoImports() error {
 	return sh.RunV(goexe, "get", "-u", "golang.org/x/tools/cmd/goimports")
@@ -67,10 +62,9 @@ func getGoLint() error {
 
 // Install Go Dep and sync kache dependencies
 func Vendor() error {
-	mg.Deps(getDep)
 	mg.Deps(getGoImports)
 	mg.Deps(getGoLint)
-	return sh.RunV("dep", "ensure")
+	return sh.RunV("go", "mod", "vendor")
 }
 
 // Build kache
@@ -145,7 +139,7 @@ func kachePackages() ([]string, error) {
 
 // check if go is latest
 func isGoLatest() bool {
-	return strings.Contains(runtime.Version(), "1.10")
+	return strings.Contains(runtime.Version(), "1.11")
 }
 
 // Run gofmt linter
