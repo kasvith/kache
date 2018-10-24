@@ -56,15 +56,28 @@ func getGoImports() error {
 	return sh.RunV(goexe, "get", "-u", "golang.org/x/tools/cmd/goimports")
 }
 
+// get dep
+func getDep() error {
+	return sh.RunV(goexe, "get", "-u", "github.com/golang/dep/cmd/dep")
+}
+
 func getGoLint() error {
 	return sh.RunV(goexe, "get", "-u", "golang.org/x/lint/golint")
 }
 
 // Install Go Dep and sync kache dependencies
 func Vendor() error {
-	mg.Deps(getGoImports)
 	mg.Deps(getGoLint)
-	return sh.RunV("go", "mod", "vendor")
+	mg.Deps(getGoImports)
+
+	// by default dep used. you can change this by setting environment variable mgr=gomod
+	mgr := os.Getenv("mgr")
+	if mgr == "gomod" {
+		return sh.RunV(goexe, "mod", "vendor")
+	} else {
+		mg.Deps(getDep)
+		return sh.RunV("dep", "ensure")
+	}
 }
 
 // Build kache
@@ -89,7 +102,7 @@ func KacheCliNoGitInfo() error {
 	return Kache()
 }
 
-// Run gofmt, vet, imports and tests
+// Run gofmt, vet, imports and tests also with race
 func Check() {
 	if strings.Contains(runtime.Version(), "1.8") {
 		// Go 1.8 doesn't play along with go test ./... and /vendor.
