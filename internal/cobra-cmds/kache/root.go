@@ -31,7 +31,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/kasvith/kache/internal/cobra-cmds"
+	cobracmds "github.com/kasvith/kache/internal/cobra-cmds"
 	"github.com/kasvith/kache/internal/config"
 	"github.com/kasvith/kache/internal/klogs"
 	"github.com/kasvith/kache/internal/srv"
@@ -44,7 +44,7 @@ var cfgFile string
 var RootCmd = &cobra.Command{
 	Use:   "kache",
 	Short: "kache is a simple distributed in memory database",
-	Long:  `A fast and a flexible in memory database built with go`,
+	Long:  `A fast and a flexible in memory redis-compatible database`,
 	Run:   runApp,
 }
 
