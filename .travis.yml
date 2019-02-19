@@ -7,8 +7,8 @@ before_install:
   - go version
   - go env
   - go get github.com/magefile/mage
-  - mage vendor
   - export GO111MODULE=on
+  - mage vendor
 
 script:
 - mage check
