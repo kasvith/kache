@@ -2,4 +2,5 @@
 .idea
 .vendor-new
 bin
+build
 vendor

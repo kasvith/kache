@@ -8,14 +8,10 @@ before_install:
   - go env
   - go get github.com/magefile/mage
   - mage vendor
+  - export GO111MODULE=true
 
 script:
-  - mage fmt
-  - mage lint
-  - mage vet
-  - mage imports
-  - mage test386
-  - mage testcover
+- mage check
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

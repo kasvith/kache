@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	outDir       = "bin"
+	outDir       = "build"
 	basePackage  = "github.com/kasvith/kache"
 	noGitLdflags = "-X $PACKAGE/internal/cobra-cmds.BuildDate=$BUILD_DATE"
 )
@@ -56,11 +56,6 @@ func getGoImports() error {
 	return sh.RunV(goexe, "get", "-u", "golang.org/x/tools/cmd/goimports")
 }
 
-// get dep
-func getDep() error {
-	return sh.RunV(goexe, "get", "-u", "github.com/golang/dep/cmd/dep")
-}
-
 func getGoLint() error {
 	return sh.RunV(goexe, "get", "-u", "golang.org/x/lint/golint")
 }
@@ -70,14 +65,7 @@ func Vendor() error {
 	mg.Deps(getGoLint)
 	mg.Deps(getGoImports)
 
-	// by default dep used. you can change this by setting environment variable mgr=gomod
-	mgr := os.Getenv("mgr")
-	if mgr == "gomod" {
-		return sh.RunV(goexe, "mod", "vendor")
-	} else {
-		mg.Deps(getDep)
-		return sh.RunV("dep", "ensure")
-	}
+	return sh.RunV(goexe, "mod", "vendor")
 }
 
 // Build kache
@@ -112,18 +100,12 @@ func Check() {
 	}
 
 	// Do this because CI memory error can occur
+	mg.Deps(Lint)
 	mg.Deps(Fmt)
 	mg.Deps(Vet)
 	mg.Deps(Imports)
 	mg.Deps(Test)
-	mg.Deps(Test386)
 	mg.Deps(TestRace)
-}
-
-// Run tests in 32-bit mode
-// Note that we don't run with the extended tag. Currently not supported in 32 bit.
-func Test386() error {
-	return sh.RunWith(map[string]string{"GOARCH": "386"}, goexe, "test", "./...")
 }
 
 // Run tests
@@ -234,7 +216,7 @@ func Imports() error {
 	return nil
 }
 
-// Run golint linter
+// Run golint
 func Lint() error {
 	pkgs, err := kachePackages()
 	if err != nil {
@@ -255,7 +237,7 @@ func Lint() error {
 	return nil
 }
 
-//  Run go vet linter
+//  Run go vet
 func Vet() error {
 	return sh.RunV(goexe, "vet", "./...")
 }
