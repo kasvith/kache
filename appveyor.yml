@@ -5,7 +5,7 @@ clone_folder: c:\gopath\src\github.com\kasvith\kache
 environment:
   GOPATH: c:\gopath
 
-stack: go 1.11
+stack: go 1.12
 
 before_test:
   - set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
@@ -13,12 +13,11 @@ before_test:
   - go env
   - go get github.com/magefile/mage
   - mage vendor
-  - mage fmt
-  - mage lint
-  - mage vet
-  - mage imports
+  - mage check
 
 test_script:
   - mage test
-  - mage test386
 
+cache:
+  - '%LocalAppData%\go-build'
+  - '%GOPATH%\pkg\mod'

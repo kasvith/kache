@@ -31,6 +31,8 @@ func init() {
 	if exe := os.Getenv("GOEXE"); exe != "" {
 		goexe = exe
 	}
+
+	os.Setenv("GO111MODULE", "on")
 }
 
 func flagEnv() map[string]string {
@@ -44,6 +46,8 @@ func flagEnv() map[string]string {
 }
 
 func addOSExecType(str string) string {
+	str = fmt.Sprintf("%s-%s-%s", str, runtime.GOOS, runtime.GOARCH)
+
 	if runtime.GOOS == "windows" {
 		return str + ".exe"
 	}
@@ -53,19 +57,20 @@ func addOSExecType(str string) string {
 
 // get go imports
 func getGoImports() error {
-	return sh.RunV(goexe, "get", "-u", "golang.org/x/tools/cmd/goimports")
+	return sh.Run(goexe, "get", "-u", "golang.org/x/tools/cmd/goimports")
 }
 
+// get go lint
 func getGoLint() error {
-	return sh.RunV(goexe, "get", "-u", "golang.org/x/lint/golint")
+	return sh.Run(goexe, "get", "-u", "golang.org/x/lint/golint")
 }
 
-// Install Go Dep and sync kache dependencies
+// Install dependencies to vendor
 func Vendor() error {
 	mg.Deps(getGoLint)
 	mg.Deps(getGoImports)
 
-	return sh.RunV(goexe, "mod", "vendor")
+	return sh.Run(goexe, "mod", "download")
 }
 
 // Build kache
@@ -92,6 +97,8 @@ func KacheCliNoGitInfo() error {
 
 // Run gofmt, vet, imports and tests also with race
 func Check() {
+	fmt.Println("Checking started")
+
 	if strings.Contains(runtime.Version(), "1.8") {
 		// Go 1.8 doesn't play along with go test ./... and /vendor.
 		// We could fix that, but that would take time.
@@ -105,7 +112,6 @@ func Check() {
 	mg.Deps(Vet)
 	mg.Deps(Imports)
 	mg.Deps(Test)
-	mg.Deps(TestRace)
 }
 
 // Run tests
@@ -237,9 +243,12 @@ func Lint() error {
 	return nil
 }
 
-//  Run go vet
+//  Run go vet linter
 func Vet() error {
-	return sh.RunV(goexe, "vet", "./...")
+	if err := sh.Run(goexe, "vet", "./..."); err != nil {
+		return fmt.Errorf("error running go vet: %v", err)
+	}
+	return nil
 }
 
 // Generate test coverage report

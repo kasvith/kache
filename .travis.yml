@@ -1,25 +1,48 @@
 language: go
 
-go:
-  - "1.11.x"
-
 before_install:
-  - go version
-  - go env
   - go get github.com/magefile/mage
-  - export GO111MODULE=on
   - mage vendor
 
 script:
-- mage check
+  - mage check
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 
-os:
-  - linux
-  - osx
+matrix:
+  fast_finish: true
+  include:
+  - os: linux
+    go: "1.11.x"
+    cache:
+      directories:
+      - $HOME/.cache/go-build
+      - $HOME/gopath/pkg/mod
+
+  - os: linux
+    go: "1.12.x"
+    cache:
+      directories:
+      - $HOME/.cache/go-build
+      - $HOME/gopath/pkg/mod
+
+  - os: osx
+    go: "1.11.x"
+    cache:
+      directories:
+      - $HOME/Library/Caches/go-build
+      - $HOME/gopath/pkg/mod
+
+  - os: osx
+    go: "1.12.x"
+    cache:
+      directories:
+      - $HOME/Library/Caches/go-build
+      - $HOME/gopath/pkg/mod
 
 branches:
   except:
   - gh-pages
+
+
