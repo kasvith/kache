@@ -28,7 +28,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/kasvith/kache/internal/protcl"
+	"github.com/kasvith/kache/internal/protocol"
 )
 
 // DB holds a thread safe struct for store data
@@ -129,13 +129,13 @@ func (db *DB) Exists(key string) int {
 }
 
 // Keys returns all keys of the db
-func (db *DB) Keys() []*protcl.Resp3 {
+func (db *DB) Keys() []*protocol.Resp3 {
 	db.mux.RLock()
 
-	keys := make([]*protcl.Resp3, 0)
+	keys := make([]*protocol.Resp3, 0)
 	for key, val := range db.file {
 		if !val.IsExpired() {
-			keys = append(keys, &protcl.Resp3{Type: protcl.Resp3BlobString, Str: key})
+			keys = append(keys, &protocol.Resp3{Type: protocol.Resp3BlobString, Str: key})
 		}
 
 	}

@@ -10,7 +10,7 @@ import (
 
 	"github.com/kasvith/kache/internal/config"
 	"github.com/kasvith/kache/internal/klogs"
-	"github.com/kasvith/kache/internal/protcl"
+	"github.com/kasvith/kache/internal/protocol"
 	"github.com/kasvith/kache/internal/srv"
 )
 
@@ -39,7 +39,7 @@ func initTestServerClient(t *testing.T) {
 func runTestSendRecv(t *testing.T, send, recv string) {
 	assert := testifyAssert.New(t)
 
-	assert.Nil(c.Write(protcl.NewSliceResp3(strings.Split(send, " "))))
+	assert.Nil(c.Write(protocol.NewSliceResp3(strings.Split(send, " "))))
 	resp, err := c.resp3Parser.Parse()
 	assert.Nil(err)
 	assert.NotNil(resp)

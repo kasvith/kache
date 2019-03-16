@@ -30,14 +30,14 @@ import (
 	"net"
 	"time"
 
-	"github.com/kasvith/kache/internal/protcl"
+	"github.com/kasvith/kache/internal/protocol"
 )
 
 var c *cli
 
 type cli struct {
 	conn        net.Conn
-	resp3Parser *protcl.Resp3Parser
+	resp3Parser *protocol.Resp3Parser
 	addr        string
 }
 
@@ -68,7 +68,7 @@ func Dial(addr string) error {
 
 	c = new(cli)
 	c.conn = conn
-	c.resp3Parser = protcl.NewResp3Parser(bufio.NewReader(conn))
+	c.resp3Parser = protocol.NewResp3Parser(bufio.NewReader(conn))
 	c.addr = addr
 
 	return nil

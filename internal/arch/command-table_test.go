@@ -6,14 +6,14 @@ import (
 	testifyAssert "github.com/stretchr/testify/assert"
 
 	"github.com/kasvith/kache/internal/db"
-	"github.com/kasvith/kache/internal/protcl"
+	"github.com/kasvith/kache/internal/protocol"
 )
 
-func testRespError(t *testing.T, err error, resp3 *protcl.Resp3) {
+func testRespError(t *testing.T, err error, resp3 *protocol.Resp3) {
 	assert := testifyAssert.New(t)
 	if err == nil {
-		assert.NotEqual(protcl.Resp3SimpleError, resp3.Type)
-		assert.NotEqual(protcl.Resp3BolbError, resp3.Type)
+		assert.NotEqual(protocol.Resp3SimpleError, resp3.Type)
+		assert.NotEqual(protocol.Resp3BolbError, resp3.Type)
 		assert.Nil(resp3.Err)
 		return
 	}
@@ -31,28 +31,28 @@ func TestCommandArgsCountValidator(t *testing.T) {
 	{
 		testRespError(t, nil, cmd.Execute(db, "ping", nil))
 		testRespError(t, nil, cmd.Execute(db, "ping", []string{"1"}))
-		testRespError(t, &protcl.ErrWrongNumberOfArgs{Cmd: "ping"}, cmd.Execute(db, "ping", []string{"1", "2"}))
+		testRespError(t, &protocol.ErrWrongNumberOfArgs{Cmd: "ping"}, cmd.Execute(db, "ping", []string{"1", "2"}))
 	}
 
 	// del at least 1
 	{
-		testRespError(t, &protcl.ErrWrongNumberOfArgs{Cmd: "del"}, cmd.Execute(db, "del", nil))
+		testRespError(t, &protocol.ErrWrongNumberOfArgs{Cmd: "del"}, cmd.Execute(db, "del", nil))
 		testRespError(t, nil, cmd.Execute(db, "del", []string{"1"}))
 		testRespError(t, nil, cmd.Execute(db, "del", []string{"1", "2"}))
 	}
 
 	// set equal 2
 	{
-		testRespError(t, &protcl.ErrWrongNumberOfArgs{Cmd: "set"}, cmd.Execute(db, "set", nil))
-		testRespError(t, &protcl.ErrWrongNumberOfArgs{Cmd: "set"}, cmd.Execute(db, "set", []string{"1"}))
+		testRespError(t, &protocol.ErrWrongNumberOfArgs{Cmd: "set"}, cmd.Execute(db, "set", nil))
+		testRespError(t, &protocol.ErrWrongNumberOfArgs{Cmd: "set"}, cmd.Execute(db, "set", []string{"1"}))
 		testRespError(t, nil, cmd.Execute(db, "set", []string{"1", "2"}))
-		testRespError(t, &protcl.ErrWrongNumberOfArgs{Cmd: "set"}, cmd.Execute(db, "set", []string{"1", "2", "3"}))
+		testRespError(t, &protocol.ErrWrongNumberOfArgs{Cmd: "set"}, cmd.Execute(db, "set", []string{"1", "2", "3"}))
 	}
 
 	// equal 1: get exists incr decr
 	for _, command := range []string{"get", "exists", "incr", "decr"} {
-		testRespError(t, &protcl.ErrWrongNumberOfArgs{Cmd: command}, cmd.Execute(db, command, nil))
+		testRespError(t, &protocol.ErrWrongNumberOfArgs{Cmd: command}, cmd.Execute(db, command, nil))
 		testRespError(t, nil, cmd.Execute(db, command, []string{"1"}))
-		testRespError(t, &protcl.ErrWrongNumberOfArgs{Cmd: command}, cmd.Execute(db, command, []string{"1", "2"}))
+		testRespError(t, &protocol.ErrWrongNumberOfArgs{Cmd: command}, cmd.Execute(db, command, []string{"1", "2"}))
 	}
 }

@@ -27,11 +27,11 @@ package arch
 import (
 	"github.com/kasvith/kache/internal/cmds"
 	"github.com/kasvith/kache/internal/db"
-	"github.com/kasvith/kache/internal/protcl"
+	"github.com/kasvith/kache/internal/protocol"
 )
 
 // CommandFunc holds a function signature which can be used as a command.
-type CommandFunc func(*db.DB, []string) *protcl.Resp3
+type CommandFunc func(*db.DB, []string) *protocol.Resp3
 
 // Command holds a command structure which is used to execute a kache command
 type Command struct {
@@ -69,18 +69,18 @@ func getCommand(cmd string) (*Command, error) {
 		return &v, nil
 	}
 
-	return nil, &protcl.ErrUnknownCommand{Cmd: cmd}
+	return nil, &protocol.ErrUnknownCommand{Cmd: cmd}
 }
 
 // Execute a single command on the given database with args
-func (DBCommand) Execute(db *db.DB, cmd string, args []string) *protcl.Resp3 {
+func (DBCommand) Execute(db *db.DB, cmd string, args []string) *protocol.Resp3 {
 	command, err := getCommand(cmd)
 	if err != nil {
-		return &protcl.Resp3{Type: protcl.Resp3SimpleError, Err: err}
+		return &protocol.Resp3{Type: protocol.Resp3SimpleError, Err: err}
 	}
 
 	if argsLen := len(args); (command.MinArgs > 0 && argsLen < command.MinArgs) || (command.MaxArgs != -1 && argsLen > command.MaxArgs) {
-		return &protcl.Resp3{Type: protcl.Resp3SimpleError, Err: &protcl.ErrWrongNumberOfArgs{Cmd: cmd}}
+		return &protocol.Resp3{Type: protocol.Resp3SimpleError, Err: &protocol.ErrWrongNumberOfArgs{Cmd: cmd}}
 	}
 
 	return command.Fn(db, args)

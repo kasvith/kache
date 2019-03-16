@@ -26,14 +26,14 @@ package cmds
 
 import (
 	"github.com/kasvith/kache/internal/db"
-	"github.com/kasvith/kache/internal/protcl"
+	"github.com/kasvith/kache/internal/protocol"
 )
 
 // Ping will return PONG when no argument found or will echo the given argument
-func Ping(d *db.DB, args []string) *protcl.Resp3 {
+func Ping(d *db.DB, args []string) *protocol.Resp3 {
 	if len(args) == 0 {
-		return &protcl.Resp3{Type: protcl.Resp3SimpleString, Str: "PONG"}
+		return &protocol.Resp3{Type: protocol.Resp3SimpleString, Str: "PONG"}
 	}
 
-	return &protcl.Resp3{Type: protcl.Resp3BlobString, Str: args[0]}
+	return &protocol.Resp3{Type: protocol.Resp3BlobString, Str: args[0]}
 }

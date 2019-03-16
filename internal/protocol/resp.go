@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package protcl
+package protocol
 
 const (
 	// PrefixWrongType WRONGTYP

@@ -1,4 +1,4 @@
-package protcl
+package protocol
 
 import (
 	"bufio"

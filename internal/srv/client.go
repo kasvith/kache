@@ -33,7 +33,7 @@ import (
 	"github.com/kasvith/kache/internal/arch"
 	"github.com/kasvith/kache/internal/db"
 	"github.com/kasvith/kache/internal/klogs"
-	"github.com/kasvith/kache/internal/protcl"
+	"github.com/kasvith/kache/internal/protocol"
 )
 
 // TODO: Need refactoring this to allow multiple DBs for use
@@ -61,7 +61,7 @@ func (client *Client) RemoteAddr() net.Addr {
 func (client *Client) Handle() {
 	// TODO determine client type by first issued command to kache, this can improve performance
 
-	resp3Parser := protcl.NewResp3Parser(bufio.NewReader(client.Connection))
+	resp3Parser := protocol.NewResp3Parser(bufio.NewReader(client.Connection))
 	writer := bufio.NewWriter(client.Connection)
 
 	for {
@@ -69,14 +69,14 @@ func (client *Client) Handle() {
 
 		// handle any parse errors
 		if err != nil {
-			recoverable, isRecoverableErr := err.(protcl.RecoverableError)
+			recoverable, isRecoverableErr := err.(protocol.RecoverableError)
 
 			if isRecoverableErr {
 				if recoverable.Recoverable() {
 					// log the error, inform client continue loop
 					// anything else should be sent to client with prefix PrefixErr
 					klogs.Logger.Debug(client.RemoteAddr(), ": ", err.Error())
-					writer.WriteString((&protcl.Resp3{Type: protcl.Resp3BolbError, Err: err}).ProtocolString())
+					writer.WriteString((&protocol.Resp3{Type: protocol.Resp3BolbError, Err: err}).ProtocolString())
 					writer.Flush()
 					continue
 				}

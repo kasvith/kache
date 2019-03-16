@@ -28,64 +28,64 @@ import (
 	"strconv"
 
 	"github.com/kasvith/kache/internal/db"
-	"github.com/kasvith/kache/internal/protcl"
+	"github.com/kasvith/kache/internal/protocol"
 	"github.com/kasvith/kache/pkg/util"
 )
 
 // Get will find the value of a given string key and return it
-func Get(d *db.DB, args []string) *protcl.Resp3 {
+func Get(d *db.DB, args []string) *protocol.Resp3 {
 	val, err := d.Get(args[0])
 	if err != nil {
-		return &protcl.Resp3{Type: protcl.Resp3Null}
+		return &protocol.Resp3{Type: protocol.Resp3Null}
 	}
 
 	if val.Type != db.TypeString {
-		return &protcl.Resp3{Type: protcl.Resp3BolbError, Err: &protcl.ErrWrongType{}}
+		return &protocol.Resp3{Type: protocol.Resp3BolbError, Err: &protocol.ErrWrongType{}}
 	}
 
-	return &protcl.Resp3{Type: protcl.Resp3BlobString, Str: util.ToString(val.Value)}
+	return &protocol.Resp3{Type: protocol.Resp3BlobString, Str: util.ToString(val.Value)}
 }
 
 // Set will create a new string key value pair
-func Set(d *db.DB, args []string) *protcl.Resp3 {
+func Set(d *db.DB, args []string) *protocol.Resp3 {
 	key := args[0]
 	val := args[1]
 
 	d.Set(key, db.NewDataNode(db.TypeString, -1, val))
 
-	return &protcl.Resp3{Type: protcl.Resp3SimpleString, Str: "OK"}
+	return &protocol.Resp3{Type: protocol.Resp3SimpleString, Str: "OK"}
 }
 
 // Incr will increment a given string key by 1
 // If key not found it will be set to 0 and will do operation
 // If key type is invalid it will return an error
-func Incr(d *db.DB, args []string) *protcl.Resp3 {
+func Incr(d *db.DB, args []string) *protocol.Resp3 {
 	return accumulateBy(d, args[0], 1, true)
 }
 
 // Decr will decrement a given string key by 1
 // If key not found it will be set to 0 and will do operation
 // If key type is invalid it will return an error
-func Decr(d *db.DB, args []string) *protcl.Resp3 {
+func Decr(d *db.DB, args []string) *protocol.Resp3 {
 	return accumulateBy(d, args[0], -1, true)
 }
 
 // accumulateBy will accumulate the value of key by given amount
-func accumulateBy(d *db.DB, key string, v int, incr bool) *protcl.Resp3 {
+func accumulateBy(d *db.DB, key string, v int, incr bool) *protocol.Resp3 {
 	val, found := d.GetIfNotSet(key, db.NewDataNode(db.TypeString, -1, strconv.Itoa(v)))
 
 	if !found {
-		return &protcl.Resp3{Type: protcl.Resp3Number, Integer: v}
+		return &protocol.Resp3{Type: protocol.Resp3Number, Integer: v}
 	}
 
 	if val.Type != db.TypeString {
-		return &protcl.Resp3{Type: protcl.Resp3BolbError, Err: &protcl.ErrWrongType{}}
+		return &protocol.Resp3{Type: protocol.Resp3BolbError, Err: &protocol.ErrWrongType{}}
 	}
 
 	i, err := strconv.Atoi(util.ToString(val.Value))
 
 	if err != nil {
-		return &protcl.Resp3{Type: protcl.Resp3BolbError, Err: &protcl.ErrCastFailedToInt{Val: val.Value}}
+		return &protocol.Resp3{Type: protocol.Resp3BolbError, Err: &protocol.ErrCastFailedToInt{Val: val.Value}}
 	}
 
 	var n int
@@ -97,5 +97,5 @@ func accumulateBy(d *db.DB, key string, v int, incr bool) *protcl.Resp3 {
 
 	d.Set(key, db.NewDataNode(db.TypeString, -1, strconv.Itoa(n)))
 
-	return &protcl.Resp3{Type: protcl.Resp3Number, Integer: n}
+	return &protocol.Resp3{Type: protocol.Resp3Number, Integer: n}
 }

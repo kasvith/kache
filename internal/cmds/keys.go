@@ -30,44 +30,44 @@ import (
 	"time"
 
 	"github.com/kasvith/kache/internal/db"
-	"github.com/kasvith/kache/internal/protcl"
+	"github.com/kasvith/kache/internal/protocol"
 	"github.com/kasvith/kache/internal/sys"
 )
 
 // Exists will check for key existency in given db
-func Exists(d *db.DB, args []string) *protcl.Resp3 {
+func Exists(d *db.DB, args []string) *protocol.Resp3 {
 	found := d.Exists(args[0])
-	return &protcl.Resp3{Type: protcl.Resp3Number, Integer: found}
+	return &protocol.Resp3{Type: protocol.Resp3Number, Integer: found}
 }
 
 // Del will delete set of keys and return number of deleted keys
-func Del(d *db.DB, args []string) *protcl.Resp3 {
+func Del(d *db.DB, args []string) *protocol.Resp3 {
 	deleted := d.Del(args)
-	return &protcl.Resp3{Type: protcl.Resp3Number, Integer: deleted}
+	return &protocol.Resp3{Type: protocol.Resp3Number, Integer: deleted}
 }
 
 // Keys will return all keys of the db as a list
-func Keys(d *db.DB, args []string) *protcl.Resp3 {
+func Keys(d *db.DB, args []string) *protocol.Resp3 {
 	keys := d.Keys()
-	return &protcl.Resp3{Type: protcl.Resp3Array, Elems: keys}
+	return &protocol.Resp3{Type: protocol.Resp3Array, Elems: keys}
 }
 
 // Expire a key
-func Expire(d *db.DB, args []string) *protcl.Resp3 {
+func Expire(d *db.DB, args []string) *protocol.Resp3 {
 	if v, ok := d.GetNode(args[0]); ok {
 		val, err := strconv.Atoi(args[1])
 		if err != nil {
-			return &protcl.Resp3{Type: protcl.Resp3SimpleError, Err: &protcl.ErrCastFailedToInt{Val: args[1]}}
+			return &protocol.Resp3{Type: protocol.Resp3SimpleError, Err: &protocol.ErrCastFailedToInt{Val: args[1]}}
 		}
 
 		if val < 0 {
-			return &protcl.Resp3{Type: protcl.Resp3SimpleError, Err: errors.New("invalid seconds")}
+			return &protocol.Resp3{Type: protocol.Resp3SimpleError, Err: errors.New("invalid seconds")}
 		}
 
 		ttl := sys.GetTTL(int64(val), time.Second)
 		v.SetExpiration(ttl)
-		return &protcl.Resp3{Type: protcl.Resp3Number, Integer: 1}
+		return &protocol.Resp3{Type: protocol.Resp3Number, Integer: 1}
 	}
 
-	return &protcl.Resp3{Type: protcl.Resp3Number, Integer: 0}
+	return &protocol.Resp3{Type: protocol.Resp3Number, Integer: 0}
 }
