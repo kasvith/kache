@@ -14,24 +14,10 @@ matrix:
   fast_finish: true
   include:
   - os: linux
-    go: "1.11.x"
-    cache:
-      directories:
-      - $HOME/.cache/go-build
-      - $HOME/gopath/pkg/mod
-
-  - os: linux
     go: "1.12.x"
     cache:
       directories:
       - $HOME/.cache/go-build
-      - $HOME/gopath/pkg/mod
-
-  - os: osx
-    go: "1.11.x"
-    cache:
-      directories:
-      - $HOME/Library/Caches/go-build
       - $HOME/gopath/pkg/mod
 
   - os: osx
