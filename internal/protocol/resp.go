@@ -32,15 +32,10 @@ const (
 	PrefixErr = "ERR"
 )
 
-// RespCommand represents a command that can be executed by the kache server
-// It can also contain a multi command(pipelined)
-type RespCommand struct {
+// Command represents a command that can be executed by the kache server
+type Command struct {
 	// Name of the command
 	Name string
 	// Args for command
 	Args []string
-	// Multi type command
-	Multi bool
-	// Commands array when its multi
-	Commands []RespCommand
 }

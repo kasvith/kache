@@ -19,7 +19,7 @@ func NewResp3Parser(r *bufio.Reader) *Resp3Parser {
 }
 
 // Commands parse resp3 message to kache command
-func (r *Resp3Parser) Commands() (*RespCommand, error) {
+func (r *Resp3Parser) Commands() (*Command, error) {
 	resp3, err := r.Parse()
 	if err != nil {
 		return nil, err
@@ -32,7 +32,7 @@ func (r *Resp3Parser) Commands() (*RespCommand, error) {
 		return nil, &ErrInvalidCommand{}
 	}
 
-	return &RespCommand{Name: strings.ToLower(args[0]), Args: args[1:]}, nil
+	return &Command{Name: strings.ToLower(args[0]), Args: args[1:]}, nil
 }
 
 // Parse return Resp3
