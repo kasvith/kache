@@ -24,14 +24,6 @@
 
 package protocol
 
-const (
-	// PrefixWrongType WRONGTYP
-	PrefixWrongType = "WRONGTYP"
-
-	// PrefixErr ERR
-	PrefixErr = "ERR"
-)
-
 // Command represents a command that can be executed by the kache server
 type Command struct {
 	// Name of the command
