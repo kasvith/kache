@@ -2,8 +2,9 @@ package wire
 
 import (
 	"bufio"
-	"github.com/kasvith/kache/internal/protocol"
 	"strings"
+
+	"github.com/kasvith/kache/internal/protocol"
 )
 
 type Parser struct {
