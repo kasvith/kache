@@ -2,9 +2,10 @@ package resp2
 
 import (
 	"bufio"
-	"github.com/kasvith/kache/internal/protocol"
 	"strings"
 	"testing"
+
+	"github.com/kasvith/kache/internal/protocol"
 
 	testifyAssert "github.com/stretchr/testify/assert"
 )
