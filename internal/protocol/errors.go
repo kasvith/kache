@@ -26,6 +26,14 @@ package protocol
 
 import "fmt"
 
+const (
+	// PrefixWrongType WRONGTYP
+	PrefixWrongType = "WRONGTYP"
+
+	// PrefixErr ERR
+	PrefixErr = "ERR"
+)
+
 // RecoverableError indicates an error is recoverable, if it's not it leads for critical actions like disconnecting a
 // client
 type RecoverableError interface {
