@@ -26,6 +26,8 @@ package srv
 
 import (
 	"bufio"
+	"github.com/kasvith/kache/internal/resp/resp2"
+	"github.com/kasvith/kache/internal/wire"
 	"net"
 
 	"io"
@@ -50,6 +52,9 @@ type Client struct {
 
 	// DB selected database for client, default to 0
 	DB int
+
+	// Parser is used for parsing a request
+	Parser protocol.CommandParser
 }
 
 // RemoteAddr returns remote address of client
@@ -59,13 +64,18 @@ func (client *Client) RemoteAddr() net.Addr {
 
 // Handle the client
 func (client *Client) Handle() {
-	// TODO determine client type by first issued command to kache, this can improve performance
+	err := client.detectParser()
 
-	resp3Parser := protocol.NewResp3Parser(bufio.NewReader(client.Connection))
+	if err != nil {
+		klogs.Logger.Error(client.RemoteAddr(), ": ", err.Error())
+		client.logAndRemove()
+		return
+	}
+
 	writer := bufio.NewWriter(client.Connection)
 
 	for {
-		command, err := resp3Parser.Commands()
+		command, err := client.Parser.Parse()
 
 		// handle any parse errors
 		if err != nil {
@@ -100,7 +110,31 @@ func (client *Client) Handle() {
 		writer.Flush()
 	}
 
+	client.logAndRemove()
+}
+
+func (client *Client) logAndRemove() {
 	ConnectedClients.Remove(client.RemoteAddr().String())
 	client.Connection.Close()
 	ConnectedClients.LogClientCount()
+}
+
+func (client *Client) detectParser() error {
+	reader := bufio.NewReader(client.Connection)
+	b, err := reader.ReadByte()
+	reader.UnreadByte()
+	if err != nil {
+		return err
+	}
+
+	switch b {
+	case resp2.TypeArray:
+		// we have resp2
+		client.Parser = resp2.NewParser(reader)
+	default:
+		client.Parser = wire.NewParser(reader)
+
+	}
+
+	return nil
 }
