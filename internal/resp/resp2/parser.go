@@ -28,35 +28,27 @@ func (p Parser) Parse() (*protocol.Command, error) {
 
 	switch b {
 	case TypeArray:
-		arrLen, err := p.readIntBeforeCRLF()
+		arrLen, err := p.readArrayLength()
 		if err != nil {
 			return nil, err
 		}
 
-		args := make([]string, arrLen)
-		for i := 0; i < arrLen; i++ {
-			b, err = r.ReadByte()
-			if err != nil {
-				return nil, err
-			}
-
-			if b != TypeBulkString {
-				return nil, &protocol.ErrWrongType{}
-			}
-
-			strLen, err := p.readIntBeforeCRLF()
-			if err != nil {
-				return nil, err
-			}
-
-			str, err := p.readBulkString(strLen)
-			if err != nil {
-				return nil, err
-			}
-
-			args = append(args, str)
+		if arrLen == 0 {
+			return &protocol.Command{}, nil
 		}
 
+		if arrLen == -1 {
+			return nil, nil
+		}
+
+		args := make([]string, arrLen)
+		for i := 0; i < arrLen; i++ {
+			str, err := p.readBulkString()
+			if err != nil {
+				return nil, err
+			}
+			args[i] = str
+		}
 		return &protocol.Command{Name: strings.ToLower(args[0]), Args: args[1:]}, nil
 
 	default:
@@ -66,7 +58,7 @@ func (p Parser) Parse() (*protocol.Command, error) {
 	return nil, nil
 }
 
-func (p Parser) readIntBeforeCRLF() (int, error) {
+func (p Parser) readArrayLength() (int, error) {
 	buf, err := p.reader.ReadBytes(LF)
 	if err != nil {
 		return 0, err
@@ -79,25 +71,51 @@ func (p Parser) readIntBeforeCRLF() (int, error) {
 
 	val, err := strconv.Atoi(string(bs))
 	if err != nil {
-		return 0, err
+		return 0, &protocol.ErrCastFailedToInt{Val: string(bs)}
 	}
 
 	return val, nil
 }
 
-func (p Parser) readBulkString(strLen int) (string, error) {
+func (p Parser) readBulkString() (string, error) {
+	b, err := p.reader.ReadByte()
+
+	if err != nil {
+		return "", err
+	}
+
+	if b != TypeBulkString {
+		return "", &protocol.ErrWrongType{}
+	}
+
+	lenBuf, err := p.reader.ReadBytes(LF)
+	if err != nil {
+		return "", err
+	}
+
+	bs, err := trimCRLF(lenBuf)
+	if err != nil {
+		return "", err
+	}
+
+	strLen, err := strconv.Atoi(string(bs))
+	if err != nil {
+		return "", &protocol.ErrCastFailedToInt{Val: string(bs)}
+	}
+
 	buf := make([]byte, strLen)
 	n, err := io.ReadFull(p.reader, buf)
 	if err != nil || n < strLen {
 		return "", &protocol.ErrUnexpectedLineEnd{}
 	}
 
-	// eat CRLF
-	b, err := p.reader.ReadByte()
+	// eat CR
+	b, err = p.reader.ReadByte()
 	if b != CR {
 		return "", &protocol.ErrUnexpectedLineEnd{}
 	}
 
+	// eat LF
 	b, err = p.reader.ReadByte()
 	if b != LF {
 		return "", &protocol.ErrUnexpectedLineEnd{}
