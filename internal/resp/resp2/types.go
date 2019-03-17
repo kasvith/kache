@@ -26,6 +26,10 @@ const (
 	TypeArray = '*'
 
 	CRLF = "\r\n"
+
+	CR = '\r'
+
+	LF = '\n'
 )
 
 // Command represents a command that can be executed
@@ -40,7 +44,7 @@ type SimpleStringReply struct {
 	Str string
 }
 
-func NewSimpleStringReply(str string) SimpleStringReply{
+func NewSimpleStringReply(str string) SimpleStringReply {
 	return SimpleStringReply{Str: str}
 }
 
@@ -69,11 +73,11 @@ func NewIntegerReply(val int) IntegerReply {
 }
 
 func (v IntegerReply) ToBytes() []byte {
-	return []byte(fmt.Sprintf("%c%d%s", TypeInteger,v.Value, CRLF))
+	return []byte(fmt.Sprintf("%c%d%s", TypeInteger, v.Value, CRLF))
 }
 
 type BulkStringReply struct {
-	Str string
+	Str    string
 	IsNull bool
 }
 
@@ -92,12 +96,12 @@ func (s BulkStringReply) ToBytes() []byte {
 	builder.WriteString(CRLF)
 	builder.WriteString(s.Str)
 	builder.WriteString(CRLF)
-	
+
 	return []byte(builder.String())
 }
 
 type ArrayReply struct {
-	Reps []protocol.Reply
+	Reps   []protocol.Reply
 	IsNull bool
 }
 
