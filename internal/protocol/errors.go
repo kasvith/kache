@@ -229,3 +229,15 @@ func (e *ErrInvalidBlkStringLength) Error() string {
 func (ErrInvalidBlkStringLength) Recoverable() bool {
 	return true
 }
+
+type ErrUnknownProtocol struct {
+}
+
+func (ErrUnknownProtocol) Error() string {
+	return "unknown protocol"
+}
+
+// Recoverable whether error is recoverable or not
+func (ErrUnknownProtocol) Recoverable() bool {
+	return true
+}
