@@ -10,10 +10,10 @@ import (
 )
 
 type Parser struct {
-	reader bufio.Reader
+	reader *bufio.Reader
 }
 
-func NewParser(r bufio.Reader) *Parser {
+func NewParser(r *bufio.Reader) *Parser {
 	return &Parser{r}
 }
 
@@ -87,7 +87,7 @@ func (p Parser) readIntBeforeCRLF() (int, error) {
 
 func (p Parser) readBulkString(strLen int) (string, error) {
 	buf := make([]byte, strLen)
-	n, err := io.ReadFull(&p.reader, buf)
+	n, err := io.ReadFull(p.reader, buf)
 	if err != nil || n < strLen {
 		return "", &protocol.ErrUnexpectedLineEnd{}
 	}
