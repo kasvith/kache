@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c)  2018 Kasun Vithanage
+ * Copyright (c) 2019 Kasun Vithanage
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,6 +20,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 
 package cmds
@@ -34,7 +35,7 @@ import (
 	"github.com/kasvith/kache/internal/sys"
 )
 
-// Exists will check for key existency in given db
+// Exists will check for key existence in given db
 func Exists(d *db.DB, args []string) *protocol.Resp3 {
 	found := d.Exists(args[0])
 	return &protocol.Resp3{Type: protocol.Resp3Number, Integer: found}
