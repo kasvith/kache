@@ -26,9 +26,10 @@ package srv
 
 import (
 	"bufio"
+	"net"
+
 	"github.com/kasvith/kache/internal/resp/resp2"
 	"github.com/kasvith/kache/internal/wire"
-	"net"
 
 	"io"
 
