@@ -238,6 +238,7 @@ func (ErrInvalidBlkStringLength) Recoverable() bool {
 	return true
 }
 
+// ErrUnknownProtocol is used to indicate user that server cannot understand the protocl
 type ErrUnknownProtocol struct {
 }
 
