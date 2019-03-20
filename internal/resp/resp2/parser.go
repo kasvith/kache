@@ -9,10 +9,12 @@ import (
 	"github.com/kasvith/kache/internal/protocol"
 )
 
+// Parser is used to process RESP2 protocol strings
 type Parser struct {
 	reader *bufio.Reader
 }
 
+// NewParser returns a new Resp2 type parser to the caller
 func NewParser(r *bufio.Reader) *Parser {
 	return &Parser{r}
 }
@@ -54,10 +56,9 @@ func (p Parser) Parse() (*protocol.Command, error) {
 	default:
 		return nil, &protocol.ErrUnknownProtocol{}
 	}
-
-	return nil, nil
 }
 
+// readArrayLength will read the length of an RESP2 array
 func (p Parser) readArrayLength() (int, error) {
 	buf, err := p.reader.ReadBytes(LF)
 	if err != nil {
@@ -77,6 +78,7 @@ func (p Parser) readArrayLength() (int, error) {
 	return val, nil
 }
 
+// readBulkString reads a bulk string from the stream
 func (p Parser) readBulkString() (string, error) {
 	b, err := p.reader.ReadByte()
 
@@ -124,6 +126,7 @@ func (p Parser) readBulkString() (string, error) {
 	return string(buf), nil
 }
 
+// trimCRLF trim the trailing CRLF from a byte array. If the buffer does not ends with CRLF it returns an error
 func trimCRLF(buf []byte) ([]byte, error) {
 	bufLen := len(buf)
 
