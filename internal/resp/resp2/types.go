@@ -3,9 +3,10 @@ package resp2
 import (
 	"bytes"
 	"fmt"
-	"github.com/kasvith/kache/internal/protocol"
 	"strconv"
 	"strings"
+
+	"github.com/kasvith/kache/internal/protocol"
 )
 
 const (
@@ -15,77 +16,90 @@ const (
 	// PrefixErr ERR
 	PrefixErr = "ERR"
 
+	// TypeSimpleString represents a RESP2 simple string
 	TypeSimpleString = '+'
 
+	// TypeError represents a RESP2 error
 	TypeError = '-'
 
+	// TypeInteger represents a RESP2 integer
 	TypeInteger = ':'
 
+	// TypeBulkString represents a RESP2 bulk string
 	TypeBulkString = '$'
 
+	// TypeArray reperesnts a RESP2 array
 	TypeArray = '*'
 
+	// CRLF represents line ending \r\n
 	CRLF = "\r\n"
 
+	// CR represents Carriage Return
 	CR = '\r'
 
+	// LF represents Line Follow
 	LF = '\n'
 )
 
-// Command represents a command that can be executed
-type Command struct {
-	// Name of the command
-	Name string
-	// Args for command
-	Args []string
-}
-
+// SimpleStringReply represents a RESP2 simple string reply
 type SimpleStringReply struct {
 	Str string
 }
 
-func NewSimpleStringReply(str string) SimpleStringReply {
-	return SimpleStringReply{Str: str}
+// NewSimpleStringReply creates a SimpleStringReply
+func NewSimpleStringReply(str string) *SimpleStringReply {
+	return &SimpleStringReply{Str: str}
 }
 
+// ToBytes returns the byte representation of the SimpleStirngReply
 func (s SimpleStringReply) ToBytes() []byte {
 	return []byte(fmt.Sprintf("%c%s%s", TypeSimpleString, s.Str, CRLF))
 }
 
+// ErrorReply is used to indicate an error processing the request
 type ErrorReply struct {
 	Err error
 }
 
-func NewErrorReply(err error) ErrorReply {
-	return ErrorReply{Err: err}
+// NewErrorReply creates a new ErrorReply struct
+func NewErrorReply(err error) *ErrorReply {
+	return &ErrorReply{Err: err}
 }
 
+// ToBytes returns byte representation of the ErrorReply
 func (e ErrorReply) ToBytes() []byte {
 	return []byte(fmt.Sprintf("%c%s%s", TypeError, e.Err.Error(), CRLF))
 }
 
+// IntegerReply used to return an integer from server
 type IntegerReply struct {
 	Value int
 }
 
-func NewIntegerReply(val int) IntegerReply {
-	return IntegerReply{Value: val}
+// NewIntegerReply creates a new IntegerReply
+func NewIntegerReply(val int) *IntegerReply {
+	return &IntegerReply{Value: val}
 }
 
+// ToBytes returns byte representation of IntegerReply
 func (v IntegerReply) ToBytes() []byte {
 	return []byte(fmt.Sprintf("%c%d%s", TypeInteger, v.Value, CRLF))
 }
 
+// BulkStringReply is used to store and return a bulk string
 type BulkStringReply struct {
 	Str    string
 	IsNull bool
 }
 
-func NewBulkStringReply(isNull bool, str string) BulkStringReply {
-	return BulkStringReply{Str: str, IsNull: isNull}
+// NewBulkStringReply is used to create a new BulkStringReply
+func NewBulkStringReply(isNull bool, str string) *BulkStringReply {
+	return &BulkStringReply{Str: str, IsNull: isNull}
 }
 
+// ToBytes returns byte representation of BulkStringReply
 func (s BulkStringReply) ToBytes() []byte {
+	// handle null strings
 	if s.IsNull {
 		return []byte("$-1\r\n")
 	}
@@ -100,15 +114,18 @@ func (s BulkStringReply) ToBytes() []byte {
 	return []byte(builder.String())
 }
 
+// ArrayReply is used to store a RESP array
 type ArrayReply struct {
 	Reps   []protocol.Reply
 	IsNull bool
 }
 
-func NewArrayReply(isNull bool, reps ...protocol.Reply) ArrayReply {
-	return ArrayReply{IsNull: isNull, Reps: reps}
+// NewArrayReply creates a new ArrayReply
+func NewArrayReply(isNull bool, reps ...protocol.Reply) *ArrayReply {
+	return &ArrayReply{IsNull: isNull, Reps: reps}
 }
 
+// ToBytes returns byte representation of ArrayReply
 func (a ArrayReply) ToBytes() []byte {
 	if a.IsNull {
 		return []byte("*-1\r\n")
