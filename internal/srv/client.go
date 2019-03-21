@@ -47,6 +47,11 @@ var DB = db.NewDB()
 
 var commander = &arch.DBCommand{}
 
+const (
+	RESP2 = "resp2"
+	RESP3 = "resp3"
+)
+
 // Client represents a structure to manage connected client
 type Client struct {
 	// Connection for client
@@ -57,6 +62,16 @@ type Client struct {
 
 	// Parser is used for parsing a request
 	Parser protocol.CommandParser
+
+	// Protocol
+	Protocol string
+}
+
+// NewClient creates a new client object
+// Note all clients will be initialized to use RESP2 as the default reply protocol
+// This can be changed in future
+func NewClient(conn net.Conn, db int) *Client {
+	return &Client{Connection: conn, DB: 0, Protocol: RESP2}
 }
 
 // RemoteAddr returns remote address of client
