@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c)  2018 Kasun Vithanage
+ * Copyright (c) 2019 Kasun Vithanage
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,6 +20,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 
 package srv
@@ -33,7 +34,7 @@ import (
 // ConnectedClients represents connected clients
 var ConnectedClients = ClientRegistry{clients: make(map[string]*Client)}
 
-// ClientRegistry maintains the registy of connected clients
+// ClientRegistry maintains the registry of connected clients
 type ClientRegistry struct {
 	clients map[string]*Client
 	mux     sync.RWMutex
