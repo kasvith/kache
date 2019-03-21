@@ -70,8 +70,8 @@ type Client struct {
 // NewClient creates a new client object
 // Note all clients will be initialized to use RESP2 as the default reply protocol
 // This can be changed in future
-func NewClient(conn net.Conn, db int) *Client {
-	return &Client{Connection: conn, DB: 0, Protocol: RESP2}
+func NewClient(conn net.Conn) *Client {
+	return &Client{Connection: conn, Protocol: RESP2}
 }
 
 // RemoteAddr returns remote address of client
