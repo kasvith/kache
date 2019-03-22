@@ -146,7 +146,7 @@ type ArrayReply struct {
 }
 
 // NewArrayReply creates a new ArrayReply
-func NewArrayReply(isNull bool, reps ...protocol.Reply) *ArrayReply {
+func NewArrayReply(isNull bool, reps []protocol.Reply) *ArrayReply {
 	return &ArrayReply{IsNull: isNull, Reps: reps}
 }
 

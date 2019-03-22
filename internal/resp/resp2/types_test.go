@@ -64,19 +64,19 @@ func TestBulkStringReply(t *testing.T) {
 }
 
 func TestArrayReply(t *testing.T) {
-	reply := NewArrayReply(
-		false,
+	reply := NewArrayReply(false, []protocol.Reply{
 		NewSimpleStringReply("foo"),
 		NewIntegerReply(10),
 		NewErrorReply(errors.New("foo bar")),
 		NewBulkStringReply(false, "bar"),
 		NewBulkStringReply(true, ""),
-	)
+	})
+
 	testifyAssert.Equal(t, []byte("*5\r\n+foo\r\n:10\r\n-foo bar\r\n$3\r\nbar\r\n$-1\r\n"), reply.ToBytes())
 
-	reply = NewArrayReply(false)
+	reply = NewArrayReply(false, []protocol.Reply{})
 	testifyAssert.Equal(t, []byte("*0\r\n"), reply.ToBytes())
 
-	reply = NewArrayReply(true)
+	reply = NewArrayReply(true, []protocol.Reply{})
 	testifyAssert.Equal(t, []byte("*-1\r\n"), reply.ToBytes())
 }
