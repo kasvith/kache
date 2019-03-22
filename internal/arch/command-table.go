@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c)  2018 Kasun Vithanage
+ * Copyright (c) 2019 Kasun Vithanage
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,18 +20,19 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 
 package arch
 
 import (
 	"github.com/kasvith/kache/internal/cmds"
-	"github.com/kasvith/kache/internal/db"
 	"github.com/kasvith/kache/internal/protocol"
+	"github.com/kasvith/kache/internal/srv"
 )
 
 // CommandFunc holds a function signature which can be used as a command.
-type CommandFunc func(*db.DB, []string) *protocol.Resp3
+type CommandFunc func(*srv.Client, []string)
 
 // Command holds a command structure which is used to execute a kache command
 type Command struct {
@@ -64,24 +65,10 @@ type DBCommand struct {
 }
 
 // getCommand will fetch the command from command table
-func getCommand(cmd string) (*Command, error) {
+func GetCommand(cmd string) (*Command, error) {
 	if v, ok := CommandTable[cmd]; ok {
 		return &v, nil
 	}
 
 	return nil, &protocol.ErrUnknownCommand{Cmd: cmd}
-}
-
-// Execute a single command on the given database with args
-func (DBCommand) Execute(db *db.DB, cmd string, args []string) *protocol.Resp3 {
-	command, err := getCommand(cmd)
-	if err != nil {
-		return &protocol.Resp3{Type: protocol.Resp3SimpleError, Err: err}
-	}
-
-	if argsLen := len(args); (command.MinArgs > 0 && argsLen < command.MinArgs) || (command.MaxArgs != -1 && argsLen > command.MaxArgs) {
-		return &protocol.Resp3{Type: protocol.Resp3SimpleError, Err: &protocol.ErrWrongNumberOfArgs{Cmd: cmd}}
-	}
-
-	return command.Fn(db, args)
 }
