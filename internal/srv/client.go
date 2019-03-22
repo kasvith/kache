@@ -43,7 +43,7 @@ import (
 // TODO: Need refactoring this to allow multiple DBs for use
 
 // DB is the database used
-var DB = db.NewDB()
+var dbase = db.NewDB()
 
 var commander = &arch.DBCommand{}
 
@@ -58,20 +58,30 @@ type Client struct {
 	Connection net.Conn
 
 	// DB selected database for client, default to 0
-	DB int
+	Database *db.DB
 
 	// Parser is used for parsing a request
 	Parser protocol.CommandParser
 
 	// Protocol
 	Protocol string
+
+	// Multi will indicate that client is in multi mode or not
+	Multi bool
+
+	// Pending will indicate number of pending commands needs to send
+	// If zero or 1 it will write reply immediately to the connection
+	Pending int
+
+	// Writer is used to write out data to client connection
+	*bufio.Writer
 }
 
 // NewClient creates a new client object
 // Note all clients will be initialized to use RESP2 as the default reply protocol
 // This can be changed in future
 func NewClient(conn net.Conn) *Client {
-	return &Client{Connection: conn, Protocol: RESP2}
+	return &Client{Connection: conn, Protocol: RESP2, Writer: bufio.NewWriter(conn), Database: dbase}
 }
 
 // RemoteAddr returns remote address of client
@@ -89,8 +99,6 @@ func (client *Client) Handle() {
 		return
 	}
 
-	writer := bufio.NewWriter(client.Connection)
-
 	for {
 		command, err := client.Parser.Parse()
 
@@ -103,8 +111,8 @@ func (client *Client) Handle() {
 					// log the error, inform client continue loop
 					// anything else should be sent to client with prefix PrefixErr
 					klogs.Logger.Debug(client.RemoteAddr(), ": ", err.Error())
-					writer.WriteString((&protocol.Resp3{Type: protocol.Resp3BolbError, Err: err}).ProtocolString())
-					writer.Flush()
+
+					client.WriteError(err)
 					continue
 				}
 			}
@@ -120,10 +128,8 @@ func (client *Client) Handle() {
 		}
 
 		// executes the command
-		message := commander.Execute(DB, command.Name, command.Args)
-
+		message := commander.Execute(dbase, command.Name, command.Args)
 		writer.WriteString(message.ProtocolString())
-
 		writer.Flush()
 	}
 
@@ -155,4 +161,49 @@ func (client *Client) detectParser() error {
 	}
 
 	return nil
+}
+
+func (client *Client) WriteError(err error) {
+	switch client.Protocol {
+	case RESP2:
+	case RESP3:
+		client.WriteProtocolReply(resp2.NewErrorReply(err))
+		break
+	}
+}
+
+func (client *Client) WriteInteger(n int) {
+	switch client.Protocol {
+	case RESP2:
+	case RESP3:
+		client.WriteProtocolReply(resp2.NewIntegerReply(n))
+		break
+	}
+}
+
+func (client *Client) WriteProtocolReply(reply protocol.Reply) {
+	// if we are in multi mode and we still have commands to be processed wait
+	// cache the reply too
+	if client.Pending > 0 {
+		// TODO cache reply
+		client.Pending--
+	}
+
+	// ok we are clear to send
+	client.Write(reply.ToBytes())
+	client.Flush()
+}
+
+// Execute a single command on the given database with args
+func (client *Client) Execute(cmd string, args []string) {
+	command, err := arch.GetCommand(cmd)
+	if err != nil {
+		client.WriteError(err)
+	}
+
+	if argsLen := len(args); (command.MinArgs > 0 && argsLen < command.MinArgs) || (command.MaxArgs != -1 && argsLen > command.MaxArgs) {
+		client.WriteError(&protocol.ErrWrongNumberOfArgs{Cmd: cmd})
+	}
+
+	command.Fn(client, args)
 }
