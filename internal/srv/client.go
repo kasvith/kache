@@ -45,8 +45,6 @@ import (
 // DB is the database used
 var dbase = db.NewDB()
 
-var commander = &arch.DBCommand{}
-
 const (
 	RESP2 = "resp2"
 	RESP3 = "resp3"
@@ -128,9 +126,7 @@ func (client *Client) Handle() {
 		}
 
 		// executes the command
-		message := commander.Execute(dbase, command.Name, command.Args)
-		writer.WriteString(message.ProtocolString())
-		writer.Flush()
+		client.Execute(command.Name, command.Args)
 	}
 
 	client.logAndRemove()
@@ -157,7 +153,6 @@ func (client *Client) detectParser() error {
 	default:
 		// use wire protocol
 		client.Parser = wire.NewParser(reader)
-
 	}
 
 	return nil
