@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c)  2018 Kasun Vithanage
+ * Copyright (c) 2019 Kasun Vithanage
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,20 +20,22 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 
 package cmds
 
 import (
-	"github.com/kasvith/kache/internal/db"
-	"github.com/kasvith/kache/internal/protocol"
+	"github.com/kasvith/kache/internal/srv"
 )
 
 // Ping will return PONG when no argument found or will echo the given argument
-func Ping(d *db.DB, args []string) *protocol.Resp3 {
+func Ping(client *srv.Client, args []string) {
 	if len(args) == 0 {
-		return &protocol.Resp3{Type: protocol.Resp3SimpleString, Str: "PONG"}
+		client.WriteString("PONG")
+		client.Flush()
 	}
 
-	return &protocol.Resp3{Type: protocol.Resp3BlobString, Str: args[0]}
+	client.WriteString(args[0])
+	client.Flush()
 }

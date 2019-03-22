@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c)  2018 Kasun Vithanage
+ * Copyright (c) 2019 Kasun Vithanage
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +20,14 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 
 package cmds
 
 import (
+	"github.com/kasvith/kache/internal/resp/resp2"
+	"github.com/kasvith/kache/internal/srv"
 	"strconv"
 
 	"github.com/kasvith/kache/internal/db"
@@ -33,59 +36,64 @@ import (
 )
 
 // Get will find the value of a given string key and return it
-func Get(d *db.DB, args []string) *protocol.Resp3 {
-	val, err := d.Get(args[0])
+func Get(client *srv.Client, args []string) {
+	val, err := client.Database.Get(args[0])
 	if err != nil {
-		return &protocol.Resp3{Type: protocol.Resp3Null}
+		switch client.Protocol {
+		case srv.RESP2:
+		case srv.RESP3:
+			client.WriteProtocolReply(resp2.NewBulkStringReply(true, ""))
+		}
 	}
 
 	if val.Type != db.TypeString {
-		return &protocol.Resp3{Type: protocol.Resp3BolbError, Err: &protocol.ErrWrongType{}}
+		client.WriteError(&protocol.ErrWrongType{})
 	}
 
-	return &protocol.Resp3{Type: protocol.Resp3BlobString, Str: util.ToString(val.Value)}
+	// TODO handle RESP3 value also
+	client.WriteProtocolReply(resp2.NewBulkStringReply(false, util.ToString(val.Value)))
 }
 
 // Set will create a new string key value pair
-func Set(d *db.DB, args []string) *protocol.Resp3 {
+func Set(client *srv.Client, args []string) {
 	key := args[0]
 	val := args[1]
 
-	d.Set(key, db.NewDataNode(db.TypeString, -1, val))
+	client.Database.Set(key, db.NewDataNode(db.TypeString, -1, val))
 
-	return &protocol.Resp3{Type: protocol.Resp3SimpleString, Str: "OK"}
+	client.WriteProtocolReply(resp2.NewSimpleStringReply("OK"))
 }
 
 // Incr will increment a given string key by 1
 // If key not found it will be set to 0 and will do operation
 // If key type is invalid it will return an error
-func Incr(d *db.DB, args []string) *protocol.Resp3 {
-	return accumulateBy(d, args[0], 1, true)
+func Incr(client *srv.Client, args []string) {
+	accumulateBy(client, args[0], 1, true)
 }
 
 // Decr will decrement a given string key by 1
 // If key not found it will be set to 0 and will do operation
 // If key type is invalid it will return an error
-func Decr(d *db.DB, args []string) *protocol.Resp3 {
-	return accumulateBy(d, args[0], -1, true)
+func Decr(client *srv.Client, args []string) {
+	accumulateBy(client, args[0], -1, true)
 }
 
 // accumulateBy will accumulate the value of key by given amount
-func accumulateBy(d *db.DB, key string, v int, incr bool) *protocol.Resp3 {
-	val, found := d.GetIfNotSet(key, db.NewDataNode(db.TypeString, -1, strconv.Itoa(v)))
+func accumulateBy(client *srv.Client, key string, v int, incr bool) {
+	val, found := client.Database.GetIfNotSet(key, db.NewDataNode(db.TypeString, -1, strconv.Itoa(v)))
 
 	if !found {
-		return &protocol.Resp3{Type: protocol.Resp3Number, Integer: v}
+		client.WriteInteger(v)
 	}
 
 	if val.Type != db.TypeString {
-		return &protocol.Resp3{Type: protocol.Resp3BolbError, Err: &protocol.ErrWrongType{}}
+		client.WriteProtocolReply(resp2.NewErrorReply(&protocol.ErrWrongType{}))
 	}
 
 	i, err := strconv.Atoi(util.ToString(val.Value))
 
 	if err != nil {
-		return &protocol.Resp3{Type: protocol.Resp3BolbError, Err: &protocol.ErrCastFailedToInt{Val: val.Value}}
+		client.WriteError(&protocol.ErrCastFailedToInt{Val: val.Value})
 	}
 
 	var n int
@@ -95,7 +103,7 @@ func accumulateBy(d *db.DB, key string, v int, incr bool) *protocol.Resp3 {
 		n = i - v
 	}
 
-	d.Set(key, db.NewDataNode(db.TypeString, -1, strconv.Itoa(n)))
+	client.Database.Set(key, db.NewDataNode(db.TypeString, -1, strconv.Itoa(n)))
 
-	return &protocol.Resp3{Type: protocol.Resp3Number, Integer: n}
+	client.WriteInteger(n)
 }

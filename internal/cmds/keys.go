@@ -27,48 +27,61 @@ package cmds
 
 import (
 	"errors"
+	"github.com/kasvith/kache/internal/resp/resp2"
+	"github.com/kasvith/kache/internal/srv"
 	"strconv"
 	"time"
 
-	"github.com/kasvith/kache/internal/db"
 	"github.com/kasvith/kache/internal/protocol"
 	"github.com/kasvith/kache/internal/sys"
 )
 
 // Exists will check for key existence in given db
-func Exists(d *db.DB, args []string) *protocol.Resp3 {
-	found := d.Exists(args[0])
-	return &protocol.Resp3{Type: protocol.Resp3Number, Integer: found}
+func Exists(client *srv.Client, args []string) {
+	found := client.Database.Exists(args[0])
+	client.WriteInteger(found)
 }
 
 // Del will delete set of keys and return number of deleted keys
-func Del(d *db.DB, args []string) *protocol.Resp3 {
-	deleted := d.Del(args)
-	return &protocol.Resp3{Type: protocol.Resp3Number, Integer: deleted}
+func Del(client *srv.Client, args []string) {
+	deleted := client.Database.Del(args)
+	client.WriteInteger(deleted)
 }
 
 // Keys will return all keys of the db as a list
-func Keys(d *db.DB, args []string) *protocol.Resp3 {
-	keys := d.Keys()
-	return &protocol.Resp3{Type: protocol.Resp3Array, Elems: keys}
+func Keys(client *srv.Client, args []string) {
+	keys := client.Database.Keys()
+
+	switch client.Protocol {
+	case srv.RESP2:
+		// TODO do a proper RESP3
+	case srv.RESP3:
+		arr := make([]protocol.Reply, len(keys))
+		for i := 0; i < len(keys); i++ {
+			arr[i] = *resp2.NewBulkStringReply(false, keys[i])
+		}
+
+		client.WriteProtocolReply(resp2.NewArrayReply(false, arr))
+		break
+	}
 }
 
 // Expire a key
-func Expire(d *db.DB, args []string) *protocol.Resp3 {
-	if v, ok := d.GetNode(args[0]); ok {
+func Expire(client *srv.Client, args []string) {
+	if v, ok := client.Database.GetNode(args[0]); ok {
 		val, err := strconv.Atoi(args[1])
 		if err != nil {
-			return &protocol.Resp3{Type: protocol.Resp3SimpleError, Err: &protocol.ErrCastFailedToInt{Val: args[1]}}
+			client.WriteError(&protocol.ErrCastFailedToInt{Val: args[1]})
 		}
 
 		if val < 0 {
-			return &protocol.Resp3{Type: protocol.Resp3SimpleError, Err: errors.New("invalid seconds")}
+			client.WriteError(errors.New("invalid seconds"))
 		}
 
 		ttl := sys.GetTTL(int64(val), time.Second)
 		v.SetExpiration(ttl)
-		return &protocol.Resp3{Type: protocol.Resp3Number, Integer: 1}
+		client.WriteInteger(1)
 	}
 
-	return &protocol.Resp3{Type: protocol.Resp3Number, Integer: 0}
+	client.WriteInteger(0)
 }
