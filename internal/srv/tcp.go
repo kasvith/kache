@@ -30,6 +30,8 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/kasvith/kache/internal/client"
+
 	"github.com/kasvith/kache/internal/config"
 	"github.com/kasvith/kache/internal/klogs"
 )
@@ -55,10 +57,10 @@ func Start(config config.AppConfig) {
 			continue // we skip malformed user
 		}
 
-		client := NewClient(conn)
-		ConnectedClients.Add(client)
-		ConnectedClients.LogClientCount()
+		newClient := client.NewClient(conn)
+		client.ConnectedClients.Add(newClient)
+		client.ConnectedClients.LogClientCount()
 
-		go client.Handle()
+		go newClient.Handle()
 	}
 }
