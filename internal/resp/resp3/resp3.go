@@ -1,7 +1,8 @@
-package protocol
+package resp3
 
 import (
 	"fmt"
+	"github.com/kasvith/kache/internal/protocol"
 	"math/big"
 	"strconv"
 	"strings"
@@ -81,7 +82,7 @@ func (r *Resp3) commands() ([]string, error) {
 		i := 0
 		for _, v := range r.Elems {
 			if v.Type != Resp3SimpleString && v.Type != Resp3BlobString && v.Type != Resp3Number && v.Type != Resp3Double && v.Type != Resp3BigNumber && v.Type != Resp3Boolean {
-				return nil, &ErrInvalidCommand{}
+				return nil, &protocol.ErrInvalidCommand{}
 			}
 			c, err := v.command()
 			if err != nil {
@@ -92,7 +93,7 @@ func (r *Resp3) commands() ([]string, error) {
 		}
 		return slices, nil
 	}
-	return nil, &ErrInvalidCommand{}
+	return nil, &protocol.ErrInvalidCommand{}
 }
 
 func (r *Resp3) command() (string, error) {
@@ -111,7 +112,7 @@ func (r *Resp3) command() (string, error) {
 		}
 		return "false", nil
 	}
-	return "", &ErrInvalidCommand{}
+	return "", &protocol.ErrInvalidCommand{}
 }
 
 func (r *Resp3) protocolString(buf *strings.Builder) {

@@ -27,17 +27,16 @@ package cli
 import (
 	"bufio"
 	"fmt"
+	"github.com/kasvith/kache/internal/resp/resp3"
 	"net"
 	"time"
-
-	"github.com/kasvith/kache/internal/protocol"
 )
 
 var c *cli
 
 type cli struct {
 	conn        net.Conn
-	resp3Parser *protocol.Resp3Parser
+	resp3Parser *resp3.Parser
 	addr        string
 }
 
@@ -68,7 +67,7 @@ func Dial(addr string) error {
 
 	c = new(cli)
 	c.conn = conn
-	c.resp3Parser = protocol.NewResp3Parser(bufio.NewReader(conn))
+	c.resp3Parser = resp3.NewResp3Parser(bufio.NewReader(conn))
 	c.addr = addr
 
 	return nil

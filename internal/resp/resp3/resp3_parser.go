@@ -1,25 +1,26 @@
-package protocol
+package resp3
 
 import (
 	"bufio"
 	"errors"
+	"github.com/kasvith/kache/internal/protocol"
 	"math/big"
 	"strconv"
 	"strings"
 )
 
-// Resp3Parser is for parser resp3 protocol
-type Resp3Parser struct {
+// Parser is for parser resp3 protocol
+type Parser struct {
 	reader *bufio.Reader
 }
 
-// NewResp3Parser return a Resp3Parser
-func NewResp3Parser(r *bufio.Reader) *Resp3Parser {
-	return &Resp3Parser{reader: r}
+// NewResp3Parser return a Parser
+func NewResp3Parser(r *bufio.Reader) *Parser {
+	return &Parser{reader: r}
 }
 
 // Commands parse resp3 message to kache command
-func (r *Resp3Parser) Commands() (*Command, error) {
+func (r *Parser) Commands() (*protocol.Command, error) {
 	resp3, err := r.Parse()
 	if err != nil {
 		return nil, err
@@ -29,18 +30,18 @@ func (r *Resp3Parser) Commands() (*Command, error) {
 		return nil, err
 	}
 	if len(args) == 0 {
-		return nil, &ErrInvalidCommand{}
+		return nil, &protocol.ErrInvalidCommand{}
 	}
 
-	return &Command{Name: strings.ToLower(args[0]), Args: args[1:]}, nil
+	return &protocol.Command{Name: strings.ToLower(args[0]), Args: args[1:]}, nil
 }
 
 // Parse return Resp3
-func (r *Resp3Parser) Parse() (*Resp3, error) {
+func (r *Parser) Parse() (*Resp3, error) {
 	return r.parse()
 }
 
-func (r *Resp3Parser) parse() (*Resp3, error) {
+func (r *Parser) parse() (*Resp3, error) {
 	b, err := r.reader.ReadByte()
 	if err != nil {
 		return nil, err
@@ -84,7 +85,7 @@ func (r *Resp3Parser) parse() (*Resp3, error) {
 		}
 		f, err := strconv.ParseFloat(str, 64)
 		if err != nil {
-			return nil, &ErrConvertType{Type: "double", Value: str, Err: err}
+			return nil, &protocol.ErrConvertType{Type: "double", Value: str, Err: err}
 		}
 		return &Resp3{Type: b, Double: f}, nil
 	case Resp3BigNumber:
@@ -94,7 +95,7 @@ func (r *Resp3Parser) parse() (*Resp3, error) {
 		}
 		bigInt, ok := big.NewInt(0).SetString(str, 10)
 		if !ok {
-			return nil, &ErrConvertType{Type: "Big Number", Value: str}
+			return nil, &protocol.ErrConvertType{Type: "Big Number", Value: str}
 		}
 		return &Resp3{Type: b, BigInt: bigInt}, nil
 	case Resp3Null:
@@ -114,7 +115,7 @@ func (r *Resp3Parser) parse() (*Resp3, error) {
 		case 'f':
 			return &Resp3{Type: b, Boolean: false}, nil
 		}
-		return nil, &ErrUnexpectString{Str: "t/f"}
+		return nil, &protocol.ErrUnexpectString{Str: "t/f"}
 	case Resp3Array, Resp3Set:
 		length, err := r.intBeforeLF()
 		if err != nil {
@@ -131,10 +132,10 @@ func (r *Resp3Parser) parse() (*Resp3, error) {
 		return resp, nil
 	}
 
-	return nil, &ErrProtocolType{Type: b}
+	return nil, &protocol.ErrProtocolType{Type: b}
 }
 
-func (r *Resp3Parser) stringBeforeLF() (string, error) {
+func (r *Parser) stringBeforeLF() (string, error) {
 	buf, err := r.reader.ReadBytes(LF)
 	if err != nil {
 		return "", err
@@ -146,7 +147,7 @@ func (r *Resp3Parser) stringBeforeLF() (string, error) {
 	return string(bs), nil
 }
 
-func (r *Resp3Parser) intBeforeLF() (int, error) {
+func (r *Parser) intBeforeLF() (int, error) {
 	buf, err := r.reader.ReadBytes(LF)
 	if err != nil {
 		return 0, err
@@ -158,17 +159,17 @@ func (r *Resp3Parser) intBeforeLF() (int, error) {
 	s := string(bs)
 	i, err := strconv.Atoi(s)
 	if err != nil {
-		return 0, &ErrCastFailedToInt{Val: s}
+		return 0, &protocol.ErrCastFailedToInt{Val: s}
 	}
 	return i, nil
 }
 
-func (r *Resp3Parser) readLengthBytesWithLF(length int) ([]byte, error) {
+func (r *Parser) readLengthBytesWithLF(length int) ([]byte, error) {
 	if length == 0 {
 		if b, err := r.reader.ReadByte(); err != nil {
 			return nil, err
 		} else if b != LF {
-			return nil, &ErrUnexpectString{Str: "<LF>"}
+			return nil, &protocol.ErrUnexpectString{Str: "<LF>"}
 		}
 		return nil, nil
 	}
@@ -178,7 +179,7 @@ func (r *Resp3Parser) readLengthBytesWithLF(length int) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	} else if n < length+1 {
-		return nil, &ErrUnexpectedLineEnd{}
+		return nil, &protocol.ErrUnexpectedLineEnd{}
 	}
 
 	return trimLastLF(buf)
@@ -187,7 +188,7 @@ func (r *Resp3Parser) readLengthBytesWithLF(length int) ([]byte, error) {
 func trimLastLF(buf []byte) ([]byte, error) {
 	bufLen := len(buf)
 	if len(buf) == 0 || buf[bufLen-1] != LF {
-		return nil, &ErrUnexpectedLineEnd{}
+		return nil, &protocol.ErrUnexpectedLineEnd{}
 	}
 
 	return buf[:bufLen-1], nil

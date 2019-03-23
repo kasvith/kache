@@ -26,12 +26,11 @@ package cli
 
 import (
 	"fmt"
+	"github.com/kasvith/kache/internal/resp/resp3"
 	"os"
 	"strings"
 
 	"github.com/c-bata/go-prompt"
-
-	"github.com/kasvith/kache/internal/protocol"
 )
 
 // RunCli start kache-cli command
@@ -61,7 +60,7 @@ func Executor(s string) {
 		return
 	}
 
-	if err := c.Write(protocol.NewSliceResp3(strings.Split(s, " "))); err != nil {
+	if err := c.Write(resp3.NewSliceResp3(strings.Split(s, " "))); err != nil {
 		fmt.Println(err)
 		return
 	}

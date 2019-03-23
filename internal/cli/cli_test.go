@@ -27,15 +27,11 @@ package cli
 
 import (
 	"strconv"
-	"strings"
 	"testing"
 	"time"
 
-	testifyAssert "github.com/stretchr/testify/assert"
-
 	"github.com/kasvith/kache/internal/config"
 	"github.com/kasvith/kache/internal/klogs"
-	"github.com/kasvith/kache/internal/protocol"
 	"github.com/kasvith/kache/internal/srv"
 )
 
@@ -61,15 +57,15 @@ func initTestServerClient(t *testing.T) {
 	t.Fatalf("connect to server failed")
 }
 
-func runTestSendRecv(t *testing.T, send, recv string) {
-	assert := testifyAssert.New(t)
-
-	assert.Nil(c.Write(protocol.NewSliceResp3(strings.Split(send, " "))))
-	resp, err := c.resp3Parser.Parse()
-	assert.Nil(err)
-	assert.NotNil(resp)
-	assert.Equal(recv, resp.RenderString())
-}
+//func runTestSendRecv(t *testing.T, send, recv string) {
+//	assert := testifyAssert.New(t)
+//
+//	assert.Nil(c.Write(protocol.NewSliceResp3(strings.Split(send, " "))))
+//	resp, err := c.resp3Parser.Parse()
+//	assert.Nil(err)
+//	assert.NotNil(resp)
+//	assert.Equal(recv, resp.RenderString())
+//}
 
 //func TestCli(t *testing.T) {
 //	assert := testifyAssert.New(t)
