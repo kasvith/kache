@@ -1,6 +1,7 @@
 package client
 
 import (
+	"fmt"
 	"github.com/kasvith/kache/internal/protocol"
 )
 
@@ -32,11 +33,14 @@ func GetCommand(cmd string) (*Command, error) {
 func Execute(client *Client, cmd string, args []string) {
 	command, err := GetCommand(cmd)
 	if err != nil {
+		fmt.Println(err)
 		client.WriteError(err)
+		return
 	}
 
 	if argsLen := len(args); (command.MinArgs > 0 && argsLen < command.MinArgs) || (command.MaxArgs != -1 && argsLen > command.MaxArgs) {
 		client.WriteError(&protocol.ErrWrongNumberOfArgs{Cmd: cmd})
+		return
 	}
 
 	command.Fn(client, args)

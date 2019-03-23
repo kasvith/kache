@@ -25,13 +25,14 @@
 
 package client
 
+import "github.com/kasvith/kache/internal/resp/resp2"
+
 // Ping will return PONG when no argument found or will echo the given argument
-func Ping(cl *Client, args []string) {
+func Ping(client *Client, args []string) {
 	if len(args) == 0 {
-		cl.WriteString("PONG")
-		cl.Flush()
+		client.WriteProtocolReply(resp2.NewSimpleStringReply("PONG"))
+		return
 	}
 
-	cl.WriteString(args[0])
-	cl.Flush()
+	client.WriteProtocolReply(resp2.NewSimpleStringReply(args[0]))
 }

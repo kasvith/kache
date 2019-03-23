@@ -38,51 +38,50 @@ import (
 )
 
 // Exists will check for key existence in given db
-func Exists(cl *Client, args []string) {
-	found := cl.Database.Exists(args[0])
-	cl.WriteInteger(found)
+func Exists(client *Client, args []string) {
+	found := client.Database.Exists(args[0])
+	client.WriteInteger(found)
 }
 
 // Del will delete set of keys and return number of deleted keys
-func Del(cl *Client, args []string) {
-	deleted := cl.Database.Del(args)
-	cl.WriteInteger(deleted)
+func Del(client *Client, args []string) {
+	deleted := client.Database.Del(args)
+	client.WriteInteger(deleted)
 }
 
 // Keys will return all keys of the db as a list
-func Keys(cl *Client, args []string) {
-	keys := cl.Database.Keys()
+func Keys(client *Client, args []string) {
+	keys := client.Database.Keys()
 
-	switch cl.Protocol {
-	case RESP2:
+	switch client.Protocol {
+	case RESP2, RESP3:
 		// TODO do a proper RESP3
-	case RESP3:
 		arr := make([]protocol.Reply, len(keys))
 		for i := 0; i < len(keys); i++ {
 			arr[i] = *resp2.NewBulkStringReply(false, keys[i])
 		}
 
-		cl.WriteProtocolReply(resp2.NewArrayReply(false, arr))
-		break
+		client.WriteProtocolReply(resp2.NewArrayReply(false, arr))
 	}
 }
 
 // Expire a key
-func Expire(cl *Client, args []string) {
-	if v, ok := cl.Database.GetNode(args[0]); ok {
+func Expire(client *Client, args []string) {
+	if v, ok := client.Database.GetNode(args[0]); ok {
 		val, err := strconv.Atoi(args[1])
 		if err != nil {
-			cl.WriteError(&protocol.ErrCastFailedToInt{Val: args[1]})
+			client.WriteError(&protocol.ErrCastFailedToInt{Val: args[1]})
 		}
 
 		if val < 0 {
-			cl.WriteError(errors.New("invalid seconds"))
+			client.WriteError(errors.New("invalid seconds"))
 		}
 
 		ttl := sys.GetTTL(int64(val), time.Second)
 		v.SetExpiration(ttl)
-		cl.WriteInteger(1)
+		client.WriteInteger(1)
+		return
 	}
 
-	cl.WriteInteger(0)
+	client.WriteInteger(0)
 }

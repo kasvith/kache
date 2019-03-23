@@ -27,7 +27,6 @@ package client
 
 import (
 	"bufio"
-	"fmt"
 	"net"
 
 	"github.com/kasvith/kache/internal/resp/resp2"
@@ -136,14 +135,20 @@ func (client *Client) Handle() {
 
 func (client *Client) logAndRemove() {
 	ConnectedClients.Remove(client.RemoteAddr().String())
-	client.Connection.Close()
+	err := client.Connection.Close()
+	if err != nil {
+		klogs.Logger.Error(err)
+	}
 	ConnectedClients.LogClientCount()
 }
 
 func (client *Client) detectParser() error {
 	reader := bufio.NewReader(client.Connection)
 	b, err := reader.ReadByte()
-	reader.UnreadByte()
+	if err != nil {
+		return err
+	}
+	err = reader.UnreadByte()
 	if err != nil {
 		return err
 	}
@@ -163,8 +168,7 @@ func (client *Client) detectParser() error {
 // WriteError will write an error message to the connection
 func (client *Client) WriteError(err error) {
 	switch client.Protocol {
-	case RESP2:
-	case RESP3:
+	case RESP2, RESP3:
 		client.WriteProtocolReply(resp2.NewErrorReply(err))
 		break
 	}
@@ -173,8 +177,7 @@ func (client *Client) WriteError(err error) {
 // WriteInteger will write an int value to the client
 func (client *Client) WriteInteger(n int) {
 	switch client.Protocol {
-	case RESP2:
-	case RESP3:
+	case RESP2, RESP3:
 		client.WriteProtocolReply(resp2.NewIntegerReply(n))
 		break
 	}
@@ -184,13 +187,21 @@ func (client *Client) WriteInteger(n int) {
 func (client *Client) WriteProtocolReply(reply protocol.Reply) {
 	// if we are in multi mode and we still have commands to be processed wait
 	// cache the reply too
-	fmt.Println(client.Pending)
 	if client.Pending > 0 {
 		// TODO cache reply
 		client.Pending--
+		return
 	}
 
 	// ok we are clear to send
-	client.Write(reply.ToBytes())
-	client.Flush()
+	_, err := client.Write(reply.ToBytes())
+	if err != nil {
+		client.logAndRemove()
+		return
+	}
+	err = client.Flush()
+	if err != nil {
+		client.logAndRemove()
+		return
+	}
 }
