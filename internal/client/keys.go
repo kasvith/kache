@@ -23,65 +23,66 @@
  *
  */
 
-package cmds
+package client
 
 import (
 	"errors"
-	"github.com/kasvith/kache/internal/resp/resp2"
-	"github.com/kasvith/kache/internal/srv"
+
 	"strconv"
 	"time"
+
+	"github.com/kasvith/kache/internal/resp/resp2"
 
 	"github.com/kasvith/kache/internal/protocol"
 	"github.com/kasvith/kache/internal/sys"
 )
 
 // Exists will check for key existence in given db
-func Exists(client *srv.Client, args []string) {
-	found := client.Database.Exists(args[0])
-	client.WriteInteger(found)
+func Exists(cl *Client, args []string) {
+	found := cl.Database.Exists(args[0])
+	cl.WriteInteger(found)
 }
 
 // Del will delete set of keys and return number of deleted keys
-func Del(client *srv.Client, args []string) {
-	deleted := client.Database.Del(args)
-	client.WriteInteger(deleted)
+func Del(cl *Client, args []string) {
+	deleted := cl.Database.Del(args)
+	cl.WriteInteger(deleted)
 }
 
 // Keys will return all keys of the db as a list
-func Keys(client *srv.Client, args []string) {
-	keys := client.Database.Keys()
+func Keys(cl *Client, args []string) {
+	keys := cl.Database.Keys()
 
-	switch client.Protocol {
-	case srv.RESP2:
+	switch cl.Protocol {
+	case RESP2:
 		// TODO do a proper RESP3
-	case srv.RESP3:
+	case RESP3:
 		arr := make([]protocol.Reply, len(keys))
 		for i := 0; i < len(keys); i++ {
 			arr[i] = *resp2.NewBulkStringReply(false, keys[i])
 		}
 
-		client.WriteProtocolReply(resp2.NewArrayReply(false, arr))
+		cl.WriteProtocolReply(resp2.NewArrayReply(false, arr))
 		break
 	}
 }
 
 // Expire a key
-func Expire(client *srv.Client, args []string) {
-	if v, ok := client.Database.GetNode(args[0]); ok {
+func Expire(cl *Client, args []string) {
+	if v, ok := cl.Database.GetNode(args[0]); ok {
 		val, err := strconv.Atoi(args[1])
 		if err != nil {
-			client.WriteError(&protocol.ErrCastFailedToInt{Val: args[1]})
+			cl.WriteError(&protocol.ErrCastFailedToInt{Val: args[1]})
 		}
 
 		if val < 0 {
-			client.WriteError(errors.New("invalid seconds"))
+			cl.WriteError(errors.New("invalid seconds"))
 		}
 
 		ttl := sys.GetTTL(int64(val), time.Second)
 		v.SetExpiration(ttl)
-		client.WriteInteger(1)
+		cl.WriteInteger(1)
 	}
 
-	client.WriteInteger(0)
+	cl.WriteInteger(0)
 }

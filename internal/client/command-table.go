@@ -23,19 +23,22 @@
  *
  */
 
-package cmds
+package client
 
-import (
-	"github.com/kasvith/kache/internal/srv"
-)
+// CommandTable holds all commands that are supported by kache
+var CommandTable = map[string]Command{
+	// server
+	"ping": {ModifyKeySpace: false, Fn: Ping, MinArgs: 0, MaxArgs: 1},
 
-// Ping will return PONG when no argument found or will echo the given argument
-func Ping(client *srv.Client, args []string) {
-	if len(args) == 0 {
-		client.WriteString("PONG")
-		client.Flush()
-	}
+	// key space
+	"exists": {ModifyKeySpace: false, Fn: Exists, MinArgs: 1, MaxArgs: 1},
+	"del":    {ModifyKeySpace: true, Fn: Del, MinArgs: 1, MaxArgs: -1},
+	"keys":   {ModifyKeySpace: false, Fn: Keys, MinArgs: 0, MaxArgs: 0},
+	"expire": {ModifyKeySpace: false, Fn: Expire, MinArgs: 2, MaxArgs: 2},
 
-	client.WriteString(args[0])
-	client.Flush()
+	// strings
+	"get":  {ModifyKeySpace: false, Fn: Get, MinArgs: 1, MaxArgs: 1},
+	"set":  {ModifyKeySpace: true, Fn: Set, MinArgs: 2, MaxArgs: 2},
+	"incr": {ModifyKeySpace: true, Fn: Incr, MinArgs: 1, MaxArgs: 1},
+	"decr": {ModifyKeySpace: true, Fn: Decr, MinArgs: 1, MaxArgs: 1},
 }

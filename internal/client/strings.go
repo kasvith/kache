@@ -23,12 +23,13 @@
  *
  */
 
-package cmds
+package client
 
 import (
-	"github.com/kasvith/kache/internal/resp/resp2"
-	"github.com/kasvith/kache/internal/srv"
+	"fmt"
 	"strconv"
+
+	"github.com/kasvith/kache/internal/resp/resp2"
 
 	"github.com/kasvith/kache/internal/db"
 	"github.com/kasvith/kache/internal/protocol"
@@ -36,64 +37,65 @@ import (
 )
 
 // Get will find the value of a given string key and return it
-func Get(client *srv.Client, args []string) {
-	val, err := client.Database.Get(args[0])
+func Get(cl *Client, args []string) {
+	fmt.Println(cl.Protocol)
+	val, err := cl.Database.Get(args[0])
 	if err != nil {
-		switch client.Protocol {
-		case srv.RESP2:
-		case srv.RESP3:
-			client.WriteProtocolReply(resp2.NewBulkStringReply(true, ""))
+		switch cl.Protocol {
+		case RESP2, RESP3:
+			cl.WriteProtocolReply(resp2.NewBulkStringReply(true, ""))
 		}
+		return
 	}
 
 	if val.Type != db.TypeString {
-		client.WriteError(&protocol.ErrWrongType{})
+		cl.WriteError(&protocol.ErrWrongType{})
 	}
 
 	// TODO handle RESP3 value also
-	client.WriteProtocolReply(resp2.NewBulkStringReply(false, util.ToString(val.Value)))
+	cl.WriteProtocolReply(resp2.NewBulkStringReply(false, util.ToString(val.Value)))
 }
 
 // Set will create a new string key value pair
-func Set(client *srv.Client, args []string) {
+func Set(cl *Client, args []string) {
 	key := args[0]
 	val := args[1]
 
-	client.Database.Set(key, db.NewDataNode(db.TypeString, -1, val))
+	cl.Database.Set(key, db.NewDataNode(db.TypeString, -1, val))
 
-	client.WriteProtocolReply(resp2.NewSimpleStringReply("OK"))
+	cl.WriteProtocolReply(resp2.NewSimpleStringReply("OK"))
 }
 
 // Incr will increment a given string key by 1
 // If key not found it will be set to 0 and will do operation
 // If key type is invalid it will return an error
-func Incr(client *srv.Client, args []string) {
-	accumulateBy(client, args[0], 1, true)
+func Incr(cl *Client, args []string) {
+	accumulateBy(cl, args[0], 1, true)
 }
 
 // Decr will decrement a given string key by 1
 // If key not found it will be set to 0 and will do operation
 // If key type is invalid it will return an error
-func Decr(client *srv.Client, args []string) {
-	accumulateBy(client, args[0], -1, true)
+func Decr(cl *Client, args []string) {
+	accumulateBy(cl, args[0], -1, true)
 }
 
 // accumulateBy will accumulate the value of key by given amount
-func accumulateBy(client *srv.Client, key string, v int, incr bool) {
-	val, found := client.Database.GetIfNotSet(key, db.NewDataNode(db.TypeString, -1, strconv.Itoa(v)))
+func accumulateBy(cl *Client, key string, v int, incr bool) {
+	val, found := cl.Database.GetIfNotSet(key, db.NewDataNode(db.TypeString, -1, strconv.Itoa(v)))
 
 	if !found {
-		client.WriteInteger(v)
+		cl.WriteInteger(v)
 	}
 
 	if val.Type != db.TypeString {
-		client.WriteProtocolReply(resp2.NewErrorReply(&protocol.ErrWrongType{}))
+		cl.WriteProtocolReply(resp2.NewErrorReply(&protocol.ErrWrongType{}))
 	}
 
 	i, err := strconv.Atoi(util.ToString(val.Value))
 
 	if err != nil {
-		client.WriteError(&protocol.ErrCastFailedToInt{Val: val.Value})
+		cl.WriteError(&protocol.ErrCastFailedToInt{Val: val.Value})
 	}
 
 	var n int
@@ -103,7 +105,7 @@ func accumulateBy(client *srv.Client, key string, v int, incr bool) {
 		n = i - v
 	}
 
-	client.Database.Set(key, db.NewDataNode(db.TypeString, -1, strconv.Itoa(n)))
+	cl.Database.Set(key, db.NewDataNode(db.TypeString, -1, strconv.Itoa(n)))
 
-	client.WriteInteger(n)
+	cl.WriteInteger(n)
 }
