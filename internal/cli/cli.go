@@ -26,9 +26,10 @@ package cli
 
 import (
 	"fmt"
-	"github.com/kasvith/kache/internal/resp/resp3"
 	"os"
 	"strings"
+
+	"github.com/kasvith/kache/internal/resp/resp3"
 
 	"github.com/c-bata/go-prompt"
 )

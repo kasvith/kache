@@ -2,10 +2,11 @@ package resp3
 
 import (
 	"fmt"
-	"github.com/kasvith/kache/internal/protocol"
 	"math/big"
 	"strconv"
 	"strings"
+
+	"github.com/kasvith/kache/internal/protocol"
 )
 
 // resp3 protocol type

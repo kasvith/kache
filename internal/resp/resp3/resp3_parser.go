@@ -3,10 +3,11 @@ package resp3
 import (
 	"bufio"
 	"errors"
-	"github.com/kasvith/kache/internal/protocol"
 	"math/big"
 	"strconv"
 	"strings"
+
+	"github.com/kasvith/kache/internal/protocol"
 )
 
 // Parser is for parser resp3 protocol

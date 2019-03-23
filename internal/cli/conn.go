@@ -27,9 +27,10 @@ package cli
 import (
 	"bufio"
 	"fmt"
-	"github.com/kasvith/kache/internal/resp/resp3"
 	"net"
 	"time"
+
+	"github.com/kasvith/kache/internal/resp/resp3"
 )
 
 var c *cli
