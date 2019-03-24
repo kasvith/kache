@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c)  2018 Kasun Vithanage
+ * Copyright (c) 2019 Kasun Vithanage
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,6 +20,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
 
 package kache
@@ -27,11 +28,12 @@ package kache
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	cobracmds "github.com/kasvith/kache/internal/cobra-cmds"
+	"github.com/kasvith/kache/internal/cobra-cmds"
 	"github.com/kasvith/kache/internal/config"
 	"github.com/kasvith/kache/internal/klogs"
 	"github.com/kasvith/kache/internal/srv"
@@ -96,8 +98,6 @@ func initConfig() {
 			os.Exit(1)
 		}
 
-		fmt.Printf("%T\n", err)
-
 		switch err.(type) {
 		case viper.ConfigFileNotFoundError:
 			fmt.Fprintf(os.Stderr, "Error reading config file from config directory\nLoading with application defaults...\n")
@@ -129,6 +129,30 @@ func runApp(cmd *cobra.Command, args []string) {
 
 	appConfig.MaxMultiBulkLength = config.DefaultMaxMultiBulkLength
 	config.AppConf = appConfig
+
+	fmt.Println(getAsciiBanner())
+	fmt.Printf("Started at: %s\n", time.Now().Format(time.RFC850))
+	fmt.Printf("PID: %d\n", os.Getpid())
+	fmt.Printf("Port: %d\n", appConfig.Port)
+	fmt.Println()
+
 	klogs.InitLoggers(appConfig)
 	srv.Start(appConfig)
+}
+
+func getAsciiBanner() string {
+	val := `
+
+ ██ ▄█▀▄▄▄       ▄████▄   ██░ ██ ▓█████ 
+ ██▄█▒▒████▄    ▒██▀ ▀█  ▓██░ ██▒▓█   ▀ 
+▓███▄░▒██  ▀█▄  ▒▓█    ▄ ▒██▀▀██░▒███   
+▓██ █▄░██▄▄▄▄██ ▒▓▓▄ ▄██▒░▓█ ░██ ▒▓█  ▄ 
+▒██▒ █▄▓█   ▓██▒▒ ▓███▀ ░░▓█▒░██▓░▒████▒
+▒ ▒▒ ▓▒▒▒   ▓▒█░░ ░▒ ▒  ░ ▒ ░░▒░▒░░ ▒░ ░
+░ ░▒ ▒░ ▒   ▒▒ ░  ░  ▒    ▒ ░▒░ ░ ░ ░  ░
+░ ░░ ░  ░   ▒   ░         ░  ░░ ░   ░   
+░  ░        ░  ░░ ░       ░  ░  ░   ░  ░
+                ░
+`
+	return val
 }
