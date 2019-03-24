@@ -1,5 +1,7 @@
 language: go
 
+go: 1.12.x
+
 before_install:
   - go get github.com/magefile/mage
   - mage vendor
@@ -10,22 +12,10 @@ script:
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 
-matrix:
-  fast_finish: true
-  include:
-  - os: linux
-    go: "1.12.x"
-    cache:
-      directories:
-      - $HOME/.cache/go-build
-      - $HOME/gopath/pkg/mod
-
-  - os: osx
-    go: "1.12.x"
-    cache:
-      directories:
-      - $HOME/Library/Caches/go-build
-      - $HOME/gopath/pkg/mod
+cache:
+  directories:
+  - $HOME/.cache/go-build
+  - $HOME/gopath/pkg/mod
 
 jobs:
   include:
