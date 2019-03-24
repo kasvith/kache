@@ -72,7 +72,7 @@ func (cr *Registry) Count() (num int) {
 func (cr *Registry) LogClientCount() {
 	count := cr.Count()
 	if count > 0 {
-		klogs.Logger.Infof("%d connections are open", count)
+		klogs.Logger.Debugf("%d connections are open", count)
 	}
 }
 
