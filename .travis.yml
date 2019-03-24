@@ -29,6 +29,7 @@ matrix:
 
 jobs:
   include:
+  - stage: test
   - stage: deploy
     os: linux
     if: tag IS present
