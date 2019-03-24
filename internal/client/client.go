@@ -118,10 +118,8 @@ func (client *Client) Handle() {
 
 			// If not recoverable or does not implement the interface, then its a critical error
 			// break from the loop to close connection, well we ignore EOF in normal mode
-			if err == io.EOF {
+			if err != io.EOF {
 				klogs.Logger.Debug(client.RemoteAddr(), ": ", err.Error())
-			} else {
-				klogs.Logger.Error(client.RemoteAddr(), ": ", err.Error())
 			}
 			break
 		}
@@ -135,10 +133,7 @@ func (client *Client) Handle() {
 
 func (client *Client) logAndRemove() {
 	ConnectedClients.Remove(client.RemoteAddr().String())
-	err := client.Connection.Close()
-	if err != nil {
-		klogs.Logger.Error(err)
-	}
+	_ = client.Connection.Close()
 	ConnectedClients.LogClientCount()
 }
 
