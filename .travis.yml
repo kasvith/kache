@@ -27,6 +27,26 @@ matrix:
       - $HOME/Library/Caches/go-build
       - $HOME/gopath/pkg/mod
 
+jobs:
+  include:
+  - stage: deploy
+    os: linux
+    if: tag IS present
+    name: "Github Releases"
+    script: skip
+    before_deploy: "mage kachecrossbuild"
+    deploy:
+    - provider: releases
+      api_key: $GITHUB_API_KEY
+      skip_cleanup: true
+      draft: true
+      file_glob: true
+      file:
+      - build/*
+      on:
+        branch: release
+        tags: true
+
 branches:
   except:
   - gh-pages
