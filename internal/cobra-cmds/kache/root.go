@@ -130,7 +130,7 @@ func runApp(cmd *cobra.Command, args []string) {
 	appConfig.MaxMultiBulkLength = config.DefaultMaxMultiBulkLength
 	config.AppConf = appConfig
 
-	fmt.Println(getAsciiBanner())
+	fmt.Println(getASCIIBanner())
 	fmt.Printf("Started at: %s\n", time.Now().Format(time.RFC850))
 	fmt.Printf("PID: %d\n", os.Getpid())
 	fmt.Printf("Port: %d\n", appConfig.Port)
@@ -140,7 +140,7 @@ func runApp(cmd *cobra.Command, args []string) {
 	srv.Start(appConfig)
 }
 
-func getAsciiBanner() string {
+func getASCIIBanner() string {
 	val := `
 
  ██ ▄█▀▄▄▄       ▄████▄   ██░ ██ ▓█████ 
