@@ -35,20 +35,22 @@ func init() {
 	os.Setenv("GO111MODULE", "on")
 }
 
-func flagEnv() map[string]string {
+func flagEnv(osType, osArch string) map[string]string {
 	hash, _ := sh.Output("git", "rev-parse", "--short", "HEAD")
 	return map[string]string{
 		"PACKAGE":     basePackage,
 		"OUT_DIR":     outDir,
 		"COMMIT_HASH": hash,
 		"BUILD_DATE":  time.Now().Format("2006-01-02T15:04:05Z0700"),
+		"GOOS":        osType,
+		"GOARCH":      osArch,
 	}
 }
 
-func addOSExecType(str string) string {
-	str = fmt.Sprintf("%s-%s-%s", str, runtime.GOOS, runtime.GOARCH)
+func addOSExecType(osType, osArch, str string) string {
+	str = fmt.Sprintf("%s-%s-%s", str, osType, osArch)
 
-	if runtime.GOOS == "windows" {
+	if osType == "windows" {
 		return str + ".exe"
 	}
 
@@ -75,7 +77,7 @@ func Vendor() error {
 
 // Build kache
 func Kache() error {
-	return sh.RunWith(flagEnv(), goexe, "build", "-ldflags", ldflags, "-o", addOSExecType("$OUT_DIR/kache"), "$PACKAGE/cmd/kache")
+	return sh.RunWith(flagEnv(runtime.GOOS, runtime.GOARCH), goexe, "build", "-ldflags", ldflags, "-o", addOSExecType(runtime.GOOS, runtime.GOARCH, "$OUT_DIR/kache"), "$PACKAGE/cmd/kache")
 }
 
 // Build kache without git info
@@ -84,9 +86,31 @@ func KacheNoGitInfo() error {
 	return Kache()
 }
 
+// Build kache cross platform
+func KacheCrossBuild() error {
+	// os/arch types
+	platforms := map[string][]string{
+		"linux":   []string{"386", "amd64", "arm"},
+		"darwin":  []string{"386", "amd64"},
+		"windows": []string{"386", "amd64"},
+		"openbsd": []string{"386", "amd64"},
+	}
+
+	for osType, archs := range platforms {
+		for _, arch := range archs {
+			fmt.Printf("Building for %s-%s\n", osType, arch)
+			err := sh.RunWith(flagEnv(osType, arch), goexe, "build", "-ldflags", ldflags, "-o", addOSExecType(osType, arch, "$OUT_DIR/kache"), "$PACKAGE/cmd/kache")
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 // Build kache-cli
 func KacheCli() error {
-	return sh.RunWith(flagEnv(), goexe, "build", "-ldflags", ldflags, "-o", addOSExecType("$OUT_DIR/kache-cli"), "$PACKAGE/cmd/kache-cli")
+	return sh.RunWith(flagEnv(runtime.GOOS, runtime.GOARCH), goexe, "build", "-ldflags", ldflags, "-o", addOSExecType(runtime.GOOS, runtime.GOARCH, "$OUT_DIR/kache-cli"), "$PACKAGE/cmd/kache-cli")
 }
 
 // Build kache-cli without git info

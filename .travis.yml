@@ -1,5 +1,7 @@
 language: go
 
+go: 1.12.x
+
 before_install:
   - go get github.com/magefile/mage
   - mage vendor
@@ -10,22 +12,31 @@ script:
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 
-matrix:
-  fast_finish: true
-  include:
-  - os: linux
-    go: "1.12.x"
-    cache:
-      directories:
-      - $HOME/.cache/go-build
-      - $HOME/gopath/pkg/mod
+cache:
+  directories:
+  - $HOME/.cache/go-build
+  - $HOME/gopath/pkg/mod
 
-  - os: osx
-    go: "1.12.x"
-    cache:
-      directories:
-      - $HOME/Library/Caches/go-build
-      - $HOME/gopath/pkg/mod
+jobs:
+  include:
+  - stage: test
+  - stage: deploy
+    os: linux
+    if: tag IS present
+    name: "Github Releases"
+    script: skip
+    before_deploy: "chmod +x scripts/dist.sh && scripts/dist.sh"
+    deploy:
+    - provider: releases
+      api_key: $GITHUB_API_KEY
+      skip_cleanup: true
+      draft: true
+      file_glob: true
+      file:
+      - dist/*.zip
+      on:
+        branch: release
+        tags: true
 
 branches:
   except:
