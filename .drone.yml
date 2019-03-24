@@ -11,8 +11,4 @@ steps:
   commands:
   - go get github.com/magefile/mage
   - mage vendor
-<<<<<<< HEAD
   - mage check
-=======
-  - mage check
->>>>>>> fa0ebc98c8cb49c9c9095d54554a9417ebf1c98d
