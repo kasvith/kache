@@ -71,10 +71,12 @@ func Expire(client *Client, args []string) {
 		val, err := strconv.Atoi(args[1])
 		if err != nil {
 			client.WriteError(&protocol.ErrCastFailedToInt{Val: args[1]})
+			return
 		}
 
 		if val < 0 {
 			client.WriteError(errors.New("invalid seconds"))
+			return
 		}
 
 		ttl := sys.GetTTL(int64(val), time.Second)
