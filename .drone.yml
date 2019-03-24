@@ -1,0 +1,14 @@
+kind: pipeline
+name: default
+
+workspace:
+  base: /go
+  path: kasvith/kache
+
+steps:
+- name: test
+  image: golang
+  commands:
+  - go get github.com/magefile/mage
+  - mage vendor
+  - mage check
