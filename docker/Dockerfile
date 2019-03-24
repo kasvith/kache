@@ -1,6 +1,6 @@
 # build stage
 FROM golang:alpine AS build
-ADD .. /src
+ADD . /src
 RUN go get github.com/magefile/mage && cd /src && mage vendor && mage check && mage kache
 
   # final stage
