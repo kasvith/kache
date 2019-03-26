@@ -26,8 +26,14 @@
 package client
 
 import (
+	"strings"
+
 	"github.com/kasvith/kache/internal/protocol"
+	"github.com/kasvith/kache/internal/resp/resp2"
 )
+
+// CommandFunc holds a function signature which can be used as a command.
+type CommandFunc func(*Client, []string)
 
 // Command holds a command structure which is used to execute a kache command
 type Command struct {
@@ -35,13 +41,7 @@ type Command struct {
 	Fn             CommandFunc
 	MinArgs        int // 0
 	MaxArgs        int // -1 ~ +inf, -1 mean infinite
-}
-
-// CommandFunc holds a function signature which can be used as a command.
-type CommandFunc func(*Client, []string)
-
-// DBCommand is a command that executes on a given db
-type DBCommand struct {
+	Args           []string
 }
 
 // GetCommand will fetch the command from command table
@@ -57,14 +57,31 @@ func GetCommand(cmd string) (*Command, error) {
 func Execute(client *Client, cmd string, args []string) {
 	command, err := GetCommand(cmd)
 	if err != nil {
+		if client.Multi {
+			client.MultiError = true
+			client.Commands = []*Command{}
+		}
 		client.WriteError(err)
 		return
 	}
 
 	if argsLen := len(args); (command.MinArgs > 0 && argsLen < command.MinArgs) || (command.MaxArgs != -1 && argsLen > command.MaxArgs) {
+		if client.Multi {
+			client.MultiError = true
+			client.Commands = []*Command{}
+		}
 		client.WriteError(&protocol.ErrWrongNumberOfArgs{Cmd: cmd})
 		return
 	}
 
+	if client.Multi && strings.ToLower(cmd) != "exec" {
+		// store args for later use
+		command.Args = args
+		client.Commands = append(client.Commands, command)
+		client.WriteProtocolReply(resp2.NewSimpleStringReply("QUEUED"))
+		return
+	}
+
+	// execute command directly
 	command.Fn(client, args)
 }

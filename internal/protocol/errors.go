@@ -250,3 +250,29 @@ func (ErrUnknownProtocol) Error() string {
 func (ErrUnknownProtocol) Recoverable() bool {
 	return true
 }
+
+// ErrExecAbortTransaction is used to indicate whether an error is occurred while preparing a multi transaction
+type ErrExecAbortTransaction struct {
+}
+
+// Recoverable whether error is recoverable or not
+func (ErrExecAbortTransaction) Recoverable() bool {
+	return true
+}
+
+func (ErrExecAbortTransaction) Error() string {
+	return "EXECABORT Transaction discarded because of previous errors."
+}
+
+// ErrExecWithoutMulti is used to indicate that multi is not enabled
+type ErrExecWithoutMulti struct {
+}
+
+// Recoverable whether error is recoverable or not
+func (ErrExecWithoutMulti) Recoverable() bool {
+	return true
+}
+
+func (ErrExecWithoutMulti) Error() string {
+	return "ERR EXEC without MULTI"
+}

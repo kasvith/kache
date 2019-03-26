@@ -28,7 +28,9 @@ package client
 // CommandTable holds all commands that are supported by kache
 var CommandTable = map[string]Command{
 	// server
-	"ping": {ModifyKeySpace: false, Fn: Ping, MinArgs: 0, MaxArgs: 1},
+	"ping":  {ModifyKeySpace: false, Fn: Ping, MinArgs: 0, MaxArgs: 1},
+	"multi": {ModifyKeySpace: true, Fn: Multi, MinArgs: 0, MaxArgs: 0},
+	"exec":  {ModifyKeySpace: true, Fn: Exec, MinArgs: 0, MaxArgs: 0},
 
 	// key space
 	"exists": {ModifyKeySpace: false, Fn: Exists, MinArgs: 1, MaxArgs: 1},

@@ -68,9 +68,11 @@ type Client struct {
 	// Multi will indicate that client is in multi mode or not
 	Multi bool
 
-	// Pending will indicate number of pending commands needs to send
-	// If zero or 1 it will write reply immediately to the connection
-	Pending int
+	// MultiError indicates whether a command failed during a transaction
+	MultiError bool
+
+	// Commands store a list of queued commands in a multi transaction
+	Commands []*Command
 
 	// Writer is used to write out data to client connection
 	*bufio.Writer
@@ -180,14 +182,6 @@ func (client *Client) WriteInteger(n int) {
 
 // WriteProtocolReply will write a protocol reply
 func (client *Client) WriteProtocolReply(reply protocol.Reply) {
-	// if we are in multi mode and we still have commands to be processed wait
-	// cache the reply too
-	if client.Pending > 0 {
-		// TODO cache reply
-		client.Pending--
-		return
-	}
-
 	// ok we are clear to send
 	_, err := client.Write(reply.ToBytes())
 	if err != nil {

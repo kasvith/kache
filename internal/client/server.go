@@ -25,7 +25,10 @@
 
 package client
 
-import "github.com/kasvith/kache/internal/resp/resp2"
+import (
+	"github.com/kasvith/kache/internal/protocol"
+	"github.com/kasvith/kache/internal/resp/resp2"
+)
 
 // Ping will return PONG when no argument found or will echo the given argument
 func Ping(client *Client, args []string) {
@@ -35,4 +38,33 @@ func Ping(client *Client, args []string) {
 	}
 
 	client.WriteProtocolReply(resp2.NewSimpleStringReply(args[0]))
+}
+
+// Multi command will put client in multi mode where can execute multiple commands at once
+func Multi(client *Client, args []string) {
+	client.Multi = true
+	client.WriteProtocolReply(resp2.NewSimpleStringReply("OK"))
+}
+
+// Exec command will execute a multi transaction
+func Exec(client *Client, args []string) {
+	if !client.Multi {
+		client.WriteError(protocol.ErrExecWithoutMulti{})
+		return
+	}
+
+	client.Multi = false
+	if client.MultiError {
+		client.MultiError = false
+		client.Commands = []*Command{}
+		client.WriteError(protocol.ErrExecAbortTransaction{})
+		return
+	}
+
+	for _, cmd := range client.Commands {
+		cmd.Fn(client, cmd.Args)
+	}
+
+	// clear all commands
+	client.Commands = []*Command{}
 }
