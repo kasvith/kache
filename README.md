@@ -5,6 +5,7 @@ A simple and a flexible in memory cache
 [![Build Status](https://cloud.drone.io/api/badges/kasvith/kache/status.svg)](https://cloud.drone.io/kasvith/kache)
 [![Build status](https://ci.appveyor.com/api/projects/status/40cr0460vgqyyor8/branch/master?svg=true)](https://ci.appveyor.com/project/kasvith/kache/branch/master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/kasvith/kache)](https://goreportcard.com/report/github.com/kasvith/kache)
+[![HitCount](http://hits.dwyl.io/kasvith/kache.svg)](http://hits.dwyl.io/kasvith/kache)
 [![codecov](https://codecov.io/gh/kasvith/kache/branch/master/graph/badge.svg)](https://codecov.io/gh/kasvith/kache)
 [![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/kasvith/kache/blob/master/LICENSE)
 
